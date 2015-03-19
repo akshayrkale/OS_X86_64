@@ -1,0 +1,39 @@
+GROUP:
+Akshay Kale
+SBU ID: 109838315
+
+Santosh Ghosh
+SBU ID: 109770622
+
+To boot up the kernel type
+
+qemu-system-x86_64 -curses -cdrom $USER.iso -drive id=disk,file=$USER.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic -net user,hostfwd=tcp::10080-:80 -net user,hostfwd=tcp::10023-:23 --no-reboot -gdb tcp::9998
+
+at the prompt.
+ 
+Features included in this version:
+
+1. Kernel printf:
+The kernel printf writes to console by writing to video Memory. The color scheme is white on blue background and the tab witdth is 4.
+
+2. ISR timer interrupt handler:
+After booting the kernel shows the number of seconds elapsed after booting in the lower right hand corner.
+
+3. Keyboard interrupt handler:
+The kernel handles the keyboard interrupts. The last pressed key is shown at the lower right hand corner (beside the clock). The keyboard interrupt handles all printable keys along with following special keys:
+    1.CAPSLOCK 
+    2.SHIFT
+    3.CONTROL
+    4.BACKSPACE
+    5.TAB
+    6.ENTER
+
+
+References:
+
+Following websites were referred to in developing the above features:
+1. http://www.jamesmolloy.co.uk/tutorial_html/index.html
+2. http://wiki.osdev.org
+3. https://code.google.com/p/shovelos/
+
+Appropiate copyright notices have been included in the LISCENSE file.
