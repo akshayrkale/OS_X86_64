@@ -5,25 +5,32 @@
 #include <sys/pic.h>
 #include <sys/timer.h>
 #include <sys/keyboard.h>
+#include <sys/paging.h>
+uint64_t npages;
 
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
-    int free_tot=0;
-	struct smap_t {
+    struct smap_t {
 		uint64_t base, length;
 		uint32_t type;
 	}__attribute__((packed)) *smap;
+	printf("Physbase =%p physfree =%p",physbase,physfree);
+	
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
 		if (smap->type == 1 /* memory */ && smap->length != 0) {
             
-                printf("Available Physical Memory [%x-%x] \n", smap->base, smap->base + smap->length);
-                printf("free=%x",free_tot=free_tot+smap->length);
+        printf("Available Physical Memory [%x-%x] \n", smap->base, smap->base + smap->length);
+        npages = (smap->base+smap->length)/PGSIZE;
+
 		}
     }
-	printf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 
+	printf("tarfs in [%p:%p]\n Toatal Pages:%d\n", &_binary_tarfs_start, &_binary_tarfs_end,npages);
+    printf("physfree=%p \n",physfree);
+	initialize_vm_64();
+    while(1);
     // kernel starts here
 }
 
@@ -58,8 +65,9 @@ void boot(void)
 		(void*)(uint64_t)loader_stack[4]
 	);
 
+
     printf("!!!!! start() returned !!!!! ");
 
-    while(1);
+
 	//for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
 }

@@ -1,0 +1,270 @@
+#include <stdio.h>
+#include <sys/paging.h>
+#include <sys/defs.h>
+#include <sys/mmu.h>
+
+extern uint64_t npages;
+uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot_pte;		// Kernel's initial page directory
+
+physaddr_t boot_cr3;		// Physical address of boot time page directory
+struct PageStruct *pages;
+//boot_alloc function to create the initial space for pages array and page_free_list and PMLE4
+
+static struct PageStruct *page_free_list;	// Free list of physical pages. page_free_list is the head of the free list
+
+
+//static int end_bss;
+
+
+static void *
+boot_alloc(uint32_t n){
+
+	static char *nextfree;	// virtual address of next byte of free memory
+	char *result;
+	//printf("endbss is:%p",&end_bss);
+	if (!nextfree) {
+			printf("PHYSFREE is %p\n",PHYSFREE);
+			nextfree = (char*)ROUNDUP((uint64_t)PHYSFREE, PGSIZE);//(char*)ROUNDUP((uint64_t)&end_bss, PGSIZE);
+		}
+
+	if((nextfree + n) > ((char*)(npages*PGSIZE + KERNBASE))) {
+
+		printf("Out of memory");
+
+	}
+	result = nextfree;
+
+	//nextfree will always point to the next virtual adress that is free for allocation
+	nextfree = (char*)ROUNDUP(nextfree + n, PGSIZE);
+	return result;
+
+}
+
+
+
+void initialize_vm_64(void){
+	uint64_t* pml4e;
+    pages = boot_alloc(npages*sizeof(struct PageStruct));
+    
+	pml4e = boot_alloc(PGSIZE);
+	boot_pml4e = pml4e;
+	boot_cr3 = PADDR(pml4e);
+	my_memset(boot_pml4e,0,PGSIZE);
+    
+	//Allocate space for the PDP,PD,PTE
+	boot_pdpe = boot_alloc(PGSIZE); //boot_pdp is the VA not PA
+	my_memset(boot_pdpe,0,PGSIZE);
+	boot_pde = boot_alloc(PGSIZE);	 //boot_pd is the VA not PA
+	my_memset(boot_pde,0,PGSIZE);
+	boot_pte = boot_alloc(PGSIZE);
+	my_memset(boot_pte,0,PGSIZE);
+    initialize_page_lists();
+    printf("nextfree=%p\n", boot_alloc(0));
+// map_vm_pm(boot_pml4e, PHYSBASE,PADDR(PHYSBASE),PGSIZE,PTE_P|PTE_W);
+
+     map_vm_pm(boot_pml4e, PHYSBASE,PADDR(PHYSBASE),(uint64_t)boot_alloc(0)-PHYSBASE,PTE_P|PTE_W);
+     map_vm_pm(boot_pml4e, AVAIL1_LIM,PADDR(AVAIL1_LIM),AVAIL2_BASE-AVAIL1_LIM,PTE_P|PTE_W);
+    
+ lcr3(boot_cr3);
+
+printf("virtual:pml4e=%p ,pdpe=%p,pde=%p,pte=%p\n",boot_pml4e, boot_pdpe, boot_pde, boot_pte);
+printf("Physical:pml4e=%p ,pdpe=%p,pde=%p,pte=%p\n",PADDR(boot_pml4e), PADDR(boot_pdpe), PADDR(boot_pde), PADDR(boot_pte));
+printf("PHYSBASE trace:pml4e=%p ,pdpe=%p,pde=%p,pte=%p\n",boot_pml4e[PML4(PHYSBASE)], boot_pdpe[PDPE(PHYSBASE)], boot_pde[PDX(PHYSBASE)], boot_pte[PTX(PHYSBASE)]);
+//printf("PHYSBASE trace:pml4e=%p ,pdpe=%p,pde=%p,pte=%p\n",boot_pml4e[PML4(PHYSBASE)], boot_pdpe[PDPE(PHYSBASE)], boot_pde[PDX(PHYSBASE)], boot_pte[PTX(PHYSBASE)+1]);
+
+}
+
+uint64_t*  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint16_t perm)
+{
+    uint64_t* pdpe,pde,pte;
+//extract the upper 9 bits of VA to get the index into pml4e.
+    for(uint64_t i=va; i< va+size; i+=PGSIZE)
+    {	
+    if(pml4e[PML4(va+i)] |PTE_P == 0)
+    {
+        pdpe = pageToPhysicalAddress(allocate_page());
+        if(pdpe)
+        {
+            physicalAdressToPage(pdpe)->ref_count++;
+            pml4e[PML4(va+i)] =pdpe  & ~0xFFF|perm |PTE_P;
+        }
+        else
+            return NULL;
+    }
+    pdpe = pml4e[PML4(va+i)] & ~0xFFF;
+
+    if(pdpe[PDPE(va+i)] |PTE_P == 0)
+    {
+        pde = pageToPhysicalAddress(allocate_page());
+        if(pde)
+        {
+            physicalAdressToPage(pde)->ref_count++; 
+            pdpe[PDPE(va+i)] = pde & ~0xFFF|perm  |PTE_P;
+        }
+        else
+            return NULL;
+    }
+    pde = pdpe[PML4(va+i)] & ~0xFFF ;
+       
+    if(pde[PDX(va+i)] |PTE_P == 0)
+    {
+        pte = pageToPhysicalAddress(allocate_page());
+        if(pte)
+        {
+            physicalAdressToPage(pte)->ref_count++;
+            pde[PDX(va+i)] =pte  & ~0xFFF |perm |PTE_P;
+        }
+        else
+            return NULL;
+    }  
+    pte = pde[PML4(va+i)] & ~0xFFF  ;   
+
+    pte[PTX(va+i)] = (pa+i) & ~0xFFF |perm |PTE_P;
+    }//for loop end
+    
+    
+    printf("Mapped Region:%p-%p to %p-%p\n",ROUNDDOWN(va,PGSIZE),ROUNDDOWN(va+size,PGSIZE), ROUNDDOWN(pa,PGSIZE),ROUNDDOWN(pa+size,PGSIZE));	
+return 1;
+}
+
+void initialize_page_lists(){
+
+	void *nextfree = boot_alloc(0);
+		size_t i;
+		uint16_t free=0;
+		struct PageStruct* last = NULL;
+		for (i = 0; i < npages; i++) {
+			// Off-limits until proven otherwise.
+            free = 0;
+			uint64_t page_start = i*PGSIZE;
+            uint64_t page_end = (i+1)*PGSIZE-1;
+
+			
+			if(page_start >= (uint64_t)nextfree)
+				free = 1;
+			if(page_end < (uint64_t)AVAIL1_LIM && page_start!=0)
+				free =1;
+			if(page_start >= (uint64_t)AVAIL2_BASE && page_end < (uint64_t)physbase)
+				free =1;
+		}
+
+		
+            
+
+        pages[i].ref_count=0;
+		pages[i].next = NULL;
+
+		if (free) {
+			if (last !=NULL)
+				last->next = &pages[i];
+			else
+				page_free_list = &pages[i];
+			last = &pages[i];
+		}
+}
+
+
+void my_memset(uint64_t* start, int x, size_t size){
+
+if(size==0)
+	return;
+for(uint64_t* i=start; i<start+size; i++)
+	*i = x;
+
+return;
+}
+
+
+uint64_t pageToPhysicalAddress(PageStruct* page){
+
+	//This function gives us the mapping of a page to its corresponding physical address
+
+	//pages is the base address of the array of all pages in the sysytem
+
+	return ((page - pages) << PGSHIFT );
+
+
+}
+
+PageStruct *page physicalAddressToPage(uint64_t *addr){
+
+	//This function returrns the PageStruct correesponding to a given page
+
+	return &pages[(addr >> PTXSHIFT)];
+
+}
+
+PageStruct* allocate_page(){
+
+	/*
+	Thus function pulls the first available page from the page free list and returns a 
+	virtual addresss corresponding to that free page
+	*/
+	PageStruct* pageToReturn = page_free_list;
+	if(pageToReturn){
+
+		printf("Allocating page at virtual address: %p\n" page_free_list);
+
+		page_free_list = page_free_list->next;
+		pageToReturn->next = NULL
+		my_memset(pageToReturn,0,PGSIZE);
+
+	}
+	else{
+		printf("ERROR!!! No pages to allocate in the free list\n");
+	}
+	return pageToReturn;
+}
+
+void remove_page(uint64_t* pml4e, uint64_t *va ){
+
+//This function removes the page and adds it to the tail of the page_free_list
+
+//The pagestruct structure to remove
+PageStruct *pageToRemove = NULL; 
+
+uint64_t *pdpde = pml4e[PML4(va)];
+
+if ( pdpe !=NULL && (pdpde & PTE_P)){
+
+uint64_t* pdp = pdpe[PDPE(va)];
+
+if(pdp !=NULL && (pdp & PTE_P)){
+
+uint64_t *pte = pte[PDP(va)];
+
+if (pte !=NULL && (pte & PTE_P) ){
+
+pageToRemove = physicalAddressToPage(*pte);
+
+if(--pageToRemove->ref_count == 0){
+//This page is no longer referred to by anyone else.
+//Put it in the free list
+pageToRemove->next = page_free_list;
+page_free_list = pageToRemove;
+
+}
+}
+
+else{
+
+return NULL;
+}
+
+
+}
+else{
+
+return NULL;
+}
+
+
+}
+
+else{
+
+return NULL;
+}
+
+
+}

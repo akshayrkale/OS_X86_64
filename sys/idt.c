@@ -83,7 +83,7 @@ void init_idt()
    //set the idt gates with address of isr functions
    idt_set_gate( 32, (uint64_t)&isr32 , 8,0,INTERRUPT,0);
    idt_set_gate( 33, (uint64_t)&isr33 , 8,0,INTERRUPT,0);
-
+   idt_set_gate( 14, (uint64_t)&isr14 , 8,0,INTERRUPT,0);
 
    cpu_lidt(&idt_ptr);
 }

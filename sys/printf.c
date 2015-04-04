@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include<sys/sbunix.h>
 #include <stdarg.h>
-
+#include <sys/paging.h>
 #define tabwidth 4
 #define colour  0x1F
 // update errno.
@@ -13,8 +13,8 @@ static int x=10,y;
 int write_text() {
 	int  i;
 	
-    volatile char *video = (volatile char*)0xB8000;
-    for(i=0;i<screen_ctr;i++)
+    volatile char *video =(volatile char*)VIDEO_START; // 
+ for(i=0;i<screen_ctr;i++)
     {
 		if(screen[i]=='\n')
 		{
@@ -48,9 +48,9 @@ int write_text() {
  }
 
 
-void print_ptr(long int num, int base)
+void print_ptr(long unsigned int num, long unsigned int base)
 {
-	int number[32];
+	long unsigned int number[32];
 	int i=0;
 
 		screen[screen_ctr++] = '0';
@@ -58,7 +58,7 @@ void print_ptr(long int num, int base)
 	
 	do
 	{
-		int rem=num%base;
+		long unsigned int rem=num%base;
 		if((rem) >= 10)
 		{
 			rem = rem-10 + 'a';
@@ -75,7 +75,7 @@ void print_ptr(long int num, int base)
 	{
 
 		screen[screen_ctr++] = number[i];
-	}
+    }
 }
 
 void print_num(int num, int base)
@@ -113,7 +113,7 @@ void print_num(int num, int base)
 }
 
 void printf(const char *format, ...) {
-	va_list val;
+    va_list val;
 	int printed = 0;
 	screen_ctr=0;
 	va_start(val, format);
@@ -167,12 +167,7 @@ void printf(const char *format, ...) {
 
             case 'p':
 				printed=printed;
-				long int ptr = va_arg(val, long int );
-                if(ptr < 0)
-                {
-                    screen[screen_ctr++]='-';
-                    ptr=-ptr;
-                }
+				long unsigned int ptr =(unsigned long int) va_arg(val, long int );
 				print_ptr(ptr,16);
 
 				format++;
