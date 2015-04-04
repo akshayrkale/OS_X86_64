@@ -1,7 +1,7 @@
 #include<sys/sbunix.h>
 #include<sys/port.h>
 #include <sys/defs.h>
-
+#include <sys/paging.h>
 #define CAPSLOCK  0x3a
 #define LSHIFT    0x2a
 #define RSHIFT    0x36
@@ -131,7 +131,7 @@ while (inb(0x64) & 0x01) // While there is data available.
  {
    return;
  }
- volatile char 	*video = (volatile char*) 0xb8000 + 2*(24*80 + 78);
+ volatile char 	*video = (volatile char*) VIDEO_START + 2*(24*80 + 78);
  *video = special;
  *(video+1) = 0x1F; 
  *(video+2) = theChar; 

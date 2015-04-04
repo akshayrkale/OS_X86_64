@@ -49,8 +49,8 @@ INTERRUPT(33);
 INTERRUPT(14);
 
 void isr32_handler(){
-/*static unsigned long int ticks=0;
-volatile char *video = (volatile char*)0xB8000+2*(24*80+73);
+static unsigned long int ticks=0;
+volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 *(video+2) = 's';
 *(video+3) = 0x1F;
 *(video+4) = 'e';
@@ -59,7 +59,7 @@ volatile char *video = (volatile char*)0xB8000+2*(24*80+73);
 *(video+7) = 0x1F;
 
 print_time(ticks++/1000,video);
-PIC_sendEOI(0);*/
+PIC_sendEOI(0);
 }
 
 
