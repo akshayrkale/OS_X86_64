@@ -71,9 +71,6 @@ void isr33_handler(){
 
 
 
-
-
-
 void isr14_handler(struct isr_pf_stack_frame *stack) {
 
         uint64_t vaddr = CPU_READ_REG64();

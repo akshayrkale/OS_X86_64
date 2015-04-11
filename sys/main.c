@@ -6,7 +6,8 @@
 #include <sys/timer.h>
 #include <sys/keyboard.h>
 #include <sys/paging.h>
-uint64_t npages;
+#include <sys/process.h>
+#include <sys/tarfs.h>
 
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
@@ -30,6 +31,26 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	printf("tarfs in [%p:%p]\n Toatal Pages:%d\n", &_binary_tarfs_start, &_binary_tarfs_end,npages);
     printf("physfree=%p \n",physfree);
 	initialize_vm_64();
+    printf("Memory End:");
+    initialize_process();
+    printf("Process End:");
+   ProcStruct *tp=proc_free_list;
+    int i=0;
+    while(tp->next!=NULL) 
+    {
+        tp=tp->next;
+        i++;
+    }
+
+    printf("Total procs:%d\n Inside TARFS\n",i);
+    struct posix_header_ustar* start= (struct posix_header_ustar*)&_binary_tarfs_start;
+    uint64_t* proc_binary=0;
+
+    create_process(proc_binary,USER_PROCESS);
+    printf("size of bin=%s ",start->name);
+    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->size);
+
+
     while(1);
     // kernel starts here
 }

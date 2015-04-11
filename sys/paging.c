@@ -2,15 +2,8 @@
 #include <sys/paging.h>
 #include <sys/defs.h>
 #include <sys/mmu.h>
-
+#include <sys/process.h>
 extern uint64_t npages;
-uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot_pte;		// Kernel's initial page directory
-
-physaddr_t boot_cr3;		// Physical address of boot time page directory
-struct PageStruct *pages;
-//boot_alloc function to create the initial space for pages array and page_free_list and PMLE4
-
-static struct PageStruct *page_free_list;	// Free list of physical pages. page_free_list is the head of the free list
 
 int Allocations;
 //static int end_bss;
@@ -44,7 +37,8 @@ boot_alloc(uint32_t n){
 void initialize_vm_64(void){
 	uint64_t* pml4e;
     pages = boot_alloc(npages*sizeof(struct PageStruct));
-    
+    procs = boot_alloc(NPROCS*sizeof(struct ProcStruct)); 
+    proc_free_list = procs;
 	pml4e = boot_alloc(PGSIZE);
 	boot_pml4e = pml4e;
 	boot_cr3 = PADDR(pml4e);
@@ -57,13 +51,13 @@ void initialize_vm_64(void){
 
      map_vm_pm(boot_pml4e, (uint64_t)PHYSBASE,PADDR(PHYSBASE),(uint64_t)(boot_alloc(0)-PHYSBASE),PTE_P|PTE_W);
      map_vm_pm(boot_pml4e, (uint64_t)VIDEO_START,PADDR(VIDEO_START),10*0x1000,PTE_P|PTE_W);
+//     map_vm_pm(boot_pml4e, (uint64_t)TRANSLATE,0,0x7ffd000,PTE_P|PTE_W);
 
      last =page_free_list;
      i=1;
      while((uint64_t)last && i++)
         last=last->next;
      printf("total free pages:%d",i);
-
     
      lcr3(boot_cr3);
      printf("CR3 Loaded. Allocation:%d ",Allocations);
@@ -109,7 +103,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
             printf("Failed in PDPE:%x",pde);
             return 0;
         }
-     }
+    }
     pde = (uint64_t*)(KADDR(pdpe[PDPE(va+i)]) & ~0xFFF) ;
     if((pde[PDX(va+i)] & (uint64_t)PTE_P) == 0)
     {
@@ -126,7 +120,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
             printf("Failed in PDE:%x",pte);
             return 0;
         }
-     }  
+    }  
     pte = (uint64_t*)(KADDR(pde[PDX(va+i)]) & ~0xFFF);   
 
     pte[PTX(va+i)] = ((pa+i) & (~0xFFF))|(perm|PTE_P);;
@@ -137,7 +131,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
 
 void initialize_page_lists(){
 
-	void *nextfree = boot_alloc(0) + npages*sizeof(PageStruct);
+	void *nextfree = boot_alloc(0) + npages*sizeof(PageStruct)+NPROCS*sizeof(ProcStruct);
 		size_t i;
 		uint16_t free=0;
 		struct PageStruct* last = NULL;
@@ -169,11 +163,27 @@ void initialize_page_lists(){
 }
 
 
-void my_memset(uint64_t* start, int x, size_t size){
+
+void
+tlb_invalidate(pml4e_t *pml4e, void *va)
+{
+       invlpg(va);
+}
+
+void my_memcpy(void* dst, void* src , uint64_t size)
+{
+    char* i=src;
+    char* j=dst;
+    for(;i<(char*)src+size; i++)
+    {
+        *j++=*i++;
+    }
+}
+void my_memset(void* start, int x, size_t size){
 
 if(size==0)
 	return;
-for(uint64_t* i=start; i<start+size; i++)
+for(char* i=(char*)start; i<(char*)start+size; i++)
 	*i = x;
 
 return;
