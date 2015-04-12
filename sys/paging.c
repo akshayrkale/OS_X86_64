@@ -3,7 +3,12 @@
 #include <sys/defs.h>
 #include <sys/mmu.h>
 #include <sys/process.h>
-extern uint64_t npages;
+#include<sys/tarfs.h>
+struct PageStruct *pages;
+//boot_alloc function to create the initial space for pages array and page_free_list and PMLE4
+static char* nextfree;
+
+static struct PageStruct *page_free_list;	// Free list of physical pages. page_free_list is the head of the free list
 
 int Allocations;
 //static int end_bss;
@@ -12,7 +17,7 @@ int Allocations;
 static void *
 boot_alloc(uint32_t n){
 
-	static char *nextfree;	// virtual address of next byte of free memory
+		// virtual address of next byte of free memory
 	char *result;
 	//printf("endbss is:%p",&end_bss);
 	if (!nextfree) {
@@ -37,28 +42,28 @@ boot_alloc(uint32_t n){
 void initialize_vm_64(void){
 	uint64_t* pml4e;
     pages = boot_alloc(npages*sizeof(struct PageStruct));
-    procs = boot_alloc(NPROCS*sizeof(struct ProcStruct)); 
-    proc_free_list = procs;
+        procs = boot_alloc(NPROCS*sizeof(struct ProcStruct)); 
+     proc_free_list = procs;
+
 	pml4e = boot_alloc(PGSIZE);
 	boot_pml4e = pml4e;
-	boot_cr3 = PADDR(pml4e);
+	boot_cr3 = (physaddr_t*)PADDR(pml4e);
 	my_memset(boot_pml4e,0,PGSIZE);
-    
-    initialize_page_lists();
+         initialize_page_lists();
     PageStruct *last =page_free_list;
-    uint64_t i=1;
+    
 
-
+    uint64_t i=299999999;
+//    while(i--);
      map_vm_pm(boot_pml4e, (uint64_t)PHYSBASE,PADDR(PHYSBASE),(uint64_t)(boot_alloc(0)-PHYSBASE),PTE_P|PTE_W);
+     map_vm_pm(boot_pml4e, (uint64_t)KERNBASE,0x0,0x20000,PTE_P|PTE_W);
      map_vm_pm(boot_pml4e, (uint64_t)VIDEO_START,PADDR(VIDEO_START),10*0x1000,PTE_P|PTE_W);
-//     map_vm_pm(boot_pml4e, (uint64_t)TRANSLATE,0,0x7ffd000,PTE_P|PTE_W);
 
      last =page_free_list;
      i=1;
      while((uint64_t)last && i++)
         last=last->next;
      printf("total free pages:%d",i);
-    
      lcr3(boot_cr3);
      printf("CR3 Loaded. Allocation:%d ",Allocations);
 }
@@ -78,7 +83,6 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
             physicalAddressToPage(pdpe)->ref_count++;
             pml4e[PML4(va+i)] = (((uint64_t) pdpe)  & (~0xFFF))|(perm|PTE_P);
 
-            printf("i=%d, pml4e=%p prrm=%d ",i, pml4e[PML4(va+i)],perm);
         }
         else
         {
@@ -103,7 +107,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
             printf("Failed in PDPE:%x",pde);
             return 0;
         }
-    }
+     }
     pde = (uint64_t*)(KADDR(pdpe[PDPE(va+i)]) & ~0xFFF) ;
     if((pde[PDX(va+i)] & (uint64_t)PTE_P) == 0)
     {
@@ -120,7 +124,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
             printf("Failed in PDE:%x",pte);
             return 0;
         }
-    }  
+     }  
     pte = (uint64_t*)(KADDR(pde[PDX(va+i)]) & ~0xFFF);   
 
     pte[PTX(va+i)] = ((pa+i) & (~0xFFF))|(perm|PTE_P);;
@@ -131,8 +135,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
 
 void initialize_page_lists(){
 
-	void *nextfree = boot_alloc(0) + npages*sizeof(PageStruct)+NPROCS*sizeof(ProcStruct);
-		size_t i;
+			size_t i;
 		uint16_t free=0;
 		struct PageStruct* last = NULL;
 		for (i = 0; i < npages; i++) {
@@ -162,8 +165,6 @@ void initialize_page_lists(){
         }
 }
 
-
-
 void
 tlb_invalidate(pml4e_t *pml4e, void *va)
 {
@@ -179,11 +180,14 @@ void my_memcpy(void* dst, void* src , uint64_t size)
         *j++=*i++;
     }
 }
+
+
+
 void my_memset(void* start, int x, size_t size){
 
 if(size==0)
 	return;
-for(char* i=(char*)start; i<(char*)start+size; i++)
+for(char* i=(char*)start;(char*)i<(char*)start+size; i++)
 	*i = x;
 
 return;
@@ -216,20 +220,21 @@ PageStruct* allocate_page(){
 	virtual addresss corresponding to that free page
 	*/
 	PageStruct* pageToReturn = page_free_list;
+
+
 	if(pageToReturn){
 
 //	printf("Allocating page: %p\t", pageToPhysicalAddress(pageToReturn));
         Allocations++;
-        if(Allocations >= 60)
-            printf("Allocating page:%p",pageToPhysicalAddress(pageToReturn));
-        //while(1);
 		page_free_list = page_free_list->next;
+
+
 		pageToReturn->next = NULL;
-		my_memset((uint64_t*)pageToPhysicalAddress(pageToReturn),0,sizeof(struct PageStruct));
+		my_memset((uint64_t*)KADDR(pageToPhysicalAddress(pageToReturn)),0,sizeof(struct PageStruct));
 	}
 	else{
 		printf("ERROR!!! No pages to allocate in the free list\n");
-    //while(1);
+    while(1);
     }
 	return pageToReturn;
 }

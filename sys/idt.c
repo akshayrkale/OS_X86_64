@@ -84,14 +84,17 @@ void init_idt()
    idt_set_gate( 32, (uint64_t)&isr32 , 8,0,INTERRUPT,0);
    idt_set_gate( 33, (uint64_t)&isr33 , 8,0,INTERRUPT,0);
    idt_set_gate( 14, (uint64_t)&isr14 , 8,0,INTERRUPT,0);
+   idt_set_gate( 0, (uint64_t)&isr0 , 8,0,INTERRUPT,0);
+   idt_set_gate( 11, (uint64_t)&isr11 , 8,0,INTERRUPT,0);
+   idt_set_gate( 13, (uint64_t)&isr13 , 8,0,INTERRUPT,0);
+   idt_set_gate( 8, (uint64_t)&isr8 , 8,0,INTERRUPT,0);
+   idt_set_gate( 12, (uint64_t)&isr12 , 8,0,INTERRUPT,0);
+   idt_set_gate( 17, (uint64_t)&isr17 , 8,0,INTERRUPT,0);
+   idt_set_gate( 4, (uint64_t)&isr4 , 8,0,INTERRUPT,0);
+   idt_set_gate( 6, (uint64_t)&isr6 , 8,0,INTERRUPT,0);
+   idt_set_gate( 5, (uint64_t)&isr5 , 8,0,INTERRUPT,0);
 
    cpu_lidt(&idt_ptr);
 }
-
-
-
-
-
-
 
 

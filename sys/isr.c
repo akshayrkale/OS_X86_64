@@ -1,3 +1,4 @@
+
 #include <sys/sbunix.h>
 #include<sys/defs.h>
 #include<sys/pic.h>
@@ -5,6 +6,9 @@
 #include<sys/keyboard.h>
 #include<sys/isr.h>
 #include<sys/paging.h>
+
+
+
 /* adapted from Chris Stones, shovelos */
 #define INTERRUPT(vector) \
 __asm__(".global isr" #vector "\n"\
@@ -35,19 +39,20 @@ __asm__(".global isr" #vector "\n"\
 
 
 
- uint64_t CPU_READ_REG64() {
-		
-			uint64_t ret = 0; 
-__asm __volatile("movq %%cr2,%0"  : "=r" (ret));
 
-			return ((uint64_t)ret); 
-		
-}
 
 INTERRUPT(32);   // divide by zero
 INTERRUPT(33);
 INTERRUPT(14);
-
+INTERRUPT(11);
+INTERRUPT(13);
+INTERRUPT(0);
+INTERRUPT(8);
+INTERRUPT(12);
+INTERRUPT(17);
+INTERRUPT(4);
+INTERRUPT(5);
+INTERRUPT(6);
 void isr32_handler(){
 static unsigned long int ticks=0;
 volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
@@ -68,45 +73,74 @@ void isr33_handler(){
  keyboard_read();
  PIC_sendEOI(0);
 }
-
-
-
-void isr14_handler(struct isr_pf_stack_frame *stack) {
-
-        uint64_t vaddr = CPU_READ_REG64();
-        uint64_t   pde = PADDR(vaddr);
-	pde=pde;
-//      uint64_t stale_tlb = 1;
-
-        /*
-        if(stack->error.error.p && !(pde & PT_PRESENT_FLAG))
-                stale_tlb = 0; // real page fault on present status.
-
-        if(stack->error.error.wr && !(pde & PT_WRITABLE_FLAG))
-                stale_tlb = 0; // real page fault on writable status.
-
-        if(stack->error.error.us && !(pde & PT_USER_FLAG))
-                stale_tlb = 0; // real page fault on user permission.
-
-        if(stale_tlb) {
-
-                cpu_invlpg((uint64_t*)vaddr);
-        }
-        else {
-        */
-                /*printf("PAGE FAULT!\n");
-                printf("          pde  : 0x%lx\n", pde);
-                printf("     v-address : 0x%lx\n", vaddr);
-                printf("             p : %d\n", stack->error.error.p);
-                printf("            id : %d\n", stack->error.error.id);
-                printf("            wr : %d\n", stack->error.error.wr);
-                printf("            us : %d\n", stack->error.error.us);
-                printf("          rsvd : %d\n", stack->error.error.rsvd);
-                printf("            CS : 0x%x\n", stack->cs);
-                printf("           RIP : 0x%lx\n",stack->rip);
-*/
-                //HALT("");
-//      }
+void isr11_handler(){
+printf("inside segment not present\n");
+while(1);
 }
+void isr13_handler(){
+ printf("inside GPL Fault \n");
+while(1);
+}
+void isr0_handler(){
+printf("inside Devide By Zero\n");
+while(1);
+}
+void isr8_handler(){
+printf("inside Double Fault\n");
+while(1);
+}
+void isr12_handler(){
+printf("inside Stack Segment fault\n");
+while(1);
+}
+void isr17_handler(){
+printf("inside Alignment check\n");
+while(1);
+}
+void isr4_handler(){
+printf("inside Overflow\n");
+while(1);
+}
+void isr5_handler(){
+printf("inside Bound Range Exceeded\n");
+while(1);
+}
+void isr6_handler(){
+printf("inside Invalid Opcode\n");
+while(1);
+}
+uint64_t read_cr2_register(){
+
+        uint64_t faultAddr;
+
+        __asm__("movq %%cr2, %0;" : "=r"(faultAddr));
+
+        return faultAddr;
+
+
+}
+
+
+void isr14_handler(struct faultStruct *faultFrame) {
+
+        uint64_t vaddr = read_cr2_register();
+        //uint64_t   pde = PADDR(vaddr);
+        //pde=pde;
+
+        printf("Kernel mode Page Fault");
+
+        printf("Address of faultFrame %p",faultFrame);
+
+        printf(" \n Error occured at %p ", faultFrame->rip);
+
+        printf(" \n Faulting virtual address is %p", vaddr);
+
+        while(1);
+}
+
+
+
+
+
 
 

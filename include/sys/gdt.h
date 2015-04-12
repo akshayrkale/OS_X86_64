@@ -15,4 +15,16 @@ extern uint64_t gdt[];
 void reload_gdt();
 void setup_tss();
 
+#define K_CS 0x08 
+#define K_DS 0x10
+#define U_CS 0x18 
+#define U_DS 0x20
+
+#define RPL0          0  /*** descriptor privilege level 0 ***/
+#define RPL1          1 /*** descriptor privilege level 1 ***/
+#define RPL2          2  /*** descriptor privilege level 2 ***/
+#define RPL3          0  /*** descriptor privilege level 3 ***/
+
 #endif
+
+

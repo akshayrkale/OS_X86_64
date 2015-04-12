@@ -1,0 +1,35 @@
+
+rootfs/bin/hello:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000004000b0 <main>:
+  4000b0:	89 04 25 01 00 00 00 	mov    %eax,0x1
+  4000b7:	89 04 25 01 00 00 00 	mov    %eax,0x1
+  4000be:	89 04 25 01 00 00 00 	mov    %eax,0x1
+  4000c5:	e8 e6 ff ff ff       	callq  4000b0 <main>
+  4000ca:	cd 50                	int    $0x50
+
+00000000004000cc <_start>:
+  4000cc:	48 83 ec 08          	sub    $0x8,%rsp
+  4000d0:	48 89 e2             	mov    %rsp,%rdx
+  4000d3:	48 89 e6             	mov    %rsp,%rsi
+  4000d6:	bf 01 00 00 00       	mov    $0x1,%edi
+  4000db:	e8 d0 ff ff ff       	callq  4000b0 <main>
+  4000e0:	89 c7                	mov    %eax,%edi
+  4000e2:	e8 05 00 00 00       	callq  4000ec <exit>
+  4000e7:	48 83 c4 08          	add    $0x8,%rsp
+  4000eb:	c3                   	retq   
+
+00000000004000ec <exit>:
+  4000ec:	48 83 ec 10          	sub    $0x10,%rsp
+  4000f0:	48 c7 04 24 3c 00 00 	movq   $0x3c,(%rsp)
+  4000f7:	00 
+  4000f8:	48 63 ff             	movslq %edi,%rdi
+  4000fb:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  400100:	48 8b 04 24          	mov    (%rsp),%rax
+  400104:	48 8b 7c 24 08       	mov    0x8(%rsp),%rdi
+  400109:	0f 05                	syscall 
+  40010b:	48 83 c4 10          	add    $0x10,%rsp
+  40010f:	c3                   	retq   

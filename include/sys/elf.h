@@ -2,7 +2,7 @@
 
 struct Elf {
 	uint32_t e_magic;	// must equal ELF_MAGIC
-	uint8_t e_elf[12];
+	unsigned char e_elf[12];
 	uint16_t e_type;
 	uint16_t e_machine;
 	uint32_t e_version;

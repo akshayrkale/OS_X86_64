@@ -8,6 +8,9 @@
 #include <sys/paging.h>
 #include <sys/process.h>
 #include <sys/tarfs.h>
+#include <sys/sbunix.h>
+
+
 
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
@@ -28,30 +31,30 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 		}
     }
 
-	printf("tarfs in [%p:%p]\n Toatal Pages:%d\n", &_binary_tarfs_start, &_binary_tarfs_end,npages);
-    printf("physfree=%p \n",physfree);
+	//printf("tarfs in [%p:%p]\n Toatal Pages:%d\n", &_binary_tarfs_start, &_binary_tarfs_end,npages);
+    //printf("physfree=%p \n",physfree);
+        uint64_t i=12999999;
 	initialize_vm_64();
-    printf("Memory End:");
-    initialize_process();
-    printf("Process End:");
-   ProcStruct *tp=proc_free_list;
-    int i=0;
+   initialize_process();
+    ProcStruct *tp=proc_free_list;
     while(tp->next!=NULL) 
     {
         tp=tp->next;
         i++;
     }
-
-    printf("Total procs:%d\n Inside TARFS\n",i);
+      
+  //  printf("Total procs:%d",i);
     struct posix_header_ustar* start= (struct posix_header_ustar*)&_binary_tarfs_start;
-    uint64_t* proc_binary=0;
+//    printf("name of bin=%s ",start->name);
+    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
 
-    create_process(proc_binary,USER_PROCESS);
-    printf("size of bin=%s ",start->name);
-    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->size);
-
-
-    while(1);
+   
+    uint64_t* proc_binary = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)+sizeof(struct posix_header_ustar)));
+    ProcStruct* pr1=create_process(proc_binary,USER_PROCESS);
+    i=499999999;
+    while(i--);
+    proc_run(pr1);
+while(1);
     // kernel starts here
 }
 
