@@ -1,4 +1,9 @@
-int main (int argc, char *argv[], char* envp[])
+int k;
+int main ()
 {
-while(1);
+    int a,c=0;
+    a=0;
+    k=9+a;
+    return k+c;
+
 }

@@ -51,9 +51,8 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
    
     uint64_t* proc_binary = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)+sizeof(struct posix_header_ustar)));
     ProcStruct* pr1=create_process(proc_binary,USER_PROCESS);
-    i=499999999;
-    while(i--);
     proc_run(pr1);
+
 while(1);
     // kernel starts here
 }

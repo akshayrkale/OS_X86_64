@@ -175,9 +175,11 @@ void my_memcpy(void* dst, void* src , uint64_t size)
 {
     char* i=src;
     char* j=dst;
-    for(;i<(char*)src+size; i++)
+    for(;i<(char*)src+size; )
     {
-        *j++=*i++;
+        *j=*i;
+        i++;
+        j++;
     }
 }
 

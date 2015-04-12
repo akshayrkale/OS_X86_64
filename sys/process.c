@@ -127,22 +127,19 @@ int load_elf(ProcStruct *e,uint64_t* binary)
     printf("magic=%x",*binary);
 
 	if (elf && elf->e_magic == ELF_MAGIC) {
-//		__asm __volatile("movq %0,%%cr3" : : "r" (PADDR((uint64_t)e->pml4e)));
-	
-//__asm__("movq %0,%%cr3" : : "r" (PADDR((uint64_t)e->pml4e)));
-        /*TAKE PADDR of pml4e*/
-//    uint64_t* p=(uint64_t*)(PADDR((uint64_t)e->pml4e));
-//    __asm__("movq %0,%%cr3" : : "r" (p));
         printf("this is elf");
  		lcr3(e->cr3);       
 		ph  = (struct Proghdr *)((unsigned char *)elf + elf->e_phoff);
 		eph = ph + elf->e_phnum;
 		for(;ph < eph; ph++) {
 			if (ph->p_type == ELF_PROG_LOAD) {
-				allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
+			allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
+				uint64_t    i=499999999;
+    while(i--);
 
+	my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
+          printf("start:%p end:%p ",ph->p_va, ph->p_va+ph->p_memsz);
 
-				my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
 				if (ph->p_filesz < ph->p_memsz) {
 					my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
 				}
@@ -153,7 +150,6 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 		e->tf.tf_rsp    = USER_STACK;
         
 		lcr3(boot_cr3);
-
 	} else {
 		return -1;
 	}
@@ -161,6 +157,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
     e->elf = binary;
     return 0;
 }
+
 void env_pop_tf(struct Trapframe *tf1)
 {
 	__asm__ volatile("movq %0,%%rsp\n"
@@ -173,5 +170,3 @@ void env_pop_tf(struct Trapframe *tf1)
 			 "\tiretq"
 			 : : "g" (tf1) : "memory");
 }
-
-

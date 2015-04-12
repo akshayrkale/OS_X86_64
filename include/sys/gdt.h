@@ -23,7 +23,7 @@ void setup_tss();
 #define RPL0          0  /*** descriptor privilege level 0 ***/
 #define RPL1          1 /*** descriptor privilege level 1 ***/
 #define RPL2          2  /*** descriptor privilege level 2 ***/
-#define RPL3          0  /*** descriptor privilege level 3 ***/
+#define RPL3          3  /*** descriptor privilege level 3 ***/
 
 #endif
 

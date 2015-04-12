@@ -116,8 +116,6 @@ uint64_t read_cr2_register(){
         __asm__("movq %%cr2, %0;" : "=r"(faultAddr));
 
         return faultAddr;
-
-
 }
 
 
