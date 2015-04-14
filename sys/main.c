@@ -46,11 +46,12 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
   //  printf("Total procs:%d",i);
     struct posix_header_ustar* start= (struct posix_header_ustar*)&_binary_tarfs_start;
 //    printf("name of bin=%s ",start->name);
-    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
+//    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
 
    
     uint64_t* proc_binary = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)+sizeof(struct posix_header_ustar)));
     ProcStruct* pr1=create_process(proc_binary,USER_PROCESS);
+    printf("process created");
     proc_run(pr1);
 
 while(1);

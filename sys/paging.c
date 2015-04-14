@@ -21,9 +21,8 @@ boot_alloc(uint32_t n){
 	char *result;
 	//printf("endbss is:%p",&end_bss);
 	if (!nextfree) {
-			printf("PHYSFREE is %p\n",PHYSFREE);
 			nextfree = (char*)ROUNDUP((uint64_t)PHYSFREE, PGSIZE);//(char*)ROUNDUP((uint64_t)&end_bss, PGSIZE);
-		}
+	}
 
 	if((nextfree + n) > ((char*)(npages*PGSIZE + KERNBASE))) {
 
@@ -56,16 +55,14 @@ void initialize_vm_64(void){
     uint64_t i=299999999;
 //    while(i--);
      map_vm_pm(boot_pml4e, (uint64_t)PHYSBASE,PADDR(PHYSBASE),(uint64_t)(boot_alloc(0)-PHYSBASE),PTE_P|PTE_W);
-     map_vm_pm(boot_pml4e, (uint64_t)KERNBASE,0x0,0x20000,PTE_P|PTE_W);
+     map_vm_pm(boot_pml4e, (uint64_t)KERNBASE+PGSIZE,0x1000,0x20000,PTE_P|PTE_W);//KERNELSTACK =tss.rsp0
      map_vm_pm(boot_pml4e, (uint64_t)VIDEO_START,PADDR(VIDEO_START),10*0x1000,PTE_P|PTE_W);
-
      last =page_free_list;
      i=1;
      while((uint64_t)last && i++)
         last=last->next;
-     printf("total free pages:%d",i);
+
      lcr3(boot_cr3);
-     printf("CR3 Loaded. Allocation:%d ",Allocations);
 }
 
 uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint16_t perm)

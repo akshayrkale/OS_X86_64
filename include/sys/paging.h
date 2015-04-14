@@ -20,7 +20,7 @@
 #define AVAIL2_LIM  0xffffffff87ffd000 //check this value o sbrocks
 
 #define VIDEO_START 0xffffffff800B8000 
-#define USER_STACK (KERNBASE-2*PGSIZE)
+#define USERSTACK  0
 
 typedef struct PageStruct {
 	// Next page on the free list.
@@ -45,6 +45,12 @@ static __inline void
 lcr3(uint64_t* val)
 {
 	__asm__ volatile("movq %0,%%cr3" : : "r" (val));
+}
+
+static __inline void
+ltr(uint16_t sel)
+{
+        __asm __volatile("ltr %0" : : "r" (sel));
 }
 void my_memcpy(void* dst, void* src, size_t size);
 void my_memset(void* start, int x, size_t size);

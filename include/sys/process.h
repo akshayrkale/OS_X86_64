@@ -1,6 +1,6 @@
 #include <sys/idt.h>
 #define NPROCS 250
-
+uint16_t curproc;
 enum ProcStatus{
 FREE,
 RUNNABLE,
@@ -28,6 +28,7 @@ uint64_t *elf;
 
 
 ProcStruct* proc_free_list;
+uint16_t proc_queue[250];
 ProcStruct* procs; 
 
 int setupt_proc_vm(ProcStruct *NewProc);
@@ -39,9 +40,8 @@ ProcStruct* create_process(uint64_t*, enum ProcType);
 ProcStruct* allocate_process(unsigned char parent_id);
 int load_elf(ProcStruct *,uint64_t* binary);
 ProcStruct * getnewprocess();
-void
-proc_run(struct ProcStruct *proc);
-
+void proc_run(struct ProcStruct *proc);
+void scheduler();
 
 
 #define POPA \

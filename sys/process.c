@@ -30,8 +30,7 @@ if((NewProc=allocate_process(0)) != NULL)
      {
 
         NewProc->type =type;
-
-         return NewProc;
+        return NewProc;
      }
 }
 return NULL;
@@ -50,12 +49,12 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->proc_id = (unsigned char)(NewProc-procs); 
     NewProc->parent_id = parentid;
     NewProc->status = RUNNABLE;
-
+    proc_queue[NewProc-procs]=RUNNABLE;
     my_memset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
     NewProc->tf.tf_ds =(uint16_t)(U_DS|RPL3); 
     NewProc->tf.tf_es =(uint16_t)(U_DS|RPL3);
     NewProc->tf.tf_ss = (uint16_t)(U_DS|RPL3);
-    NewProc->tf.tf_rsp = KERNBASE-18*PGSIZE;
+    NewProc->tf.tf_rsp = USERSTACK+PGSIZE;
     NewProc->tf.tf_cs = (uint16_t)(U_CS|RPL3);
     proc_free_list = NewProc->next;
     return NewProc;
@@ -70,6 +69,7 @@ setupt_proc_vm(ProcStruct* NewProc)
         return 0;
     pa->ref_count++;
     NewProc->pml4e=(uint64_t*)KADDR(pageToPhysicalAddress(pa));
+    printf("userpml4=%p",NewProc->pml4e);
     NewProc->cr3 = (physaddr_t*)PADDR(NewProc->pml4e);
     
     /*
@@ -94,10 +94,11 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
         if(!pa)
             return -1;
         newpage = pageToPhysicalAddress(pa);
+        printf("Mapping..%p to %p",i,newpage);
+
         map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P | PTE_U | PTE_W);
 
     }
-        printf("size=%p",end);
 
     return 0;
 }
@@ -113,8 +114,11 @@ ProcStruct *getnewprocess()
 void
 proc_run(struct ProcStruct *proc)
 {
-    
-	lcr3(proc->cr3);
+   uint64_t i = 499999999;
+   while(i--);
+    lcr3(proc->cr3);
+    tss.rsp0 = KERNBASE+2*PGSIZE;
+    ltr((uint16_t)(0x28));
 	env_pop_tf(&(proc->tf));
 }
 
@@ -134,20 +138,17 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 		for(;ph < eph; ph++) {
 			if (ph->p_type == ELF_PROG_LOAD) {
 			allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
-				uint64_t    i=499999999;
-    while(i--);
-
 	my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
-          printf("start:%p end:%p ",ph->p_va, ph->p_va+ph->p_memsz);
-
+         
 				if (ph->p_filesz < ph->p_memsz) {
 					my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
 				}
 			}
 		}
-		allocate_proc_area(e, (void*)(USER_STACK - PGSIZE), PGSIZE);
+        
+		allocate_proc_area(e, (void*)(USERSTACK), PGSIZE);
 		e->tf.tf_rip    = elf->e_entry;
-		e->tf.tf_rsp    = USER_STACK;
+		e->tf.tf_rsp    = USERSTACK+PGSIZE;
         
 		lcr3(boot_cr3);
 	} else {

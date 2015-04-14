@@ -23,7 +23,7 @@ static __inline int64_t syscall_1(uint64_t n, uint64_t a1) {
 	if(n==SYS_exit){
 		__asm__("movq %0,%%rax;"
 				"movq %1,%%rdi;"
-				"syscall;"
+				"int $0x80;"
 				::"m"(n),"m"(a1));
 	}
 	else{
