@@ -7,6 +7,8 @@
 #include<sys/isr.h>
 #include<sys/paging.h>
 #include<sys/process.h>
+#include<sys/syscall.h>
+#include<sys/utils.h>
 
 
 
@@ -39,6 +41,26 @@ __asm__(".global isr" #vector "\n"\
 
 
 
+#define INTERRUPT_WITH_ERRORCODE(vector) \
+__asm__(".global isr" #vector "\n"\
+                        "isr" #vector ":\n" \
+                        "pushq $0;" \
+                        "pushq %rax;" \
+                        "subq $8,%rsp;" \
+                        "movw %es, (%rsp);" \
+                        "subq $8,%rsp;" \
+                        "movw %ds, (%rsp);" \
+                        PUSHA \
+                        "movw $0x10, %ax;" \
+                        "movw %ax, %ds;" \
+                        "movw %ax, %es;" \
+                        "movq %rsp, %rdi;" \
+                        "    call isr" #vector "_handler;" \
+                        POPA2 \
+                        "addq $32, %rsp;" \
+                        "    iretq;    ");
+
+
 
 
 
@@ -54,6 +76,9 @@ INTERRUPT(17);
 INTERRUPT(4);
 INTERRUPT(5);
 INTERRUPT(6);
+INTERRUPT_WITH_ERRORCODE(128);
+
+
 void isr32_handler(){
 static unsigned long int ticks=0;
 volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
@@ -80,6 +105,7 @@ while(1);
 }
 void isr13_handler(){
  printf("inside GPL Fault \n");
+
 while(1);
 }
 void isr0_handler(){
@@ -138,8 +164,42 @@ void isr14_handler(struct faultStruct *faultFrame) {
 }
 
 
+void isr128_handler(struct Trapframe* tf){
 
 
+        //printf("ISR 128 handler %d", tf->tf_regs.reg_rax);
 
+        //while(1);
+        
+        
+
+        //Examie the trapnumber to get the syscall number and call the appropiate system call
+        int syscall_number = tf->tf_trapno;
+
+        //printf("Inside syscall dispatcher..syscall number: %d data on r15 %d",tf->tf_regs.reg_rax,tf->tf_regs.reg_r15 );
+
+
+        //while(1);
+
+        switch(syscall_number){
+
+                case SYS_write:
+
+                        sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
+                        break;
+
+
+                case SYS_exit:
+                        //printf("Calling exit");
+                        //while(1);
+                        sys_exit(2);
+                        break;
+
+
+                default:
+                        break;
+
+                };
+        }
 
 

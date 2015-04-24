@@ -20,17 +20,28 @@ static __inline int64_t syscall_1(uint64_t n, uint64_t a1) {
 
 	int64_t ret;
 
-	if(n==SYS_exit){
+	__asm__("movq $78,%r15");
+
+	//printf("Syscall called %d",n);
+
+	//__asm__("movq %0,%%rax;"
+	//		::"m"(n));
+
+	//while(1);
+
+	if(n==60){
 		__asm__("movq %0,%%rax;"
 				"movq %1,%%rdi;"
-				"syscall;"
+				"int $0x80;"
 				::"m"(n),"m"(a1));
+
+		//while(1);
 	}
 	else{
 
 		__asm__("movq %1,%%rax;"
 				"movq %2,%%rdi;"
-				"syscall;"
+				"int $0x80;"
 				"movq %%rax,%0;"
 				:"=r"(ret):"m"(n),"m"(a1));
 	}
@@ -43,7 +54,7 @@ static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
 	__asm__("movq %1,%%rax;"
 			"movq %2,%%rdi;"
 			"movq %3,%%rsi;"
-			"syscall;"
+			"int $0x80;"
 			"movq %%rax,%0;"
 			:"=r"(ret):"m"(n),"m"(a1),"m"(a2));
 	return ret;
@@ -56,7 +67,7 @@ static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_
 			"movq %2,%%rdi;"
 			"movq %3, %%rsi;"
 			"movq %4, %%rdx;"
-			"syscall;"
+			"int $0x80;"
 			"movq %%rax,%0;"
 			:"=r"(ret):"m"(n),"m"(a1),"m"(a2),"m"(a3));
 	return ret;

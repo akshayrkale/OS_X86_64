@@ -11,8 +11,6 @@
 #include <sys/sbunix.h>
 
 
-
-
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
     struct smap_t {
@@ -27,15 +25,14 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
             
         printf("Available Physical Memory [%x-%x] \n", smap->base, smap->base + smap->length);
         npages = (smap->base+smap->length)/PGSIZE;
-
 		}
     }
 
 	//printf("tarfs in [%p:%p]\n Toatal Pages:%d\n", &_binary_tarfs_start, &_binary_tarfs_end,npages);
     //printf("physfree=%p \n",physfree);
-        uint64_t i=12999999;
+  uint64_t i=0;
 	initialize_vm_64();
-   initialize_process();
+  initialize_process();
     ProcStruct *tp=proc_free_list;
     while(tp->next!=NULL) 
     {
@@ -46,15 +43,12 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
   //  printf("Total procs:%d",i);
     struct posix_header_ustar* start= (struct posix_header_ustar*)&_binary_tarfs_start;
 //    printf("name of bin=%s ",start->name);
-//    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
+    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
 
    
     uint64_t* proc_binary = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)+sizeof(struct posix_header_ustar)));
     ProcStruct* pr1=create_process(proc_binary,USER_PROCESS);
-    printf("process created");
-    proc_run(pr1);
-
-while(1);
+  printf("running");   proc_run(pr1);
     // kernel starts here
 }
 

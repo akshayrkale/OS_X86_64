@@ -8,6 +8,8 @@
 #ifndef ISR_H_
 #define ISR_H_
 
+#include<sys/idt.h>
+
 void isr0();
 void isr1();
 void isr2();
@@ -22,6 +24,9 @@ void isr17();
 void isr4();
 void isr6();
 void isr5();
+void isr128();
+
+
 struct faultStruct {
 
     uint64_t errorCode;
@@ -34,5 +39,7 @@ struct faultStruct {
 
 };
 typedef struct faultStruct faultFrame;
+
+void syscall_dispatcher(struct Trapframe*);
 
 #endif /* ISR_H_ */

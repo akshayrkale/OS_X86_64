@@ -93,6 +93,7 @@ void init_idt()
    idt_set_gate( 4, (uint64_t)&isr4 , 8,0,INTERRUPT,0);
    idt_set_gate( 6, (uint64_t)&isr6 , 8,0,INTERRUPT,0);
    idt_set_gate( 5, (uint64_t)&isr5 , 8,0,INTERRUPT,0);
+idt_set_gate( 128, (uint64_t)&isr128 , 8,3,TRAP_GATE,0); //Entry for syscalls. DPL should be 3 to enable entry from ser mode
 
    cpu_lidt(&idt_ptr);
 }

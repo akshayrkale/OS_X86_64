@@ -11,6 +11,5 @@ ssize_t write(int fd, const void *buf, size_t count){
 	}
 	errno = -retvalue;
 	return -1;
-
 }
 

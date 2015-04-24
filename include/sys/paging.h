@@ -20,7 +20,7 @@
 #define AVAIL2_LIM  0xffffffff87ffd000 //check this value o sbrocks
 
 #define VIDEO_START 0xffffffff800B8000 
-#define USERSTACK  0
+#define USERSTACKTOP  PGSIZE
 
 typedef struct PageStruct {
 	// Next page on the free list.
@@ -54,6 +54,7 @@ ltr(uint16_t sel)
 }
 void my_memcpy(void* dst, void* src, size_t size);
 void my_memset(void* start, int x, size_t size);
+void tlb_invalidate(pml4e_t *pml4e, void *va);
 
 
 
@@ -95,6 +96,6 @@ struct PageStruct* allocate_page();
 struct PageStruct *physicalAddressToPage(uint64_t *addr);
 uint64_t* pageToPhysicalAddress(struct PageStruct* page);
 PageStruct * physicalAddressToPage(uint64_t *addr);
-
+int remove_page(uint64_t*);
 #endif /* PAGING_H_ */
 

@@ -10,11 +10,11 @@ char screen[1024];
 int screen_ctr;
 static int x=10,y;
 
-int write_text() {
+int write_text(int len) {
 	int  i;
 	
     volatile char *video =(volatile char*)VIDEO_START; // 
- for(i=0;i<screen_ctr;i++)
+ for(i=0;i<len;i++)
     {
 		if(screen[i]=='\n')
 		{
@@ -189,7 +189,23 @@ void printf(const char *format, ...) {
 		}
 	}
 
-	printed = write_text();
+	printed = write_text(screen_ctr);
 	
+}
+
+void kprintf(char* buff,int len){
+
+	//printf("Before copying buffer");
+	int i;
+	for(i=0;i<len;i++){
+
+		screen[i]=buff[i];
+
+	}
+
+	//printf("After copying buffer");
+
+	write_text(len);
+
 }
 

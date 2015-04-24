@@ -9,6 +9,6 @@ void _start(void) {
 	int res;
 	res = main(0, NULL, NULL);
    
-	exit(res);
+    exit(res);
 }
 
