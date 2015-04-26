@@ -128,7 +128,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
     pte[PTX(va+i)] = ((pa+i) & (~0xFFF))|(perm|PTE_P);;
     tlb_invalidate(pml4e,(void*)va+i);
    }//for loop end
-   printf("Mapped Region:%p-%p to %p-%p\n",ROUNDDOWN(va,PGSIZE),ROUNDDOWN(va+size,PGSIZE), ROUNDDOWN(pa,PGSIZE),ROUNDDOWN(pa+size,PGSIZE));	
+//   printf("Mapped Region:%p-%p to %p-%p\n",ROUNDDOWN(va,PGSIZE),ROUNDDOWN(va+size,PGSIZE), ROUNDDOWN(pa,PGSIZE),ROUNDDOWN(pa+size,PGSIZE));	
    return 1;
 }
 

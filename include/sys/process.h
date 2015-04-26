@@ -23,6 +23,7 @@ uint64_t    vm_start;
 uint64_t    vm_end; 
 uint64_t    *vm_file;          /* mapped file, if any */
 uint64_t vm_size;
+uint64_t vm_filesz;
 uint64_t vm_offset;
 enum SegType vm_type;
 struct vma_struct   *vm_next;

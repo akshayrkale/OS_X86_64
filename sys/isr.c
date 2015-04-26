@@ -112,6 +112,8 @@ volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 *(video+7) = 0x1F;
 
 print_time(ticks++/1000,video);
+//if(ticks%1000 == 0)
+  //  scheduler();
 PIC_sendEOI(0);
 }
 
@@ -181,8 +183,8 @@ void isr14_handler(struct faultStruct *faultFrame) {
         if(curproc->status==RUNNING)
         {
             vma_struct *vma=curproc->mm->mmap;
-            vma_struct *stack,*heap;
-            while(!(vma->vm_start<vaddr && vma->vm_end>vaddr))
+            vma_struct *stack=NULL,*heap=NULL;
+            while(!(vma->vm_start<=vaddr && vma->vm_end>=vaddr))
             {
                 if(vma->vm_type == STACK)
                     stack=vma;
@@ -193,21 +195,28 @@ void isr14_handler(struct faultStruct *faultFrame) {
             
             if(vma == NULL)
             {
-                heap=stack=0;
-                heap++; stack++;
-                //stack or heap      
+                 if(vaddr < stack->vm_start && vaddr > stack->vm_start-PGSIZE)    
+                 {
+                     printf("Stack Fault");
+
+                     allocate_proc_area(curproc, (void*)stack->vm_start-PGSIZE,PGSIZE);
+                 //stack or heap
+                 }
+                 heap++;
+
             }
             else
             {
                
-//               allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
-               allocate_proc_area(curproc, (void*)vma->vm_start,vma->vm_size); 
-             /*  uint64_t size =PGSIZE;
+               allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
+//               allocate_proc_area(curproc, (void*)vma->vm_start,vma->vm_size); 
+/*               uint64_t size =PGSIZE;
                if(ROUNDDOWN(vaddr,PGSIZE)+PGSIZE >= vma->vm_end)
-                   size=vma->vm_end-ROUNDDOWN(vaddr,PGSIZE);
-*/
-               //my_memcpy((void*)ROUNDDOWN(vaddr,PGSIZE),(void*)ROUNDDOWN((char*)vma->vm_file+vma->vm_offset+1,PGSIZE),size);
-               my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
+                   size=vma->vm_end-ROUNDDOWN(vaddr,PGSIZE);*/
+               uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
+               
+               my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
+//             my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
 
              printf("Allocated page");        
             }   

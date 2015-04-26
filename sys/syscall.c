@@ -13,12 +13,14 @@ void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
 
 }
 void sys_exit(uint64_t error_code){
-    printf("Exiting Process%p %d",curproc,curproc->proc_id);
+//    printf("Exiting Process%p %d",curproc,curproc->proc_id);
     if(curproc)
     {
         proc_free(curproc);
-        uint64_t i = 499999999;
-        while(i--);
+        //uint64_t i = 499999999;
+        //while(i--);
+
+        while(1);
         scheduler();
     }
 }

@@ -27,7 +27,10 @@ ProcStruct* create_process(uint64_t* binary, enum ProcType type)
 ProcStruct *NewProc=NULL;
 
 if((NewProc=allocate_process(0)) != NULL)
-{    printf("Allcated");    
+{    printf("Allcated");   
+ uint64_t i=499999999;
+            while(i--);
+
      if(load_elf(NewProc,binary)==0)
      {
         printf("Loaded");
@@ -96,7 +99,7 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
            return -1;
         newpage = pageToPhysicalAddress(pa);
         //printf("Mapping..%p to %p",i,newpage);
-        map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P | PTE_U | PTE_W);
+        map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P |PTE_U|PTE_W);
 
     }
 
@@ -148,10 +151,9 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 		eph = ph + elf->e_phnum;
 		for(;ph < eph; ph++) {
 			if (ph->p_type == ELF_PROG_LOAD) {
-		    	allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
-    	my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
+		    	//allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
+    	//my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
         vma_struct* vma;
-
         vma = allocate_vma(e->mm);
         vma->vm_start = ph->p_va;
         vma->vm_end = vma->vm_start + ph->p_memsz;
@@ -164,7 +166,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
         vma->vm_offset = ph->p_offset;
 
     	if (ph->p_filesz < ph->p_memsz) {
-			my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
+		vma->vm_filesz=ph->p_filesz;	//my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
 		}
 		}
 		}
@@ -183,9 +185,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
          printf("T2"); 
-		 uint64_t i=499999999;
-            while(i--);
-         allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+		 allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
 
 		 e->tf.tf_rip    = elf->e_entry;
 		 e->tf.tf_rsp    = USERSTACKTOP;
@@ -216,7 +216,7 @@ struct vma_struct* allocate_vma(mm_struct* mem)
             vma=vma->vm_next;
         mem->count++;
         vma->vm_next=(vma_struct*)((char*)vma+sizeof(vma_struct));
-       return (vma_struct*)(vma->vm_next);
+        return (vma_struct*)(vma->vm_next);
     }
 
 }
@@ -280,7 +280,7 @@ int proc_free(ProcStruct *proc)
         {
            uint64_t ipdpe,*pdpe=(uint64_t*)KADDR((pml4e[ipml4e]&~0xFFF));
            if(deleteme)
-           printf("pdpe:%p",pdpe);
+  //         printf("pdpe:%p",pdpe);
             for(ipdpe=0; ipdpe<512; ipdpe++)
             {
                 if((uint64_t)pdpe[ipdpe]&PTE_P)
@@ -299,25 +299,25 @@ int proc_free(ProcStruct *proc)
  //                                   printf("herepteis=%p pte[]=%d",pte,pte[0]);
 
                                     remove_page((uint64_t*)((uint64_t)pte[ipte]&~0xFFF));
-printf("Removed page:%p",((uint64_t)pte[ipte]&~0xFFF));
+//printf("Removed page:%p",((uint64_t)pte[ipte]&~0xFFF));
 
                                     pte[ipte]=0;
 
                                 }
                             }
                             remove_page((uint64_t*)((uint64_t)pde[ipde]&~0xFFF));
-                printf("Removed pte:%p",((uint64_t)pde[ipde]&~0xFFF));
+//                printf("Removed pte:%p",((uint64_t)pde[ipde]&~0xFFF));
             pde[ipde]=0;
 
                         }
                    }
-                   remove_page((uint64_t*)((uint64_t)pdpe[ipdpe]&~0xFFF));printf("Removed pde:%p",((uint64_t)pdpe[ipdpe]&~0xFFF));
+                   remove_page((uint64_t*)((uint64_t)pdpe[ipdpe]&~0xFFF));//printf("Removed pde:%p",((uint64_t)pdpe[ipdpe]&~0xFFF));
 
                    pdpe[ipdpe]=0;
                 }
             }
             remove_page((uint64_t*)((uint64_t)pml4e[ipml4e]&~0xFFF));
-printf("Removed pdpe:%p ",((uint64_t)pml4e[ipml4e]&~0xFFF));
+//printf("Removed pdpe:%p ",((uint64_t)pml4e[ipml4e]&~0xFFF));
 
             pml4e[ipml4e]=0;
         }
@@ -326,7 +326,7 @@ printf("Removed pdpe:%p ",((uint64_t)pml4e[ipml4e]&~0xFFF));
 
     }
     remove_page(proc->cr3);
-    printf("removed");
+    printf("Last removal");
 
     my_memset((void*)proc,0,sizeof(ProcStruct));
     proc->status = FREE;
