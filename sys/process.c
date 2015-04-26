@@ -107,7 +107,7 @@ ProcStruct *getnewprocess()
 {
     ProcStruct* p =proc_free_list;
     if(proc_free_list)
-    proc_free_list=proc_free_list->next;
+        proc_free_list=proc_free_list->next;
     
     p->next=proc_running_list;
     proc_running_list=p;
@@ -119,9 +119,9 @@ void
 proc_run(struct ProcStruct *proc)
 {
    
-    if(curproc)
+    //if(curproc)
     {
-        curproc->status =RUNNABLE;
+        //curproc->status =RUNNABLE;
         proc->status = RUNNING;
     }
 
@@ -150,7 +150,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 			if (ph->p_type == ELF_PROG_LOAD) {
 		    	allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
     	my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
-    /*    vma_struct* vma;
+        vma_struct* vma;
 
         vma = allocate_vma(e->mm);
         vma->vm_start = ph->p_va;
@@ -161,35 +161,35 @@ int load_elf(ProcStruct *e,uint64_t* binary)
         vma->vm_type=LOAD;
         vma->vm_file = (uint64_t*)elf;
         vma->vm_flags = ph->p_flags;
-        vma->vm_offset = ph->p_offset;  */
+        vma->vm_offset = ph->p_offset;
 
-			if (ph->p_filesz < ph->p_memsz) {
-				my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
-				}
-			}
+    	if (ph->p_filesz < ph->p_memsz) {
+			my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
 		}
-         /*vma_struct* vma;
-         vma = allocate_vma(e->mm);
-        uint64_t* pdpe = (uint64_t*)KADDR(e->pml4e[0]);
-
-    uint64_t* pde = (uint64_t*)KADDR(pdpe[0]);
-         uint64_t* pte = (uint64_t*)KADDR(pde[0]);
- printf("testing");  printf("At pte2", pte[2]);*/
-/*
+		}
+		}
+        vma_struct* vma;
+        vma = allocate_vma(e->mm);
+/*      uint64_t* pdpe = (uint64_t*)KADDR(e->pml4e[0]);
+        uint64_t* pde = (uint64_t*)KADDR(pdpe[0]);
+        uint64_t* pte = (uint64_t*)KADDR(pde[0]);*/
+         
          vma->vm_mm=e->mm;
          vma->vm_start = USERSTACKTOP-PGSIZE;
          vma->vm_end = USERSTACKTOP+1;
          vma->vm_size = PGSIZE;
-         vma->vm_type=STACK ;  
+         vma->vm_type=STACK; 
          vma->vm_next = NULL;
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
-*/
-		 allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), 1);
+         printf("T2"); 
+		 uint64_t i=499999999;
+            while(i--);
+         allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+
 		 e->tf.tf_rip    = elf->e_entry;
 		 e->tf.tf_rsp    = USERSTACKTOP;
-        
-		lcr3(boot_cr3);
+		 lcr3(boot_cr3);
 	} else {
 		return -1;
 	}
@@ -204,10 +204,10 @@ struct vma_struct* allocate_vma(mm_struct* mem)
     printf("vma allocated");  
     if(mem->mmap == 0)
     {
-        printf("T2");
+
       mem->mmap=(vma_struct*)(mem+1); //(vma_struct*)KADDR(pageToPhysicalAddress(pa));
       mem->count++;
-      return mem->mmap;
+      printf("T2");     return mem->mmap;
     }
     else
     {
@@ -244,8 +244,15 @@ int scheduler()
     else
         start = proc_running_list;
         
-    while(start->status!=RUNNABLE && start !=curproc)
+    while(start->status!=RUNNABLE)
     {
+        while(start->next!=NULL && start->next->status == FREE) //if proc_rinning_list->status==free it wont be added to free list immediately
+        {
+            ProcStruct *newnext = start->next->next;
+            start->next = proc_free_list;
+            proc_free_list = start->next;
+            start->next=newnext;
+        }
         if(start->next!=NULL)
             start=start->next;
         else 
@@ -320,12 +327,8 @@ printf("Removed pdpe:%p ",((uint64_t)pml4e[ipml4e]&~0xFFF));
     }
     remove_page(proc->cr3);
     printf("removed");
-     uint64_t i=499999999;
-      while(i--);
 
-my_memset((void*)proc,0,sizeof(ProcStruct));
-    proc->next=proc_free_list;
-    proc_free_list=proc;
-
+    my_memset((void*)proc,0,sizeof(ProcStruct));
+    proc->status = FREE;
     return 0;
 }

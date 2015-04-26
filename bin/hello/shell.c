@@ -10,7 +10,7 @@ int main (int argc, char* argv[], char* envp[])
   k=2;
 printf("hi%d",k);
 
- while(1);   
+    
  
  /*int a,c=0;
                

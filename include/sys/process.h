@@ -12,6 +12,31 @@ enum ProcType
 USER_PROCESS=0,
 KERNEL_PROCESS
 };
+enum SegType{
+STACK,
+HEAP,
+LOAD,
+};
+typedef struct vma_struct{
+struct mm_struct    *vm_mm; 
+uint64_t    vm_start; 
+uint64_t    vm_end; 
+uint64_t    *vm_file;          /* mapped file, if any */
+uint64_t vm_size;
+uint64_t vm_offset;
+enum SegType vm_type;
+struct vma_struct   *vm_next;
+uint64_t    vm_flags;      /* flags */
+
+}vma_struct;
+typedef struct mm_struct {
+    int count;
+    uint64_t * pt; // page table pointer  
+    struct vma_struct * mmap;
+    struct vma_struct * mmap_avl;
+}mm_struct;
+
+vma_struct* allocate_vma();
 
 typedef struct ProcStruct{
 unsigned char proc_id;
@@ -62,29 +87,4 @@ int proc_free(ProcStruct*);
 	"\tmovq 112(%%rsp),%%rax\n" \
 	"\taddq $120,%%rsp\n"
 
-enum SegType{
-STACK,
-HEAP,
-LOAD,
-};
-typedef struct vma_struct{
-struct mm_struct    *vm_mm; 
-uint64_t    vm_start; 
-uint64_t    vm_end; 
-uint64_t    *vm_file;          /* mapped file, if any */
-uint64_t vm_size;
-uint64_t vm_offset;
-enum SegType vm_type;
-struct vma_struct   *vm_next;
-uint64_t    vm_flags;      /* flags */
-
-}vma_struct;
-typedef struct mm_struct {
-    int count;
-    uint64_t * pt; // page table pointer  
-    struct vma_struct * mmap;
-    struct vma_struct * mmap_avl;
-}mm_struct;
-
-vma_struct* allocate_vma();
 

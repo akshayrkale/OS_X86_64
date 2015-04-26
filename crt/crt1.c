@@ -1,5 +1,5 @@
 #include <stdlib.h>
-
+#include <stdio.h>
 int main(int argc, char* argv[], char* envp[]);
 
 void _start(void) {
@@ -10,5 +10,5 @@ void _start(void) {
 	res = main(0, NULL, NULL);
    
     exit(res);
-}
+  }
 

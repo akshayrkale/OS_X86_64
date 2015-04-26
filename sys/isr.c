@@ -38,7 +38,32 @@ __asm__(".global isr" #vector "\n"\
                         "    popq %rcx;" \
                         "    popq %rax;" \
                         "    iretq;    ");
-
+#define INTERRUPTPG(vector) \
+__asm__(".global isr" #vector "\n"\
+                        "isr" #vector ":\n" \
+                        "    pushq %rax;" \
+                        "    pushq %rcx;" \
+                        "    pushq %rdx;" \
+                        "    pushq %rsi;" \
+                        "    pushq %rdi;" \
+                        "    pushq %r8;" \
+                        "    pushq %r9;" \
+                        "    pushq %r10;" \
+                        "    pushq %r11;" \
+                        "    movq  %rsp,%rdi;" \
+                        "    addq  $72, %rdi;"  \
+                        "    call isr" #vector "_handler;" \
+                        "    popq %r11;" \
+                        "    popq %r10;" \
+                        "    popq %r9;" \
+                        "    popq %r8;" \
+                        "    popq %rdi;" \
+                        "    popq %rsi;" \
+                        "    popq %rdx;" \
+                        "    popq %rcx;" \
+                        "    popq %rax;" \
+                        "    addq $8,%rsp;" \
+                        "    iretq;    ");
 
 
 #define INTERRUPT_WITH_ERRORCODE(vector) \
@@ -50,23 +75,20 @@ __asm__(".global isr" #vector "\n"\
                         "movw %es, (%rsp);" \
                         "subq $8,%rsp;" \
                         "movw %ds, (%rsp);" \
-                        PUSHA \
+                         PUSHA \
                         "movw $0x10, %ax;" \
                         "movw %ax, %ds;" \
                         "movw %ax, %es;" \
                         "movq %rsp, %rdi;" \
-                        "    call isr" #vector "_handler;" \
-                        POPA2 \
+                        "call isr" #vector "_handler;" \
+                         POPA2 \
                         "addq $32, %rsp;" \
-                        "    iretq;    ");
-
-
-
+                        "iretq;    ");
 
 
 INTERRUPT(32);   // divide by zero
 INTERRUPT(33);
-INTERRUPT(14);
+INTERRUPTPG(14);
 INTERRUPT(11);
 INTERRUPT(13);
 INTERRUPT(0);
@@ -151,16 +173,45 @@ void isr14_handler(struct faultStruct *faultFrame) {
         uint64_t vaddr = read_cr2_register();
         //uint64_t   pde = PADDR(vaddr);
         //pde=pde;
-
-        printf("Kernel mode Page Fault");
-
-        printf("Address of faultFrame %p",faultFrame);
-
-        printf(" \n Error occured at %p ", faultFrame->rip);
-
+//        printf("Kernel mode Page Fault");
+//        printf("Address of faultFrame %p",faultFrame);
+//        printf(" \n Error occured at %p ", faultFrame->rip);
         printf(" \n Faulting virtual address is %p", vaddr);
 
-        while(1);
+        if(curproc->status==RUNNING)
+        {
+            vma_struct *vma=curproc->mm->mmap;
+            vma_struct *stack,*heap;
+            while(!(vma->vm_start<vaddr && vma->vm_end>vaddr))
+            {
+                if(vma->vm_type == STACK)
+                    stack=vma;
+                if(vma->vm_type == HEAP)
+                    heap = vma;
+                vma=vma->vm_next;
+            }
+            
+            if(vma == NULL)
+            {
+                heap=stack=0;
+                heap++; stack++;
+                //stack or heap      
+            }
+            else
+            {
+               
+//               allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
+               allocate_proc_area(curproc, (void*)vma->vm_start,vma->vm_size); 
+             /*  uint64_t size =PGSIZE;
+               if(ROUNDDOWN(vaddr,PGSIZE)+PGSIZE >= vma->vm_end)
+                   size=vma->vm_end-ROUNDDOWN(vaddr,PGSIZE);
+*/
+               //my_memcpy((void*)ROUNDDOWN(vaddr,PGSIZE),(void*)ROUNDDOWN((char*)vma->vm_file+vma->vm_offset+1,PGSIZE),size);
+               my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
+
+             printf("Allocated page");        
+            }   
+        }
 }
 
 
@@ -193,6 +244,7 @@ void isr128_handler(struct Trapframe* tf){
                         //printf("Calling exit");
                         //while(1);
                         sys_exit(2);
+                        printf("exited");
                         break;
 
 
@@ -200,6 +252,6 @@ void isr128_handler(struct Trapframe* tf){
                         break;
 
                 };
-        }
+}
 
 
