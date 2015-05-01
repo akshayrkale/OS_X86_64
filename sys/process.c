@@ -234,7 +234,7 @@ void env_pop_tf(struct Trapframe *tf1)
 int scheduler()
 {
     ProcStruct *start=curproc;
-
+    
     if(!start || start->next==NULL)
     {
         start=proc_running_list;

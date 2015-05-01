@@ -50,16 +50,12 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 
   i=499999999;
           while(i--);  
-    ProcStruct* pr=create_process(proc_binary,USER_PROCESS);
+    create_process(proc_binary,USER_PROCESS);
 printf("name=%s",((struct posix_header_ustar*)((unsigned char*)proc_binary+ROUNDUP(20952,512)))->name);
     uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(20952,512)+512);
-    ProcStruct *pr2=create_process(proc_binary1,USER_PROCESS);
+    create_process(proc_binary1,USER_PROCESS);
     uint64_t* proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(20611,512)+512);
-    ProcStruct *pr3=create_process(proc_binary2,USER_PROCESS);
-
-pr=pr2;
-pr2=pr=pr3;
-pr3=pr;
+    create_process(proc_binary2,USER_PROCESS);
 
     printf("done");
 ltr((uint16_t)(0x28));

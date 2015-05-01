@@ -26,7 +26,6 @@ __asm__(".global isr" #vector "\n"\
                         "    pushq %r10;" \
                         "    pushq %r11;" \
                         "    movq  %rsp,%rdi;" \
-                        "    addq  $72, %rdi;"  \
                         "    call isr" #vector "_handler;" \
                         "    popq %r11;" \
                         "    popq %r10;" \
@@ -38,7 +37,7 @@ __asm__(".global isr" #vector "\n"\
                         "    popq %rcx;" \
                         "    popq %rax;" \
                         "    iretq;    ");
-#define INTERRUPTPG(vector) \
+#define INTERRUPTP_ERRORCODE(vector) \
 __asm__(".global isr" #vector "\n"\
                         "isr" #vector ":\n" \
                         "    pushq %rax;" \
@@ -66,7 +65,7 @@ __asm__(".global isr" #vector "\n"\
                         "    iretq;    ");
 
 
-#define INTERRUPT_WITH_ERRORCODE(vector) \
+#define INTERRUPT_NO_ERRORCODE(vector) \
 __asm__(".global isr" #vector "\n"\
                         "isr" #vector ":\n" \
                         "pushq $0;" \
@@ -86,9 +85,9 @@ __asm__(".global isr" #vector "\n"\
                         "iretq;    ");
 
 
-INTERRUPT(32);   // divide by zero
-INTERRUPT(33);
-INTERRUPTPG(14);
+INTERRUPT_NO_ERRORCODE(32);   
+INTERRUPT_NO_ERRORCODE(33);
+INTERRUPTP_ERRORCODE(14);
 INTERRUPT(11);
 INTERRUPT(13);
 INTERRUPT(0);
@@ -98,10 +97,10 @@ INTERRUPT(17);
 INTERRUPT(4);
 INTERRUPT(5);
 INTERRUPT(6);
-INTERRUPT_WITH_ERRORCODE(128);
+INTERRUPT_NO_ERRORCODE(128);
 
 
-void isr32_handler(){
+void isr32_handler(struct Trapframe *tf){
 static unsigned long int ticks=0;
 volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 *(video+2) = 's';
@@ -114,8 +113,17 @@ volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 print_time(ticks++/1000,video);
 PIC_sendEOI(0);
 
-if(ticks%1000 == 0)
+if(ticks%900 == 0)
 {
+    if((tf->tf_cs & 3) == 3)
+    {
+        curproc->tf=*tf;
+        tf=&curproc->tf;
+        curproc->status =RUNNABLE;
+        printf(" RIP:%p",tf->tf_rip);
+        
+    }
+
     scheduler();
 }
 }
@@ -181,7 +189,7 @@ void isr14_handler(struct faultStruct *faultFrame) {
 //        printf("Kernel mode Page Fault");
 //        printf("Address of faultFrame %p",faultFrame);
 //        printf(" \n Error occured at %p ", faultFrame->rip);
-        printf(" \n Faulting virtual address is %p", vaddr);
+//        printf(" \n Faulting virtual address is %p", vaddr);
 
         if(curproc->status==RUNNING)
         {
@@ -220,7 +228,7 @@ void isr14_handler(struct faultStruct *faultFrame) {
                my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
 //             my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
 
-             printf("Allocated page");        
+//             printf("Allocated page");        
             }   
         }
 }
