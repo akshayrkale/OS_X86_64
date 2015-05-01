@@ -1,7 +1,8 @@
 #include<stdio.h>
 int main()
 {
-printf("HII");
+printf("In Malluaunty");
+//while(1);
 return 0;
 }
 

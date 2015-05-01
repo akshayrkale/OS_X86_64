@@ -20,7 +20,7 @@ void sys_exit(uint64_t error_code){
         //uint64_t i = 499999999;
         //while(i--);
 
-        while(1);
+//        while(1);
         scheduler();
     }
 }

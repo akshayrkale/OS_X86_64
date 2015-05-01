@@ -6,10 +6,10 @@ int main (int argc, char* argv[], char* envp[])
   int k=9;
   k=k+1;
 
-  printf("hi");
-  k=2;
-printf("hi%d",k);
 
+printf("In Hello%d",k);
+return 0;
+//while(1);
     
  
  /*int a,c=0;

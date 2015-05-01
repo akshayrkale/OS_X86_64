@@ -112,9 +112,12 @@ volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 *(video+7) = 0x1F;
 
 print_time(ticks++/1000,video);
-//if(ticks%1000 == 0)
-  //  scheduler();
 PIC_sendEOI(0);
+
+if(ticks%1000 == 0)
+{
+    scheduler();
+}
 }
 
 
@@ -207,7 +210,6 @@ void isr14_handler(struct faultStruct *faultFrame) {
             }
             else
             {
-               
                allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
 //               allocate_proc_area(curproc, (void*)vma->vm_start,vma->vm_size); 
 /*               uint64_t size =PGSIZE;
@@ -255,8 +257,6 @@ void isr128_handler(struct Trapframe* tf){
                         sys_exit(2);
                         printf("exited");
                         break;
-
-
                 default:
                         break;
 

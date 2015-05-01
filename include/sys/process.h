@@ -51,6 +51,7 @@ struct Trapframe tf;
 physaddr_t* cr3;
 uint64_t *elf;
 struct mm_struct *mm;
+uint64_t* kstack[512];
 }ProcStruct;
 
 

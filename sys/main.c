@@ -43,12 +43,30 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
   //  printf("Total procs:%d",i);
     struct posix_header_ustar* start= (struct posix_header_ustar*)&_binary_tarfs_start;
 //    printf("name of bin=%s ",start->name);
-    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->name);
-
-   
+    printf("name of file:%s",((struct posix_header_ustar*)((uint64_t)start+sizeof(struct posix_header_ustar)))->size);
+    
     uint64_t* proc_binary = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)+sizeof(struct posix_header_ustar)));
-    ProcStruct* pr1=create_process(proc_binary,USER_PROCESS);
-  printf("running");   proc_run(pr1);
+//    uint64_t* struct1  = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)));
+
+  i=499999999;
+          while(i--);  
+    ProcStruct* pr=create_process(proc_binary,USER_PROCESS);
+printf("name=%s",((struct posix_header_ustar*)((unsigned char*)proc_binary+ROUNDUP(20952,512)))->name);
+    uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(20952,512)+512);
+    ProcStruct *pr2=create_process(proc_binary1,USER_PROCESS);
+    uint64_t* proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(20611,512)+512);
+    ProcStruct *pr3=create_process(proc_binary2,USER_PROCESS);
+
+pr=pr2;
+pr2=pr=pr3;
+pr3=pr;
+
+    printf("done");
+ltr((uint16_t)(0x28));
+
+  __asm__("sti");
+
+    while(1);
     // kernel starts here
 }
 
@@ -76,16 +94,13 @@ void boot(void)
    
     init_PIT(1000);
     keyboard_init();
-    __asm__("sti");
+   // __asm__("sti");
     start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
 	);
 
-
     printf("!!!!! start() returned !!!!! ");
-
-
 	//for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
 }

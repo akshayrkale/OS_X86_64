@@ -28,8 +28,8 @@ ProcStruct *NewProc=NULL;
 
 if((NewProc=allocate_process(0)) != NULL)
 {    printf("Allcated");   
- uint64_t i=499999999;
-            while(i--);
+// uint64_t i=499999999;
+  //          while(i--);
 
      if(load_elf(NewProc,binary)==0)
      {
@@ -51,7 +51,7 @@ ProcStruct* allocate_process(unsigned char parentid)
     if(setupt_proc_vm(NewProc)==0)
         return NULL;
     printf("Proc vm set");
-    NewProc->proc_id = (unsigned char)(NewProc-procs); 
+    NewProc->proc_id = (unsigned char)(NewProc-procs)+1; 
     NewProc->parent_id = parentid;
     NewProc->status = RUNNABLE;
     my_memset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
@@ -62,7 +62,6 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->tf.tf_cs = (uint16_t)(U_CS|RPL3);
     NewProc->tf.tf_eflags = 0x200;//9th bit=IF flag
 
-    proc_free_list = NewProc->next;
     return NewProc;
 }
 
@@ -100,9 +99,7 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
         newpage = pageToPhysicalAddress(pa);
         //printf("Mapping..%p to %p",i,newpage);
         map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P |PTE_U|PTE_W);
-
     }
-
     return 0;
 }
 
@@ -110,28 +107,28 @@ ProcStruct *getnewprocess()
 {
     ProcStruct* p =proc_free_list;
     if(proc_free_list)
-        proc_free_list=proc_free_list->next;
-    
+    {
+    proc_free_list=proc_free_list->next;
     p->next=proc_running_list;
     proc_running_list=p;
-
     return p;
+    }
+    return NULL;
 }
 
 void
 proc_run(struct ProcStruct *proc)
 {
    
-    //if(curproc)
-    {
-        //curproc->status =RUNNABLE;
+    if(curproc && curproc->status!=FREE)
+       curproc->status =RUNNABLE;
+   
+         
         proc->status = RUNNING;
-    }
 
         lcr3(proc->cr3);
-        tss.rsp0 = KERNBASE+2*PGSIZE;
-        ltr((uint16_t)(0x28));
-        curproc = proc;
+        tss.rsp0 =(uint64_t) &proc->kstack[511];
+                curproc = proc;
     	env_pop_tf(&(proc->tf));
 }
 
@@ -237,12 +234,14 @@ void env_pop_tf(struct Trapframe *tf1)
 int scheduler()
 {
     ProcStruct *start=curproc;
-    if(!start)
-        return 0;
-    else if(start->next!=NULL)
+
+    if(!start || start->next==NULL)
+    {
+        start=proc_running_list;
+    }
+    else 
         start = start->next;
-    else
-        start = proc_running_list;
+   
         
     while(start->status!=RUNNABLE)
     {
@@ -328,7 +327,14 @@ int proc_free(ProcStruct *proc)
     remove_page(proc->cr3);
     printf("Last removal");
 
-    my_memset((void*)proc,0,sizeof(ProcStruct));
+   // my_memset((void*)proc,0,sizeof(ProcStruct));
     proc->status = FREE;
     return 0;
+}
+
+
+int 
+fork_process()
+{
+return 0;
 }
