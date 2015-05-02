@@ -26,7 +26,9 @@ void isr6();
 void isr5();
 void isr128();
 
-
+#define ER_P 0x1
+#define ER_W 0x2   
+#define ER_U 0x4
 struct faultStruct {
 
     uint64_t errorCode;

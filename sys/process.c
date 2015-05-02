@@ -34,7 +34,7 @@ if((NewProc=allocate_process(0)) != NULL)
      if(load_elf(NewProc,binary)==0)
      {
         printf("Loaded");
-            NewProc->type =type;
+        NewProc->type =type;
         return NewProc;
      }
 }
@@ -53,7 +53,6 @@ ProcStruct* allocate_process(unsigned char parentid)
     printf("Proc vm set");
     NewProc->proc_id = (unsigned char)(NewProc-procs)+1; 
     NewProc->parent_id = parentid;
-    NewProc->status = RUNNABLE;
     my_memset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
     NewProc->tf.tf_ds =(uint16_t)(U_DS|RPL3); 
     NewProc->tf.tf_es =(uint16_t)(U_DS|RPL3);
@@ -61,6 +60,10 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->tf.tf_rsp = USERSTACKTOP;
     NewProc->tf.tf_cs = (uint16_t)(U_CS|RPL3);
     NewProc->tf.tf_eflags = 0x200;//9th bit=IF flag
+    NewProc->status = RUNNABLE;
+    PageStruct *pa=allocate_page();
+    NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
+    my_memset((void *)(NewProc->mm), 0, sizeof(mm_struct));
 
     return NewProc;
 }
@@ -88,7 +91,7 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
 {
     char* start = (char*)ROUNDDOWN((uint64_t)va, PGSIZE);
     char* end = (char*)ROUNDUP((char*)va+size, PGSIZE);
-    uint64_t* newpage;
+    uint64_t* newpage=0;
     PageStruct* pa;
     for(char* i=start; i<end; i+=PGSIZE)
     {
@@ -99,8 +102,11 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
         newpage = pageToPhysicalAddress(pa);
         //printf("Mapping..%p to %p",i,newpage);
         map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P |PTE_U|PTE_W);
+
     }
-    return 0;
+return (uint64_t)newpage;
+
+
 }
 
 ProcStruct *getnewprocess()
@@ -108,10 +114,10 @@ ProcStruct *getnewprocess()
     ProcStruct* p =proc_free_list;
     if(proc_free_list)
     {
-    proc_free_list=proc_free_list->next;
-    p->next=proc_running_list;
-    proc_running_list=p;
-    return p;
+        proc_free_list=proc_free_list->next;
+        p->next=proc_running_list;
+        proc_running_list=p;
+        return p;
     }
     return NULL;
 }
@@ -121,14 +127,12 @@ proc_run(struct ProcStruct *proc)
 {
    
     if(curproc && curproc->status!=FREE)
-       curproc->status =RUNNABLE;
-   
+        curproc->status =RUNNABLE;
          
         proc->status = RUNNING;
-
         lcr3(proc->cr3);
         tss.rsp0 =(uint64_t) &proc->kstack[511];
-                curproc = proc;
+        curproc = proc;
     	env_pop_tf(&(proc->tf));
 }
 
@@ -137,10 +141,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 {
 	struct Elf *elf = (struct Elf *)binary;
 	struct Proghdr *ph, *eph;
-    PageStruct *pa=allocate_page();
-    e->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
-    my_memset((void *)(e->mm), 0, sizeof(mm_struct));
-
+    
     if (elf && elf->e_magic == ELF_MAGIC) {
         printf("this is elf");
  		lcr3(e->cr3);       
@@ -181,12 +182,12 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_next = NULL;
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
-         printf("T2"); 
-		 allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
 
+		 int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+printf("stack page:%p-%d ",p,e->proc_id);
 		 e->tf.tf_rip    = elf->e_entry;
 		 e->tf.tf_rsp    = USERSTACKTOP;
-		 lcr3(boot_cr3);
+	     lcr3(boot_cr3);
 	} else {
 		return -1;
 	}
@@ -332,9 +333,169 @@ int proc_free(ProcStruct *proc)
     return 0;
 }
 
-
-int 
-fork_process()
+uint64_t execvpe(char *arg1,char *arg2[], char* arg3[])
 {
+/*
+        char *tmp_pathname = arg1;
+        char **tmp_argument = (char **)arg2;
+        char **tmp_env = (char **)arg3;
+        int i=0;
+        int j=0;
+        char pathname[1024];
+        //strcpy(pathname,tmp_pathname);
+         
+        char **temp1=tmp_argument;
+        while(i<3){
+                    printf("arg%d is %s\n",i,temp1[i]);
+                            i++;
+        } 
+     
+        char **temp2=tmp_env;
+        while(j<3){
+                    printf("env%d is %s\n",j,temp2[j]);
+                            j++;
+         }
+        //print("done");
+
+        struct ProcStruct *proc=create_process(pathname,USER_PROCESS);
+        //print("done");
+       
+       
+        proc->proc_id =  curproc->proc_id;
+        proc->parent_id = curproc->parent_id;
+        exit_process(0);*/
+        return 0;
+}     
+int fork_process(struct Trapframe* tf)
+{
+    ProcStruct* NewProc=NULL;
+
+    if((NewProc=allocate_process(curproc->proc_id)) != NULL)
+    {    
+        printf("Allcated child");
+       
+        NewProc->tf = curproc->tf;       
+        copypagetables(NewProc);
+        copyvmas(NewProc);
+      //lcr3(NewProc->cr3);
+  //      allocate_proc_area(NewProc, (void*)(USERSTACKTOP), PGSIZE);
+//        my_memcpy((void*)(USERSTACKTOP),(void*)USERSTACKTOP-PGSIZE,PGSIZE); //?
+     //   lcr3(curproc->cr3);       //?
+        //my_memcpy((void*)NewProc->kstack,(void*) curproc->kstack, PGSIZE);
+        //for(int i=511;i>0;i--)
+    //        NewProc->kstack[i]=curproc->kstack[i];
+   //     NewProc->tf.tf_rsp = USERSTACKTOP+PGSIZE;
+        NewProc->tf.tf_regs.reg_rax=0; //?
+    }
+    return (tf->tf_regs.reg_rax= NewProc->proc_id);
+}
+
+int copypagetables(ProcStruct *proc)
+{
+    uint64_t* pml4e=curproc->pml4e;
+    uint64_t* chpml4e=proc->pml4e;
+    uint64_t* pdpe,*pde,*pte,*chpdpe,*chpde,*chpte;
+
+//extract the upper 9 bits of VA to get the index into pml4e.
+    for(int ipml4e=0; ipml4e<512; ipml4e++)
+    {
+        if(PML4(PHYSBASE)==ipml4e || PML4(VIDEO_START)==ipml4e)
+            continue;
+
+    if((pml4e[ipml4e] & (uint64_t)PTE_P))
+    {
+        chpdpe = pageToPhysicalAddress(allocate_page());
+        chpml4e[ipml4e]= ((uint64_t)chpdpe &(~0xFFF)) | (pml4e[ipml4e]&(0xfff));
+
+        if(chpml4e[ipml4e] & PTE_W)
+        {
+            chpml4e[ipml4e]=(chpml4e[ipml4e]&~PTE_W)|PTE_COW;
+            pml4e[ipml4e]=(pml4e[ipml4e]&~PTE_W)|PTE_COW;
+        }
+
+        //printf("ret=%p",pdpe);
+    
+    pdpe = (uint64_t*) (KADDR(pml4e[ipml4e]) & (~0xFFF));
+    chpdpe = (uint64_t*) (KADDR(chpml4e[ipml4e]) & (~0xFFF));
+      // printf("pdpe retu=%p",pdpe);
+
+    for(int ipdpe=0; ipdpe<512; ipdpe++)
+    {
+        if((pdpe[ipdpe] & (uint64_t)PTE_P))
+    {
+        
+        chpde = pageToPhysicalAddress(allocate_page());
+        chpdpe[ipdpe]= ((uint64_t)chpde &(~0xFFF)) | (pdpe[ipdpe]&(0xfff));
+
+        if(chpdpe[ipdpe] & PTE_W)
+        {
+            chpdpe[ipdpe]=(chpdpe[ipdpe]&~PTE_W) | PTE_COW;
+            pdpe[ipdpe]=(pdpe[ipdpe]&~PTE_W) | PTE_COW;
+        }
+
+        //printf("ret=%p",pdpe);
+    
+      pde = (uint64_t*) (KADDR(pdpe[ipdpe]) & (~0xFFF));
+      chpde = (uint64_t*) (KADDR(chpdpe[ipdpe]) & (~0xFFF));
+    for(int ipde=0; ipde<512; ipde++)
+    {
+        if((pde[ipde] & (uint64_t)PTE_P))
+        { 
+        
+        chpte = pageToPhysicalAddress(allocate_page());
+        chpde[ipde]= ((uint64_t)chpte &(~0xFFF)) | (pde[ipde]&(0xfff));
+
+        if(chpde[ipde] & PTE_W)
+        {
+            chpde[ipde]=(chpde[ipde]&~PTE_W)| PTE_COW;
+            pde[ipde]=(pde[ipde]&~PTE_W)| PTE_COW;
+
+        }
+
+        //printf("ret=%p",pdpe);
+    
+    
+    pte = (uint64_t*) (KADDR(pde[ipde]) & (~0xFFF));
+    chpte = (uint64_t*) (KADDR(chpde[ipde]) & (~0xFFF));
+    for(int ipte=0; ipte<512; ipte++)
+    {
+    if((pte[ipte] & (uint64_t)PTE_P))
+    {
+        
+       chpte[ipte]= pte[ipte];
+
+        if(chpte[ipte] & PTE_W)
+        {
+            chpte[ipte]=(chpte[ipte]&~PTE_W)| PTE_COW;
+            pte[ipte]=(pte[ipte]&~PTE_W)| PTE_COW;
+            physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
+        }
+        //printf("ret=%p",pdpe);
+    }
+    }
+   } 
+   }
+  }  
+  } 
+ }
+ }
 return 0;
 }
+
+
+int copyvmas(ProcStruct *proc)
+{   
+    vma_struct *vma=curproc->mm->mmap;
+    vma_struct* newvma=0;
+    while(vma)    
+    {
+        newvma=allocate_vma(proc->mm);
+        my_memcpy((void*)newvma,(void*)vma,sizeof(vma_struct));
+        newvma->vm_next=NULL;
+        vma=vma->vm_next;
+    }
+    return 0;
+}
+
+
+

@@ -84,7 +84,6 @@ __asm__(".global isr" #vector "\n"\
                         "addq $32, %rsp;" \
                         "iretq;    ");
 
-
 INTERRUPT_NO_ERRORCODE(32);   
 INTERRUPT_NO_ERRORCODE(33);
 INTERRUPTP_ERRORCODE(14);
@@ -123,7 +122,6 @@ if(ticks%900 == 0)
         printf(" RIP:%p",tf->tf_rip);
         
     }
-
     scheduler();
 }
 }
@@ -181,7 +179,8 @@ uint64_t read_cr2_register(){
 }
 
 
-void isr14_handler(struct faultStruct *faultFrame) {
+void isr14_handler(struct faultStruct *faultFrame)
+{
 
         uint64_t vaddr = read_cr2_register();
         //uint64_t   pde = PADDR(vaddr);
@@ -214,7 +213,6 @@ void isr14_handler(struct faultStruct *faultFrame) {
                  //stack or heap
                  }
                  heap++;
-
             }
             else
             {
@@ -223,7 +221,7 @@ void isr14_handler(struct faultStruct *faultFrame) {
 /*               uint64_t size =PGSIZE;
                if(ROUNDDOWN(vaddr,PGSIZE)+PGSIZE >= vma->vm_end)
                    size=vma->vm_end-ROUNDDOWN(vaddr,PGSIZE);*/
-               uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
+                                 uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
                
                my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
 //             my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
@@ -236,34 +234,26 @@ void isr14_handler(struct faultStruct *faultFrame) {
 
 void isr128_handler(struct Trapframe* tf){
 
-
-        //printf("ISR 128 handler %d", tf->tf_regs.reg_rax);
-
-        //while(1);
-        
-        
-
-        //Examie the trapnumber to get the syscall number and call the appropiate system call
         int syscall_number = tf->tf_trapno;
-
-        //printf("Inside syscall dispatcher..syscall number: %d data on r15 %d",tf->tf_regs.reg_rax,tf->tf_regs.reg_r15 );
-
-
-        //while(1);
 
         switch(syscall_number){
 
                 case SYS_write:
-
                         sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
                         break;
 
 
                 case SYS_exit:
-                        //printf("Calling exit");
-                        //while(1);
                         sys_exit(2);
                         printf("exited");
+                        break;
+
+                case SYS_fork:
+                        curproc->tf=*tf;
+//                        tf=&curproc->tf;
+                        curproc->status =RUNNABLE;
+                        uint64_t id = sys_fork(tf);
+  __asm__ __volatile__("movq %0, %%rax;":: "r"(id)); //?
                         break;
                 default:
                         break;

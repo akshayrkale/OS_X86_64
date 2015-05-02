@@ -1,6 +1,5 @@
 #include <sys/sbunix.h>
 #include <sys/defs.h>
-#include <sys/sbunix.h>
 #include<sys/process.h>
 
 void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
@@ -25,4 +24,7 @@ void sys_exit(uint64_t error_code){
     }
 }
 
-
+int sys_fork(struct Trapframe* tf)
+{
+    return fork_process(tf);
+}

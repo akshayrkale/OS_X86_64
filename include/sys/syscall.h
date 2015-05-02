@@ -27,6 +27,7 @@
 
 void sys_write(uint64_t fd,uint64_t buff,uint64_t len);
 void sys_exit(uint64_t error_code);
+int sys_fork();
 
 
 #endif

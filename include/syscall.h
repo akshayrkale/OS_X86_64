@@ -7,9 +7,8 @@
 static __inline uint64_t syscall_0(uint64_t n) {
 
 	uint64_t ret;
-
 	__asm__("movq %1,%%rax;"
-			"syscall;"
+			"int $0x80;"
 			"movq %%rax,%0;"
 			:"=r"(ret):"m"(n));
 

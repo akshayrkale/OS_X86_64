@@ -97,5 +97,6 @@ struct PageStruct *physicalAddressToPage(uint64_t *addr);
 uint64_t* pageToPhysicalAddress(struct PageStruct* page);
 PageStruct * physicalAddressToPage(uint64_t *addr);
 int remove_page(uint64_t*);
+
 #endif /* PAGING_H_ */
 

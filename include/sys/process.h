@@ -12,11 +12,13 @@ enum ProcType
 USER_PROCESS=0,
 KERNEL_PROCESS
 };
+
 enum SegType{
 STACK,
 HEAP,
 LOAD,
 };
+
 typedef struct vma_struct{
 struct mm_struct    *vm_mm; 
 uint64_t    vm_start; 
@@ -51,7 +53,7 @@ struct Trapframe tf;
 physaddr_t* cr3;
 uint64_t *elf;
 struct mm_struct *mm;
-uint64_t* kstack[512];
+uint64_t kstack[512];
 }ProcStruct;
 
 
@@ -70,6 +72,11 @@ int load_elf(ProcStruct *,uint64_t* binary);
 ProcStruct * getnewprocess();
 void proc_run(struct ProcStruct *proc);
 int proc_free(ProcStruct*);
+int fork_process(struct Trapframe* );
+uint64_t execvpe(char *arg1,char *arg2[], char* arg3[]);
+int copypagetables(ProcStruct *proc);
+int copyvmas(ProcStruct *proc);
+
 
 #define POPA \
 	"\tmovq 0(%%rsp),%%r15\n" \

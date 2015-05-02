@@ -237,42 +237,6 @@ PageStruct* allocate_page(){
     }
 	return pageToReturn;
 }
-/*
-void remove_page(uint64_t* pml4e, uint64_t *va ){
-
-//This function removes the page and adds it to the tail of the page_free_list
-
-//The pagestruct structure to remove
-PageStruct *pageToRemove = NULL; 
-
-uint64_t *pdpe =(uint64_t*) pml4e[PML4(va)];
-
-
-if ( pdpe !=NULL && ((uint64_t)pdpe & PTE_P)){
-
-uint64_t* pde = (uint64_t*)pdpe[PDPE(va)];
-
-if(pde !=NULL && ((uint64_t)pde & PTE_P)){
-
-uint64_t *pte = (uint64_t*)pde[PDX(va)];
-
-if (pte !=NULL && ((uint64_t)pte & PTE_P) ){
-
-pageToRemove = physicalAddressToPage((uint64_t*)*pte);
-
-if(--pageToRemove->ref_count == 0){
-//This page is no longer referred to by anyone else.
-//Put it in the free list
-pageToRemove->next = page_free_list;
-page_free_list = pageToRemove;
-pml4e[PML4(va)]= pdpe[PDPE(va)]= pde[PDX(va)] = pte[PTX(va)] =0;
-}
-}
-}
-}
-
-}*/
-
 int remove_page(uint64_t* pa)
 {
 PageStruct* pstruct = physicalAddressToPage(pa);
@@ -285,3 +249,6 @@ if(pstruct->ref_count <= 0)
 
 }return 0;
 }
+
+
+

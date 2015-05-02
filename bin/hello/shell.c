@@ -1,13 +1,17 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 int k;
 int main (int argc, char* argv[], char* envp[])
 {
   int k=9;
   k=k+1;
 
-
 printf("In Hello%d",k);
+k=fork();
+if(k==0)
+    printf("in child process");
+if(k>0)
+    printf("In parent of child:%d",k);
 return 0;
 //while(1);
     
