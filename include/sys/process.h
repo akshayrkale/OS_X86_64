@@ -1,6 +1,7 @@
 #include <sys/idt.h>
 #define NPROCS 250
-
+extern uint16_t proccount;
+extern uint64_t* proc_binary2;
 enum ProcStatus{
 FREE,
 RUNNABLE,

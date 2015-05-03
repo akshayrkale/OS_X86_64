@@ -9,6 +9,7 @@
 #include<sys/process.h>
 #include<sys/syscall.h>
 #include<sys/utils.h>
+#include<sys/mmu.h>
 
 
 
@@ -118,12 +119,22 @@ if(ticks%900 == 0)
     {
         curproc->tf=*tf;
         tf=&curproc->tf;
-        curproc->status =RUNNABLE;
+        if(curproc->status==RUNNING)
+            curproc->status =RUNNABLE;
         printf(" RIP:%p",tf->tf_rip);
         
     }
+    
+
     scheduler();
+    if(ticks == 9000)
+    {
+        printf("creating");
+        create_process(proc_binary2, USER_PROCESS);
+    }
+
 }
+
 }
 
 
@@ -194,7 +205,8 @@ void isr14_handler(struct faultStruct *faultFrame)
         {
             vma_struct *vma=curproc->mm->mmap;
             vma_struct *stack=NULL,*heap=NULL;
-            while(!(vma->vm_start<=vaddr && vma->vm_end>=vaddr))
+            int count=curproc->mm->count;
+            while(!(vma->vm_start<=vaddr && vma->vm_end>=vaddr)&& count--)
             {
                 if(vma->vm_type == STACK)
                     stack=vma;
@@ -203,7 +215,62 @@ void isr14_handler(struct faultStruct *faultFrame)
                 vma=vma->vm_next;
             }
             
-            if(vma == NULL)
+            if(vma)
+            {
+                
+                if((faultFrame->errorCode & 0x1))
+                {
+                 uint64_t* pdpe = (uint64_t*) (KADDR(curproc->pml4e[PML4(vaddr)]) & (~0xFFF));
+                    uint64_t* pde = (uint64_t*) (KADDR(pdpe[PDPE(vaddr)]) & (~0xFFF));
+                    uint64_t* pte = (uint64_t*) (KADDR(pde[PDX(vaddr)]) & (~0xFFF));
+
+                if(pte[PTX(vaddr)]&PTE_COW)//cow
+                {
+                    
+                    if(physicalAddressToPage((uint64_t*)(pte[PTX(vaddr)]&~0xfff))->ref_count<=1)
+                   {
+
+                        curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
+                        curproc->pml4e[PML4(vaddr)] |=PTE_W;
+                        pdpe[PDPE(vaddr)] &=~PTE_COW;
+                        pdpe[PDPE(vaddr)] |=PTE_W;
+                        pde[PDX(vaddr)] &=~PTE_COW;
+                        pde[PDX(vaddr)] |=PTE_W;
+                        pte[PTX(vaddr)] &=~PTE_COW;
+                        pte[PTX(vaddr)] |=PTE_W;
+                   
+                   } 
+                   else
+                   {
+                        curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
+                        curproc->pml4e[PML4(vaddr)] |=PTE_W;
+                        pdpe[PDPE(vaddr)] &=~PTE_COW;
+                        pdpe[PDPE(vaddr)] |=PTE_W;
+                        pde[PDX(vaddr)] &=~PTE_COW;
+                        pde[PDX(vaddr)] |=PTE_W;
+                        pte[PTX(vaddr)] &=~PTE_COW;
+                        pte[PTX(vaddr)] |=PTE_W;
+
+                      physicalAddressToPage((uint64_t*)(pte[PTX(vaddr)]&~0xfff))->ref_count--;
+                      uint64_t page= pte[PTX(vaddr)]&~0xfff;
+                      uint64_t newpage=allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE);
+
+                     lcr3(boot_cr3);
+                     my_memcpy((void*)KADDR(newpage),(void*)KADDR(page), PGSIZE);    
+                     lcr3(curproc->cr3);
+                   
+                   }
+                } //handle other permission violations else{} here
+                }
+                else //always LOAD type
+                {printf("OLD");
+                     allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
+                     uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
+                     my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
+ 
+                }
+            }
+            else 
             {
                  if(vaddr < stack->vm_start && vaddr > stack->vm_start-PGSIZE)    
                  {
@@ -214,20 +281,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                  }
                  heap++;
             }
-            else
-            {
-               allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
-//               allocate_proc_area(curproc, (void*)vma->vm_start,vma->vm_size); 
-/*               uint64_t size =PGSIZE;
-               if(ROUNDDOWN(vaddr,PGSIZE)+PGSIZE >= vma->vm_end)
-                   size=vma->vm_end-ROUNDDOWN(vaddr,PGSIZE);*/
-                                 uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
-               
-               my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
-//             my_memcpy((void*)vma->vm_start,(void*)(unsigned char*)vma->vm_file+vma->vm_offset,vma->vm_size);
-
-//             printf("Allocated page");        
-            }   
+              
         }
 }
 

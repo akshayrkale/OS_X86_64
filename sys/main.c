@@ -9,7 +9,7 @@
 #include <sys/process.h>
 #include <sys/tarfs.h>
 #include <sys/sbunix.h>
-
+    uint64_t* proc_binary2=0;
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -54,7 +54,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 printf("name=%s",((struct posix_header_ustar*)((unsigned char*)proc_binary+ROUNDUP(19796,512)))->name);
     uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(19796,512)+512);
     create_process(proc_binary1,USER_PROCESS);
-    uint64_t* proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(18353,512)+512);
+    proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(18353,512)+512);
     create_process(proc_binary2,USER_PROCESS);
 
     printf("done");

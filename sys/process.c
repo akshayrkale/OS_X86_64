@@ -7,7 +7,7 @@
 #include <sys/elf.h>
 #include <sys/paging.h>
 
-int deleteme=0;
+uint16_t proccount=0;
 void initialize_process()
 {
 unsigned char i;
@@ -27,13 +27,13 @@ ProcStruct* create_process(uint64_t* binary, enum ProcType type)
 ProcStruct *NewProc=NULL;
 
 if((NewProc=allocate_process(0)) != NULL)
-{    printf("Allcated");   
+{    //printf("Allcated");   
 // uint64_t i=499999999;
   //          while(i--);
 
      if(load_elf(NewProc,binary)==0)
      {
-        printf("Loaded");
+       // printf("Loaded");
         NewProc->type =type;
         return NewProc;
      }
@@ -50,7 +50,7 @@ ProcStruct* allocate_process(unsigned char parentid)
     //printf("New Proc Created");
     if(setupt_proc_vm(NewProc)==0)
         return NULL;
-    printf("Proc vm set");
+//    printf("Proc vm set");
     NewProc->proc_id = (unsigned char)(NewProc-procs)+1; 
     NewProc->parent_id = parentid;
     my_memset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
@@ -61,6 +61,7 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->tf.tf_cs = (uint16_t)(U_CS|RPL3);
     NewProc->tf.tf_eflags = 0x200;//9th bit=IF flag
     NewProc->status = RUNNABLE;
+    proccount++;
     PageStruct *pa=allocate_page();
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
     my_memset((void *)(NewProc->mm), 0, sizeof(mm_struct));
@@ -105,8 +106,6 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
 
     }
 return (uint64_t)newpage;
-
-
 }
 
 ProcStruct *getnewprocess()
@@ -184,6 +183,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_offset = ph->p_offset;  
 
 		 int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+         physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
 printf("stack page:%p-%d ",p,e->proc_id);
 		 e->tf.tf_rip    = elf->e_entry;
 		 e->tf.tf_rsp    = USERSTACKTOP;
@@ -244,7 +244,7 @@ int scheduler()
         start = start->next;
    
         
-    while(start->status!=RUNNABLE)
+    while(start->status!=RUNNABLE && proccount>0)
     {
         while(start->next!=NULL && start->next->status == FREE) //if proc_rinning_list->status==free it wont be added to free list immediately
         {
@@ -279,8 +279,7 @@ int proc_free(ProcStruct *proc)
         if(pml4e[ipml4e]&PTE_P)
         {
            uint64_t ipdpe,*pdpe=(uint64_t*)KADDR((pml4e[ipml4e]&~0xFFF));
-           if(deleteme)
-  //         printf("pdpe:%p",pdpe);
+            //         printf("pdpe:%p",pdpe);
             for(ipdpe=0; ipdpe<512; ipdpe++)
             {
                 if((uint64_t)pdpe[ipdpe]&PTE_P)
@@ -321,15 +320,14 @@ int proc_free(ProcStruct *proc)
 
             pml4e[ipml4e]=0;
         }
-        if(ipml4e==510)
-            deleteme=1;
-
+       
     }
     remove_page(proc->cr3);
     printf("Last removal");
 
    // my_memset((void*)proc,0,sizeof(ProcStruct));
     proc->status = FREE;
+    proccount--;
     return 0;
 }
 
