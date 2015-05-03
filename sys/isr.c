@@ -10,6 +10,7 @@
 #include<sys/syscall.h>
 #include<sys/utils.h>
 #include<sys/mmu.h>
+#include<sys/tarfs.h>
 
 
 
@@ -121,17 +122,11 @@ if(ticks%900 == 0)
         tf=&curproc->tf;
         if(curproc->status==RUNNING)
             curproc->status =RUNNABLE;
-        printf(" RIP:%p",tf->tf_rip);
+        printf("RIP",tf->tf_rip);
         
     }
-    
 
     scheduler();
-    if(ticks == 9000)
-    {
-        printf("creating");
-        create_process(proc_binary2, USER_PROCESS);
-    }
 
 }
 
@@ -256,7 +251,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                       uint64_t newpage=allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE);
 
                      lcr3(boot_cr3);
-                     my_memcpy((void*)KADDR(newpage),(void*)KADDR(page), PGSIZE);    
+                     kmemcpy((void*)KADDR(newpage),(void*)KADDR(page), PGSIZE);    
                      lcr3(curproc->cr3);
                    
                    }
@@ -266,7 +261,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                 {printf("OLD");
                      allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
                      uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
-                     my_memcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
+                     kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
  
                 }
             }
@@ -289,9 +284,10 @@ void isr14_handler(struct faultStruct *faultFrame)
 void isr128_handler(struct Trapframe* tf){
 
         int syscall_number = tf->tf_trapno;
-
+        int syscall_ret_value;
+printf("SYSCALNO%d ",syscall_number);
         switch(syscall_number){
-
+    
                 case SYS_write:
                         sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
                         break;
@@ -309,6 +305,103 @@ void isr128_handler(struct Trapframe* tf){
                         uint64_t id = sys_fork(tf);
   __asm__ __volatile__("movq %0, %%rax;":: "r"(id)); //?
                         break;
+                case SYS_getpid:
+
+                    printf("In sys getpid call in kernel\n");
+                    syscall_ret_value = sys_getpid();
+                    tf->tf_regs.reg_rax = syscall_ret_value;
+
+                    break;
+
+
+                case SYS_getdents:
+
+                    //printf("Calling sys_read_dir %d %d\n",SYS_getdents,syscall_number);
+                    //while(1);
+                    syscall_ret_value = sys_read_dir((void*)tf->tf_regs.reg_rdi,(char*)tf->tf_regs.reg_rsi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+                case SYS_open:
+
+                    //printf("Inside open syscall\n");
+                    //printf("%d\n",tf->tf_regs.reg_rsi );
+                    //printf("%d\n",(O_DIRECTORY|O_RDONLY) );
+                    if(tf->tf_regs.reg_rsi == (KO_DIRECTORY|KO_RDONLY)){
+
+                        //printf("Going to open a directory\n");
+                        syscall_ret_value  = sys_open_dir((char*)tf->tf_regs.reg_rdi);
+                        tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+
+                    }
+
+                    else if(tf->tf_regs.reg_rsi == KO_RDONLY){
+
+                        //printf("Normal file\n");
+                        syscall_ret_value  = sys_open_file((char*)tf->tf_regs.reg_rdi);
+                        tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+
+
+
+                    }
+
+                    break;
+
+                case SYS_read:
+
+                    //printf("In file read syscall\n");
+ 
+                    syscall_ret_value  = sys_read_file((int)tf->tf_regs.reg_rdi,(char*)tf->tf_regs.reg_rsi,(int)tf->tf_regs.reg_rdx);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+
+                    
+                case SYS_close:
+
+                    //printf("Value of argument %d\n",tf->tf_regs.reg_rdi);
+                    if(tf->tf_regs.reg_rdi >=0 && tf->tf_regs.reg_rdi <= 9){
+
+                        //This is file close
+                        //printf("This is a file close\n");
+                        syscall_ret_value  = sys_close_file((int)tf->tf_regs.reg_rdi);
+                    }
+                    else{
+
+                        //This is directory close
+                        //printf("This is directory close\n");
+                        syscall_ret_value  = sys_close_directory((void*)tf->tf_regs.reg_rdi);
+
+                    }
+                    
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+
+                case SYS_lseek:
+
+                    //printf("Inside LSEEK SYSCALL\n");
+                    syscall_ret_value  = sys_lseek_file((int)tf->tf_regs.reg_rdi,(uint64_t)tf->tf_regs.reg_rsi,(int)tf->tf_regs.reg_rdx);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+
+                case SYS_getcwd:
+
+                    //printf("Inside getcwd\n");
+                    syscall_ret_value  = sys_getcwd((char*)tf->tf_regs.reg_rdi,(uint64_t)tf->tf_regs.reg_rsi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+                case SYS_chdir:
+
+                    //printf("Inside change dir\n");
+                    syscall_ret_value  = sys_chdir((char*)tf->tf_regs.reg_rdi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+
+
                 default:
                         break;
 

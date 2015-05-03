@@ -4,6 +4,9 @@
 #include <sys/mmu.h>
 #include <sys/process.h>
 #include<sys/tarfs.h>
+#include<sys/utils.h>
+#include<sys/defs.h>
+
 struct PageStruct *pages;
 //boot_alloc function to create the initial space for pages array and page_free_list and PMLE4
 static char* nextfree;
@@ -47,7 +50,7 @@ void initialize_vm_64(void){
 	pml4e = boot_alloc(PGSIZE);
 	boot_pml4e = pml4e;
 	boot_cr3 = (physaddr_t*)PADDR(pml4e);
-	my_memset(boot_pml4e,0,PGSIZE);
+	kmemset(boot_pml4e,0,PGSIZE);
          initialize_page_lists();
     PageStruct *last =page_free_list;
     
@@ -170,30 +173,6 @@ tlb_invalidate(pml4e_t *pml4e, void *va)
        invlpg(va);
 }
 
-void my_memcpy(void* dst, void* src , uint64_t size)
-{
-    char* i=src;
-    char* j=dst;
-    for(;i<(char*)src+size; )
-    {
-        *j=*i;
-        i++;
-        j++;
-    }
-}
-
-
-
-void my_memset(void* start, int x, size_t size){
-
-if(size==0)
-	return;
-for(char* i=(char*)start;(char*)i<(char*)start+size; i++)
-	*i = x;
-
-return;
-}
-
 
 uint64_t* pageToPhysicalAddress(PageStruct* page){
 
@@ -229,7 +208,7 @@ PageStruct* allocate_page(){
 		page_free_list = page_free_list->next;
 
 		pageToReturn->next = NULL;
-		my_memset((uint64_t*)KADDR(pageToPhysicalAddress(pageToReturn)),0,PGSIZE);
+		kmemset((uint64_t*)KADDR(pageToPhysicalAddress(pageToReturn)),0,PGSIZE);
 	}
 	else{
 		printf("ERROR!!! No pages to allocate in the free list\n");

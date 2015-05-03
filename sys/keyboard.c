@@ -2,6 +2,7 @@
 #include<sys/port.h>
 #include <sys/defs.h>
 #include <sys/paging.h>
+#include <sys/utils.h>
 #define CAPSLOCK  0x3a
 #define LSHIFT    0x2a
 #define RSHIFT    0x36
@@ -15,6 +16,10 @@ char special=' ';
 unsigned char capslock = FALSE;
 unsigned char shift = FALSE;
 unsigned char ctrl = FALSE;
+char keyboard_buffer[100]; //To be used to hold the pressed keys till user presses ENTER
+volatile int enter_pressed = 0; //A flag that indicates whetehr user finished pressing keys
+int length_of_command = 0;
+
 
 void keyboard_read()
 {
@@ -131,12 +136,56 @@ while (inb(0x64) & 0x01) // While there is data available.
  {
    return;
  }
+//printf("Scan code: %d the Char %c\n",scancode,theChar );
+ keyboard_buffer[length_of_command++] = theChar;
+ if((int)scancode == 0x1c){
+  enter_pressed = 1;
+ 
+ }
  volatile char 	*video = (volatile char*) VIDEO_START + 2*(24*80 + 78);
  *video = special;
  *(video+1) = 0x1F; 
  *(video+2) = theChar; 
  *(video+3) = 0x1F;
 }
+}
+
+
+void print_keyboard_buff(){
+
+  int i;
+  for(i=0;i<length_of_command-1;i++){
+    printf("%c",keyboard_buffer[i] );
+  }
+  printf("\n");
+
+}
+
+
+uint64_t kscanf(char* buff){
+
+  //loop untill the keyboard buffer does not have a ENTER key
+  //if it has an enter key return the buffer contents
+
+
+  //printf("Inside Kernel scanf. Enter pressed %d\n",enter_pressed);
+  int ret;
+  while(!enter_pressed);
+  //printf("Enter pressed in kscanf %d\n",enter_pressed );
+  
+  //printf("The command entered is: \n");
+  //print_keyboard_buff();
+  keyboard_buffer[length_of_command-1]='\0';
+  kmemcpy(buff,keyboard_buffer,length_of_command);
+  enter_pressed = 0;
+  ret  = length_of_command;
+  
+  //printf("Length: %d %s\n",length_of_command, buff );
+  length_of_command = 0;
+  //reset_keyboard_buffer();
+ 
+  return ret;
+
 }
 
 

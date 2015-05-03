@@ -6,6 +6,8 @@
 #include <sys/sbunix.h>
 #include <sys/elf.h>
 #include <sys/paging.h>
+#include <sys/utils.h>
+#include <sys/kstring.h>
 
 uint16_t proccount=0;
 void initialize_process()
@@ -53,7 +55,7 @@ ProcStruct* allocate_process(unsigned char parentid)
 //    printf("Proc vm set");
     NewProc->proc_id = (unsigned char)(NewProc-procs)+1; 
     NewProc->parent_id = parentid;
-    my_memset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
+    kmemset((void*)&NewProc->tf, 0, sizeof(NewProc->tf));
     NewProc->tf.tf_ds =(uint16_t)(U_DS|RPL3); 
     NewProc->tf.tf_es =(uint16_t)(U_DS|RPL3);
     NewProc->tf.tf_ss = (uint16_t)(U_DS|RPL3);
@@ -64,7 +66,20 @@ ProcStruct* allocate_process(unsigned char parentid)
     proccount++;
     PageStruct *pa=allocate_page();
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
-    my_memset((void *)(NewProc->mm), 0, sizeof(mm_struct));
+    kmemset((void *)(NewProc->mm), 0, sizeof(mm_struct));
+
+    kstrcpy(NewProc->cwd,"/"); //set the cwd of a new process to root dir.
+    NewProc->fd_table[0] = 0;
+    NewProc->fd_table[1] = 1;
+    NewProc->fd_table[2] = 2;
+    NewProc->fd_table[3] = -1;
+    NewProc->fd_table[4] = -1;
+    NewProc->fd_table[5] = -1;
+    NewProc->fd_table[6] = -1;
+    NewProc->fd_table[7] = -1;
+    NewProc->fd_table[8] = -1; 
+    NewProc->fd_table[9] = -1;
+
 
     return NewProc;
 }
@@ -149,7 +164,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
 		for(;ph < eph; ph++) {
 			if (ph->p_type == ELF_PROG_LOAD) {
 		    	//allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
-    	//my_memcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
+    	//kmemcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
         vma_struct* vma;
         vma = allocate_vma(e->mm);
         vma->vm_start = ph->p_va;
@@ -163,7 +178,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
         vma->vm_offset = ph->p_offset;
 
     	if (ph->p_filesz < ph->p_memsz) {
-		vma->vm_filesz=ph->p_filesz;	//my_memset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
+		vma->vm_filesz=ph->p_filesz;	//kmemset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
 		}
 		}
 		}
@@ -199,13 +214,14 @@ printf("stack page:%p-%d ",p,e->proc_id);
 struct vma_struct* allocate_vma(mm_struct* mem)
 {
     vma_struct* vma;
-    printf("vma allocated");  
+//    printf("vma allocated");  
     if(mem->mmap == 0)
     {
 
       mem->mmap=(vma_struct*)(mem+1); //(vma_struct*)KADDR(pageToPhysicalAddress(pa));
       mem->count++;
-      printf("T2");     return mem->mmap;
+      //printf("T2");    
+      return mem->mmap;
     }
     else
     {
@@ -325,7 +341,7 @@ int proc_free(ProcStruct *proc)
     remove_page(proc->cr3);
     printf("Last removal");
 
-   // my_memset((void*)proc,0,sizeof(ProcStruct));
+   // kmemset((void*)proc,0,sizeof(ProcStruct));
     proc->status = FREE;
     proccount--;
     return 0;
@@ -377,9 +393,9 @@ int fork_process(struct Trapframe* tf)
         copyvmas(NewProc);
       //lcr3(NewProc->cr3);
   //      allocate_proc_area(NewProc, (void*)(USERSTACKTOP), PGSIZE);
-//        my_memcpy((void*)(USERSTACKTOP),(void*)USERSTACKTOP-PGSIZE,PGSIZE); //?
+//        kmemcpy((void*)(USERSTACKTOP),(void*)USERSTACKTOP-PGSIZE,PGSIZE); //?
      //   lcr3(curproc->cr3);       //?
-        //my_memcpy((void*)NewProc->kstack,(void*) curproc->kstack, PGSIZE);
+        //kmemcpy((void*)NewProc->kstack,(void*) curproc->kstack, PGSIZE);
         //for(int i=511;i>0;i--)
     //        NewProc->kstack[i]=curproc->kstack[i];
    //     NewProc->tf.tf_rsp = USERSTACKTOP+PGSIZE;
@@ -488,7 +504,7 @@ int copyvmas(ProcStruct *proc)
     while(vma)    
     {
         newvma=allocate_vma(proc->mm);
-        my_memcpy((void*)newvma,(void*)vma,sizeof(vma_struct));
+        kmemcpy((void*)newvma,(void*)vma,sizeof(vma_struct));
         newvma->vm_next=NULL;
         vma=vma->vm_next;
     }

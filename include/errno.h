@@ -1,8 +1,7 @@
 #ifndef _ERRNO_H
 #define _ERRNO_H
 
-#include <sys/defs.h>
-
+#include<sys/defs.h>
 
 #define EPERM        1  /* Operation not permitted */
 #define ENOENT       2  /* No such file or directory */
@@ -41,7 +40,7 @@
 #define EDEADLK     35  /* Deadlock would occur */
 #define ENAMETOOLONG	36 /* he path is too long to search */
 
-int64_t stderr(int);
+uint64_t stderr(int);
 
 #endif
 

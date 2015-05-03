@@ -1,7 +1,7 @@
 #include <sys/idt.h>
 #define NPROCS 250
 extern uint16_t proccount;
-extern uint64_t* proc_binary2;
+
 enum ProcStatus{
 FREE,
 RUNNABLE,
@@ -55,6 +55,9 @@ physaddr_t* cr3;
 uint64_t *elf;
 struct mm_struct *mm;
 uint64_t kstack[512];
+int fd_table[10];  //per process file descriptor array
+char cwd[50]; //store the current working directory of a process
+
 }ProcStruct;
 
 

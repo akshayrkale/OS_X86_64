@@ -32,6 +32,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     //printf("physfree=%p \n",physfree);
   uint64_t i=0;
 	initialize_vm_64();
+    tarfs_init();
   initialize_process();
     ProcStruct *tp=proc_free_list;
     while(tp->next!=NULL) 
@@ -52,10 +53,10 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
           while(i--);  
     create_process(proc_binary,USER_PROCESS);
 printf("name=%s",((struct posix_header_ustar*)((unsigned char*)proc_binary+ROUNDUP(19796,512)))->name);
-    uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(19796,512)+512);
-    create_process(proc_binary1,USER_PROCESS);
-    proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(18353,512)+512);
-    create_process(proc_binary2,USER_PROCESS);
+//    uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(19796,512)+512);
+//    create_process(proc_binary1,USER_PROCESS);
+ //   proc_binary2=(uint64_t*)((unsigned char*)proc_binary1+ROUNDUP(18353,512)+512);
+//    create_process(proc_binary2,USER_PROCESS);
 
     printf("done");
 ltr((uint16_t)(0x28));

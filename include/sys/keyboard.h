@@ -3,5 +3,5 @@
 
 void keyboard_read();
 void keyboard_init();
-
+uint64_t kscanf(char*);
 #endif

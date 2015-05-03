@@ -2,7 +2,7 @@
 #include <sys/defs.h>
 #include <stdio.h>
 
-int64_t stderr(int err)
+uint64_t stderr(int err)
 {
 
 	switch(err)

@@ -28,6 +28,18 @@
 void sys_write(uint64_t fd,uint64_t buff,uint64_t len);
 void sys_exit(uint64_t error_code);
 int sys_fork();
+int sys_getpid();
+uint64_t sys_read_dir(void* dir,char* userBuff);
+uint64_t sys_open_dir(const char* dir);
+int sys_close_directory(void* dir);
+uint64_t sys_open_file(const char* name);
+uint64_t sys_open_file(const char* name);
+uint64_t sys_read_file(int fd, char* buf , int numBytes);
+uint64_t sys_close_file(int fd);
+uint64_t sys_lseek_file(int fd,uint64_t offset, int whence);
+uint64_t sys_read_terminal(char* buf);
+uint64_t sys_getcwd(char*buff,uint64_t);
+int sys_chdir(char* path);
 
 
 #endif

@@ -49,15 +49,15 @@ void initialize_vm_64(void){
 	pml4e = boot_alloc(PGSIZE);
 	boot_pml4e = pml4e;
 	boot_cr3 = PADDR(pml4e);
-	my_memset(boot_pml4e,0,PGSIZE);
+	kmemset(boot_pml4e,0,PGSIZE);
     
 	//Allocate space for the PDP,PD,PTE
 	boot_pdpe = boot_alloc(PGSIZE); //boot_pdp is the VA not PA
-	my_memset(boot_pdpe,0,PGSIZE);
+	kmemset(boot_pdpe,0,PGSIZE);
 	boot_pde = boot_alloc(PGSIZE);	 //boot_pd is the VA not PA
-	my_memset(boot_pde,0,PGSIZE);
+	kmemset(boot_pde,0,PGSIZE);
 	boot_pte = boot_alloc(PGSIZE);
-	my_memset(boot_pte,0,PGSIZE);
+	kmemset(boot_pte,0,PGSIZE);
     initialize_page_lists();
     printf("nextfree=%p\n", boot_alloc(0));
 // map_vm_pm(boot_pml4e, PHYSBASE,PADDR(PHYSBASE),PGSIZE,PTE_P|PTE_W);
@@ -129,7 +129,7 @@ void initialize_page_lists(){
 }
 
 
-void my_memset(uint64_t* start, int x, size_t size){
+void kmemset(uint64_t* start, int x, size_t size){
 
 if(size==0)
 	return;

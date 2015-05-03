@@ -35,3 +35,21 @@
     "movq 112(%rsp),%rax;" \
     "addq $120,%rsp;" \
 
+#define ROUNDDOWN(a, n)                     \
+({                              \
+    uint64_t __a = (uint64_t) (a);              \
+     (__a - __a % (n));             \
+})
+
+#define ROUNDUP(a, n)                       \
+({                              \
+    uint64_t __n = (uint64_t) (n);              \
+     (ROUNDDOWN((uint64_t) (a) + __n - 1, __n));    \
+})
+
+
+long stoi(const char *s);
+uint64_t octalToDecimal(uint64_t octal);
+uint64_t power (uint64_t x, int e);
+void kmemset(void* start, int x, size_t size);
+void kmemcpy(void* dst, void* src , uint64_t size);
