@@ -1,124 +1,13 @@
-#include<stdio.h>
-#include<sys/syscall.h>
-#include<syscall.h>
-#include<stdlib.h>
-#include<errno.h>
-#include<stdlib.h>
-#include<string.h>
-/*
-static int dir_traverse = 0;
-static int nread = -1;
+#include <stdio.h>
+#include <sys/syscall.h>
+#include <syscall.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
-   struct dirent *readdir(void *dir) {
 
-	//nread = -1;
-	int fd;
-	fd = *((int*) dir); //get the fd for the dir pointer
-	static char buf[1024];
-	struct dirent *d;
-
-	if (dir_traverse >= nread) {
-
-		dir_traverse = 0;
-		nread = -1;
-		nread = syscall_3(SYS_getdents, fd, (uint64_t) buf, 1024);
-
-	}
-
-	if (nread == -1) {
-		//printf("Error in getdents\n");
-	}
-	if (nread == 0) {
-
-		// end of records
-		//printf("Directory exhausted\n");
-		//errno = EBADF;
-		return (struct dirent *) NULL;
-	}
-
-	//printf("Processing record %d\n",i);
-	d = (struct dirent *) (buf + dir_traverse);
-	//printf("File =%s   Value of i = %d\n", d->d_name, dir_traverse);
-	dir_traverse += d->d_reclen;
-	return (struct dirent *) d;
-}
-
-void *opendir(const char *name)
-{
-
-	int* fd = malloc(sizeof(int));
-
-	*fd = syscall_2(SYS_open, (uint64_t) name, O_DIRECTORY | O_RDONLY);
-	dir_traverse = 0;
-	nread = -1;
-	if (*fd < 0) {
-		//printf("Error opening dir \n");
-		errno = -*fd;
-		return (void*) NULL;
-	} else {
-		//printf("Succeded in opendir. Fd = %p...Opened %s\n",fd,name);
-		return (void*) fd;
-
-	}
-
-}*/
-void *opendir(const char *name)
-{
-
-	//printf("In opendir errno : %d\n",errno );
-
-	uint64_t fd;
-
-	char fullName[100];
-	char temp[100];
 	
-	fullName[0]='/';
-	fullName[1]='\0';
-
-	strcpy(temp,name);
-	int pathLen = strlen(temp);
-
-	if(temp[pathLen-1] != '/'){
-		strcat(temp,"/");
-	} //Ensures that the name has a trailing slash
-
-	if(temp[0] != '/'){
-		strcat(fullName,temp);
-	}
-	else{
-		strcpy(fullName,temp);
-	}
-
-
-
-	//printf("Sending %s to opendir\n", fullName );
-
-	fd = (uint64_t)syscall_2(SYS_open, (uint64_t) fullName, O_DIRECTORY | O_RDONLY);
-
-	//printf("Leaving opendir errno : %d\n",errno );
-
-
-	if(fd == -1){
-		return (void*)NULL;
-	}
-
-
-
-	//dir_traverse = 0;
-	//nread = -1;
-	// if (*fd < 0) {
-	// 	//printf("Error opening dir \n");
-	// 	errno = -*fd;
-	// 	return (void*) NULL;
-	// } else {
-	// 	//printf("Succeded in opendir. Fd = %p...Opened %s\n",fd,name);
-	// 	return (void*) fd;
-
-	// }
-
-	return (void*) fd;
-
-}
 uint64_t test(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3){
 
 
@@ -145,6 +34,26 @@ struct dirent* readdir(void *dir){
 
 	char buff[1024];
 
+	//printf("in readdir Value of dir %d\n", (uint64_t)dir );
+
+	// if(dir){
+	// 	printf("dir is null\n");
+	// 	return NULL;
+	// }
+
+	// if( *(int*)dir <= 0 || *(int*)dir >=10){
+
+	// 	printf("Bad directory stream\n");
+	// 	return NULL;
+	// }
+
+	if((uint64_t)dir == -1){
+
+		printf("Bad directory stream\n");
+		return NULL;
+	}
+
+
 	int ret = test(78,(uint64_t)dir,(uint64_t)buff,(uint64_t)1024);
 
 	//printf("Ret value %d\n", ret );
@@ -167,6 +76,7 @@ struct dirent* readdir(void *dir){
 	else if(ret !=0){
 
 		//There is a valid child
+		//printf("Ret of readdir is not 0\n");
 		struct dirent* x = (struct dirent*)buff;
 		//printf("Name of entry dir%s\n",x->d_name );
 		return x;

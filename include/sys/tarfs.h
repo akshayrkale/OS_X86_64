@@ -44,10 +44,10 @@ struct K_dirent
 	char d_name [K_NAME_MAX+1];
 };
 
-
+extern int numOfEntries;
 void tarfs_init();
 uint64_t kopendir(const char *name);
-uint64_t kreaddir(void *dir,char* userBuff); //directory read
+int kreaddir(void *dir,char* userBuff); //directory read
 int kclosedir(void* dir);
 int kopen(const char*); //open a file
 int kread(int fd,char* buf, int numBytesRead);
@@ -56,14 +56,17 @@ int kclose(int fd);
 uint64_t klseek(int,uint64_t,int);
 void kgetcwd(char*buff);
 int kchdir(char* path);
-void convert_to_absolute_path(const char* path,char* absPath);
+void convert_to_absolute_path_file(const char* path,char* absPath);
+void convert_to_absolute_path_dir(const char* path,char* absPath);
+
 
 	/* Device specific functions */
 
-int read_file(char *buf,int file_table_index, int numBytesToRead);
-int write_file(char *buf,int numBytesToWrite);
-int terminal_read(char *buf,int file_table_index, int numBytesToRead);
-int terminal_write(char *buf,int numBytesToWrite);
+int read_file(int file_table_index,char *buf, int numBytesToRead);
+int write_file(int file_table_index,char *buf,int numBytesToWrite);
+int close_file(int file_table_index);
+int terminal_read(int file_table_index,char *buf,int numBytesToRead);
+int terminal_write(int file_table_index,char *buf,int numBytesToWrite);
 
 #define DIRECTORY 5
 #define FILE_TYPE 0

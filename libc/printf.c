@@ -39,6 +39,42 @@ void print_num(int num, int base)
 	}
 }
 
+
+
+void print_ptr(long unsigned int num, long unsigned int base)
+{
+	long unsigned int number[32];
+	int i=0;
+
+		screen[screen_ctr++] = '0';
+		screen[screen_ctr++] = 'x';
+	
+	do
+	{
+		long unsigned int rem=num%base;
+		if((rem) >= 10)
+		{
+			rem = rem-10 + 'a';
+		}
+		else{
+			rem = rem + '0';
+		}
+		number[i]= rem;
+		i++;
+	}while((num=num/base) !=0);
+
+
+	while(i-- != 0)
+	{
+
+		screen[screen_ctr++] = number[i];
+    }
+}
+
+
+
+
+
 int printf(const char *format, ...) {
 	va_list val;
 	int printed = 0;
@@ -92,6 +128,15 @@ int printf(const char *format, ...) {
 
 				format++;
 				continue;
+
+			case 'p':
+				printed=printed;
+				long unsigned int ptr =(unsigned long int) va_arg(val, long int );
+				print_ptr(ptr,16);
+
+				format++;
+				continue;
+
 
 			case '%':
 				printed=printed;

@@ -142,11 +142,15 @@ while (inb(0x64) & 0x01) // While there is data available.
   enter_pressed = 1;
  
  }
+
+ //printf("%c pressed\n",theChar);
+ 
  volatile char 	*video = (volatile char*) VIDEO_START + 2*(24*80 + 78);
  *video = special;
  *(video+1) = 0x1F; 
  *(video+2) = theChar; 
  *(video+3) = 0x1F;
+ 
 }
 }
 

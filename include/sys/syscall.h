@@ -25,7 +25,7 @@
 
 #include<sys/defs.h>
 
-void sys_write(uint64_t fd,uint64_t buff,uint64_t len);
+uint64_t sys_write(uint64_t fd,uint64_t buff,uint64_t len);
 void sys_exit(uint64_t error_code);
 int sys_fork();
 int sys_getpid();
@@ -40,6 +40,7 @@ uint64_t sys_lseek_file(int fd,uint64_t offset, int whence);
 uint64_t sys_read_terminal(char* buf);
 uint64_t sys_getcwd(char*buff,uint64_t);
 int sys_chdir(char* path);
+int sys_pipe(int* pipeFD);
 
 
 #endif

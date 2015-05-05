@@ -285,11 +285,12 @@ void isr128_handler(struct Trapframe* tf){
 
         int syscall_number = tf->tf_trapno;
         int syscall_ret_value;
-printf("SYSCALNO%d ",syscall_number);
+        //printf("SYSCALNO %d ",syscall_number);
         switch(syscall_number){
     
                 case SYS_write:
-                        sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
+                        syscall_ret_value = sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
+                        tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                         break;
 
 
@@ -301,7 +302,7 @@ printf("SYSCALNO%d ",syscall_number);
                 case SYS_fork:
                         curproc->tf=*tf;
 //                        tf=&curproc->tf;
-                        curproc->status =RUNNABLE;
+                        //curproc->status =RUNNABLE;
                         uint64_t id = sys_fork(tf);
   __asm__ __volatile__("movq %0, %%rax;":: "r"(id)); //?
                         break;
@@ -329,7 +330,7 @@ printf("SYSCALNO%d ",syscall_number);
                     //printf("%d\n",(O_DIRECTORY|O_RDONLY) );
                     if(tf->tf_regs.reg_rsi == (KO_DIRECTORY|KO_RDONLY)){
 
-                        //printf("Going to open a directory\n");
+        //                printf("Going to open a directory\n");
                         syscall_ret_value  = sys_open_dir((char*)tf->tf_regs.reg_rdi);
                         tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
 
@@ -337,7 +338,7 @@ printf("SYSCALNO%d ",syscall_number);
 
                     else if(tf->tf_regs.reg_rsi == KO_RDONLY){
 
-                        //printf("Normal file\n");
+          //              printf("Going to open Normal file\n");
                         syscall_ret_value  = sys_open_file((char*)tf->tf_regs.reg_rdi);
                         tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
 
@@ -359,22 +360,11 @@ printf("SYSCALNO%d ",syscall_number);
                     
                 case SYS_close:
 
-                    //printf("Value of argument %d\n",tf->tf_regs.reg_rdi);
-                    if(tf->tf_regs.reg_rdi >=0 && tf->tf_regs.reg_rdi <= 9){
-
-                        //This is file close
-                        //printf("This is a file close\n");
-                        syscall_ret_value  = sys_close_file((int)tf->tf_regs.reg_rdi);
-                    }
-                    else{
-
-                        //This is directory close
-                        //printf("This is directory close\n");
-                        syscall_ret_value  = sys_close_directory((void*)tf->tf_regs.reg_rdi);
-
-                    }
-                    
+                    //This is directory close
+                    //printf("This is directory close\n");
+                    syscall_ret_value  = sys_close_file(tf->tf_regs.reg_rdi);
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+
                     break;
 
 
@@ -397,6 +387,13 @@ printf("SYSCALNO%d ",syscall_number);
 
                     //printf("Inside change dir\n");
                     syscall_ret_value  = sys_chdir((char*)tf->tf_regs.reg_rdi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+                case SYS_pipe:
+
+                    //printf("Inside pipe sycall: isr.c\n");
+                    syscall_ret_value  = sys_pipe((int*)tf->tf_regs.reg_rdi);
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
 

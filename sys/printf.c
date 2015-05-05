@@ -196,6 +196,9 @@ void printf(const char *format, ...) {
 void kprintf(char* buff,int len){
 
 	//printf("Before copying buffer");
+
+	//printf("befre write text :%s\n",buff );
+
 	int i;
 	for(i=0;i<len;i++){
 

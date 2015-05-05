@@ -1,4 +1,22 @@
 
+
+#define TYPE_FILE 0
+#define TYPE_DIRECTORY 1
+#define TYPE_PIPE 2
+
+
+typedef struct{
+
+	int readers;
+	int writers;
+	uint64_t address; //Only valid for pipe buffers and directories
+	int duplicateFD;
+	uint64_t read_cursor;
+	uint64_t write_cursor;
+
+}Pipe;
+
+
 typedef struct{
 
 	/*
@@ -10,9 +28,12 @@ typedef struct{
 	int ref_count; //number of processes which have this file open
 	int size;
 	int present; //indicates if this entry is valid or not 0->free 1->present
-	int (*read)(); //pointer to the read call
-	int (*write)(); //pointer to the write call
-	uint64_t address; //Only valid for pipe buffers
+	int (*read)(); //pointer to the device specific read call
+	int (*write)(); //pointer to the device specific write call
+	int (*close)(); //pointer to the device specific close call
+	//uint64_t address; //Only valid for pipe buffers and directories
+	uint64_t type;
+	Pipe pipe; //
 
 } fileTable_entry;
 

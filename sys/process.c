@@ -8,6 +8,8 @@
 #include <sys/paging.h>
 #include <sys/utils.h>
 #include <sys/kstring.h>
+#include <sys/tarfs.h>
+#include <sys/file_table.h>
 
 uint16_t proccount=0;
 void initialize_process()
@@ -68,19 +70,54 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
     kmemset((void *)(NewProc->mm), 0, sizeof(mm_struct));
 
+    //printf("Before copying the fd table to child\n");
+
+    //while(1);
+
     kstrcpy(NewProc->cwd,"/"); //set the cwd of a new process to root dir.
-    NewProc->fd_table[0] = 0;
-    NewProc->fd_table[1] = 1;
-    NewProc->fd_table[2] = 2;
-    NewProc->fd_table[3] = -1;
-    NewProc->fd_table[4] = -1;
-    NewProc->fd_table[5] = -1;
-    NewProc->fd_table[6] = -1;
-    NewProc->fd_table[7] = -1;
-    NewProc->fd_table[8] = -1; 
-    NewProc->fd_table[9] = -1;
+    if(parentid==0)
+    {
 
+      //printf("IN if\n");
+      NewProc->fd_table[0] = 0;
+      NewProc->fd_table[1] = 1;
+      NewProc->fd_table[2] = 2;
+      NewProc->fd_table[3] = -1;
+      NewProc->fd_table[4] = -1;
+      NewProc->fd_table[5] = -1;
+      NewProc->fd_table[6] = -1;
+      NewProc->fd_table[7] = -1;
+      NewProc->fd_table[8] = -1; 
+      NewProc->fd_table[9] = -1;
+    }
 
+    else{
+
+      //printf("In else\n");
+      NewProc->fd_table[0] = curproc->fd_table[0];
+      NewProc->fd_table[1] = curproc->fd_table[1];
+      NewProc->fd_table[2] = curproc->fd_table[2];
+
+      //while(1);
+
+      for(int i=3;i<10;i++)
+      {    
+      
+    //    printf("Inside while loop\n");
+
+        //while(1);
+
+        NewProc->fd_table[i] = curproc->fd_table[i];
+          
+          if(NewProc->fd_table[i]!=-1)
+          {
+              file_table[NewProc->fd_table[i]].ref_count++;
+          }
+      }
+    }
+
+    //while(1);
+    //printf("After copying the fd table to child\n");
     return NewProc;
 }
 
@@ -147,28 +184,31 @@ proc_run(struct ProcStruct *proc)
         lcr3(proc->cr3);
         tss.rsp0 =(uint64_t) &proc->kstack[511];
         curproc = proc;
-    	env_pop_tf(&(proc->tf));
+        env_pop_tf(&(proc->tf));
 }
 
 
 int load_elf(ProcStruct *e,uint64_t* binary)
 {
-	struct Elf *elf = (struct Elf *)binary;
-	struct Proghdr *ph, *eph;
+    struct Elf *elf = (struct Elf *)binary;
+    struct Proghdr *ph, *eph;
+    uint64_t max_addr=0;
     
     if (elf && elf->e_magic == ELF_MAGIC) {
         printf("this is elf");
- 		lcr3(e->cr3);       
-		ph  = (struct Proghdr *)((unsigned char *)elf + elf->e_phoff);
-		eph = ph + elf->e_phnum;
-		for(;ph < eph; ph++) {
-			if (ph->p_type == ELF_PROG_LOAD) {
-		    	//allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
-    	//kmemcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
+        lcr3(e->cr3);       
+        ph  = (struct Proghdr *)((unsigned char *)elf + elf->e_phoff);
+        eph = ph + elf->e_phnum;
+        for(;ph < eph; ph++) {
+            if (ph->p_type == ELF_PROG_LOAD) {
+                //allocate_proc_area(e, (void *)ph->p_va, ph->p_memsz);
+        //kmemcpy((void *)ph->p_va, (void *)((unsigned char *)elf + ph->p_offset), ph->p_filesz);
         vma_struct* vma;
         vma = allocate_vma(e->mm);
         vma->vm_start = ph->p_va;
         vma->vm_end = vma->vm_start + ph->p_memsz;
+        if(vma->vm_end>max_addr)
+            max_addr=vma->vm_end;
         vma->vm_mm=e->mm;
         vma->vm_size = ph->p_memsz;
         vma->vm_next = NULL;
@@ -177,11 +217,11 @@ int load_elf(ProcStruct *e,uint64_t* binary)
         vma->vm_flags = ph->p_flags;
         vma->vm_offset = ph->p_offset;
 
-    	if (ph->p_filesz < ph->p_memsz) {
-		vma->vm_filesz=ph->p_filesz;	//kmemset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
-		}
-		}
-		}
+        if (ph->p_filesz < ph->p_memsz) {
+        vma->vm_filesz=ph->p_filesz;    //kmemset((void *)(ph->p_va + ph->p_filesz), 0, ph->p_memsz-ph->p_filesz);
+        }
+        }
+        }
         vma_struct* vma;
         vma = allocate_vma(e->mm);
 /*      uint64_t* pdpe = (uint64_t*)KADDR(e->pml4e[0]);
@@ -196,17 +236,29 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_next = NULL;
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
-
-		 int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+       
+         int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
          physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
 printf("stack page:%p-%d ",p,e->proc_id);
-		 e->tf.tf_rip    = elf->e_entry;
-		 e->tf.tf_rsp    = USERSTACKTOP;
-	     lcr3(boot_cr3);
-	} else {
-		return -1;
-	}
-	// Give environment a stack
+         e->tf.tf_rip    = elf->e_entry;
+         e->tf.tf_rsp    = USERSTACKTOP;
+       
+         //Alocate heam vma
+         vma = allocate_vma(e->mm);
+         vma->vm_mm=e->mm;
+         max_addr=((((max_addr - 1) >> 12) + 1) << 12);
+         vma->vm_start = max_addr;
+         vma->vm_end = max_addr;
+         vma->vm_size = PGSIZE;
+         vma->vm_type=HEAP; 
+         vma->vm_next = NULL;
+         vma->vm_flags = PTE_U|PTE_W;
+         vma->vm_offset = ph->p_offset;  
+         lcr3(boot_cr3);
+    } else {
+        return -1;
+    }
+    // Give environment a stack
     e->elf = binary;
     return 0;
 }
@@ -232,20 +284,19 @@ struct vma_struct* allocate_vma(mm_struct* mem)
         vma->vm_next=(vma_struct*)((char*)vma+sizeof(vma_struct));
         return (vma_struct*)(vma->vm_next);
     }
-
 }
 
 void env_pop_tf(struct Trapframe *tf1)
 {
-	__asm__ volatile("movq %0,%%rsp\n"
+    __asm__ volatile("movq %0,%%rsp\n"
             "movw %%rsp,%%rsp\n"
-			 POPA
-			 "movw (%%rsp),%%es\n"
-			 "movw 8(%%rsp),%%ds\n"
-			 "addq $16,%%rsp\n"
-			 "\taddq $16,%%rsp\n" /* skip tf_trapno and tf_errcode */
-			 "\tiretq"
-			 : : "g" (tf1) : "memory");
+             POPA
+             "movw (%%rsp),%%es\n"
+             "movw 8(%%rsp),%%ds\n"
+             "addq $16,%%rsp\n"
+             "\taddq $16,%%rsp\n" /* skip tf_trapno and tf_errcode */
+             "\tiretq"
+             : : "g" (tf1) : "memory");
 }
 
 int scheduler()
@@ -338,48 +389,68 @@ int proc_free(ProcStruct *proc)
         }
        
     }
-    remove_page(proc->cr3);
-    printf("Last removal");
 
-   // kmemset((void*)proc,0,sizeof(ProcStruct));
-    proc->status = FREE;
-    proccount--;
-    return 0;
+    proc->mm->mmap=0;
+        return 0;
 }
 
-uint64_t execvpe(char *arg1,char *arg2[], char* arg3[])
-{
 /*
-        char *tmp_pathname = arg1;
-        char **tmp_argument = (char **)arg2;
-        char **tmp_env = (char **)arg3;
-        int i=0;
-        int j=0;
-        char pathname[1024];
-        //strcpy(pathname,tmp_pathname);
-         
-        char **temp1=tmp_argument;
-        while(i<3){
-                    printf("arg%d is %s\n",i,temp1[i]);
-                            i++;
-        } 
-     
-        char **temp2=tmp_env;
-        while(j<3){
-                    printf("env%d is %s\n",j,temp2[j]);
-                            j++;
-         }
-        //print("done");
+uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
+{
+    
+     uint64_t* elf;
+     for(int i=0; i<numOfEntries; i++)
+     {
+        if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
+        {
+            printf("found:%s ",tarfs_fs[i].name);
+            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
+            break;
+        }
+     }
+          
+     proc_free(curproc);
+     load_elf(curproc,elf);
+     printf("REPLACED");
+     vma_struct* vma=curproc->mm->mmap;
 
-        struct ProcStruct *proc=create_process(pathname,USER_PROCESS);
-        //print("done");
-       
-       
-        proc->proc_id =  curproc->proc_id;
-        proc->parent_id = curproc->parent_id;
-        exit_process(0);*/
-        return 0;
-}     
+     for(int i=0;i<curproc->mm->count;i++)
+         if(vma->vm_type==STACK)
+             break;
+     
+
+     int argc=copy_args_to_stack(vma->vm_end,arg1,arg2);
+     printf("REPLACED");
+   
+     return argc;
+}   
+
+int copy_args_to_stack(uint64_t stacktop,const char* arg1,const char** arg2)
+{
+
+     char* argv[10];
+     int len=kstrlen(arg1);
+
+     kstrcpy((char*)(stacktop=stacktop-len-1),arg1);
+     argv[0]=(char*)stacktop;
+     int argc=1;
+     
+     while(arg2[argc-1]!=NULL)
+     {
+        len = kstrlen(arg2[argc-1]);
+        kstrcpy((char*)(stacktop=stacktop-len-1),arg2[argc-1]);
+        argv[argc]=(char*)stacktop;
+        argc++;
+     }
+     for(int i=argc-1;i>=0;i--)
+     {
+         stacktop=stacktop-8;
+        *((uint64_t*)stacktop)=(uint64_t)argv[i];
+     }
+     curproc->tf.tf_rsp=stacktop;
+     return argc;
+}
+*/
 int fork_process(struct Trapframe* tf)
 {
     ProcStruct* NewProc=NULL;
@@ -510,6 +581,5 @@ int copyvmas(ProcStruct *proc)
     }
     return 0;
 }
-
 
 

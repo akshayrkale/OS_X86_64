@@ -4,13 +4,15 @@
 #include <sys/process.h>
 #include <sys/tarfs.h>
 #include <sys/keyboard.h>
+#include <sys/paging.h>
+#include <sys/pipe.h>
 
 void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
 
 	//printf(" In kernel printf.. in buffer %s",buff);
 	
 	//while(1);
-	kprintf((char*)buff,(int)len);
+	kwrite(fd,(char*)buff,(int)len);
 
 
 }
@@ -19,11 +21,15 @@ void sys_exit(uint64_t error_code){
     if(curproc)
     {
         proc_free(curproc);
-        //uint64_t i = 499999999;
-        //while(i--);
+    remove_page(curproc->cr3);
+    remove_page((uint64_t*)PADDR((uint64_t)curproc->mm));
 
-//        while(1);
-        scheduler();
+    printf("Last removal");
+    
+   // kmemset((void*)proc,0,sizeof(ProcStruct));
+    curproc->status = FREE;
+    proccount--;
+    scheduler();
     }
 }
 
@@ -61,7 +67,9 @@ uint64_t sys_read_dir(void* dir,char* userBuff){
 
 int sys_close_directory(void* dir){
 
-	return kclosedir(dir);
+	//return kclosedir(dir);
+
+	return 0;
 }
 
 // ##################################################
@@ -83,7 +91,7 @@ uint64_t sys_read_file(int fd, char* buf , int numBytes){
 
 uint64_t sys_close_file(int fd){
 
-    printf("Closing File");
+    //printf("Closing File");
 	return kclose(fd);
 
 }
@@ -119,3 +127,8 @@ int sys_chdir(char* path){
 
 }
 
+int sys_pipe(int* pipeFD){
+
+	return pipe(pipeFD);
+
+}

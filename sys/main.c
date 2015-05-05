@@ -9,6 +9,11 @@
 #include <sys/process.h>
 #include <sys/tarfs.h>
 #include <sys/sbunix.h>
+
+
+int errno = 0;
+
+
     uint64_t* proc_binary2=0;
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
@@ -50,7 +55,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 //    uint64_t* struct1  = ((uint64_t*)((uint64_t)start+sizeof(struct posix_header_ustar)));
 
   i=499999999;
-          while(i--);  
+  while(i--);  
     create_process(proc_binary,USER_PROCESS);
 printf("name=%s",((struct posix_header_ustar*)((unsigned char*)proc_binary+ROUNDUP(19796,512)))->name);
 //    uint64_t* proc_binary1=(uint64_t*)((unsigned char*)proc_binary+ROUNDUP(19796,512)+512);

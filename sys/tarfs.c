@@ -7,6 +7,7 @@
 #include <sys/keyboard.h> //to get the ref to kscanf
 #include <sys/tarfs.h>
 #include <sys/utils.h>
+#include <sys/pipe.h>
 
 //int errno = 0; //definition
 
@@ -34,7 +35,7 @@ void show_file_table(int fd){
     //int i = 0;
     printf("FILE TABLE: ");
     
-    printf("Inode: %d Cursor: %d Present: %d ",file_table[fd].inode_num,file_table[fd].cursor,file_table[fd].present);
+    printf("Inode: %d Refcount: %d Present: %d ",file_table[fd].inode_num,file_table[fd].ref_count,file_table[fd].present);
     
     printf("\n");
 }
@@ -216,125 +217,117 @@ uint64_t kopendir(const char *name){
 		This returns the address of the tarfs structure having the directory
 	*/
 
+	
 	int i =0;
 
-	//Update the current process's fd_table
-	//find the first free entry in fd_table
+	char absPath[100];
+	convert_to_absolute_path_dir(name,absPath);
+
+	//printf("Path passed :%s\n",name);
+	//printf("In open dir abspath : %s\n",absPath);
 	
-	int j=-1;
-	while(curproc->fd_table[++j]!=-1);
-
-
-
-	//printf("Inside tarfs opendir\n");
-
-	if(kstrcmp("/",name)==0){
-
-		curproc->fd_table[j] = i;
-		return -999; //special case for root dir
-
-	}
 
 	for(i=0;i<numOfEntries;i++){
 
+		char temp[100];
 
-		if(kstrcmp(tarfs_fs[i].name,name)==0 && (tarfs_fs[i].typeflag == DIRECTORY)){
+		kstrcpy(temp,tarfs_fs[i].name);
 
-			//printf("Found %s\n", (()tarfs_fs[i].addr_hdr));
-
-			curproc->fd_table[j] = i; //this directory is open for reading
-			//printf("In open dir\n");
-			//show_fd_table();
-
-			return tarfs_fs[i].addr_hdr;
+		if(kstrcmp(temp,absPath)==0 && (tarfs_fs[i].typeflag == DIRECTORY)){
+			break;
 		}
 	}
 
-	//printf("No such file or directory\n",name);
+	//printf("INODE IN FILE OPEN: %d\n",i);
+	//i now has the entry of tarfs table corresponding to the file
 
-	//errno = ENOENT;
+	if(i==numOfEntries){
+		printf("No such file or directory\n");
+		return -1;
+	}
 
-	return -1;
+	int firstFreeFileTableEntry=3;
+
+	//show_file_table(3);
+
+	while(!(file_table[firstFreeFileTableEntry].present == 0 || file_table[firstFreeFileTableEntry].inode_num == i)){
+		firstFreeFileTableEntry++;
+	}
+
+	if(file_table[firstFreeFileTableEntry].present == 0){
+
+		file_table[firstFreeFileTableEntry].inode_num = i; 
+		file_table[firstFreeFileTableEntry].cursor = 0;  //initially set the value of the cursor to the begining of the file
+		file_table[firstFreeFileTableEntry].ref_count = file_table[i].ref_count + 1 ; //Assuming extern variables have a default initial value of zero
+		file_table[firstFreeFileTableEntry].size = tarfs_fs[i].size;
+		file_table[firstFreeFileTableEntry].present = 1;
+		file_table[firstFreeFileTableEntry].read = read_file;
+		file_table[firstFreeFileTableEntry].write = write_file;
+		file_table[firstFreeFileTableEntry].close = close_file;
+	}
+	else{
+
+
+		file_table[firstFreeFileTableEntry].ref_count++;
+
+	}
+	int j=-1;
+	while(curproc->fd_table[++j]!=-1);
+	curproc->fd_table[j]=j;
+
+
+	//show_fd_table();
+	//show_file_table(firstFreeFileTableEntry);
+	
+	return firstFreeFileTableEntry;
 
 
 }
 
 
-uint64_t kreaddir(void *dir,char* userBuff){
+int kreaddir(void *dir,char* userBuff){
 
 
 	struct K_dirent ret;
 	static int i=0;
 	
-	//Address of the directory entry
-
-	struct posix_header_ustar *parentDir = (struct posix_header_ustar *)dir; 
-
-	int parent = 0;
-
-	//get id of this directory in the tarfs_fs array
-
-	char temp[100];
-
-	if((uint64_t)dir == 0){
-
-		//This will go in a checker function
-		return 0;
-
-	}
-
-	if((uint64_t)dir == -999){
-
-		//This is the special case of root directory
-		//printf("Special case of root dir \n");
-		parent = 0;
-	}
-	else{
-
-		//find the entry in tarfs table for this directory
-
-		while(1){
-
-			temp[0]='/';
-			temp[1]='\0';
-
-			kstrcat(temp,parentDir->name);
-
-			//printf("In read dir %s\n",parentDir->name);
-
-			if(kstrcmp(tarfs_fs[parent].name,temp) ==  0){
-				break;
-			}
-	        parent++;
-		}
-
-	}
-
-
 	
-	//printf("Value of parent %d\n",parent );
+	int file_table_index = (uint64_t)dir;
+	//int file_table_index = curproc->fd_table[*(int*)dir];
+
+	int inode_number = file_table[file_table_index].inode_num; //this is the index of tarfs entry in the tarfs_table
+
+	if(curproc->fd_table[file_table_index] == -1){
+
+		//fd was closed
+		//printf("In read dir returning -1\n");
+		return -1;
+	}
+
+
 
 	//loop over the fd_table of this process to check if this directory was closed or not?
 	//If closed then we must return error EBADF
 
-	int j=0;
-	for(j=3;j<10;j++){ //Currently we only support 10 entries in the process's fd table
+	// int j=0;
+	// for(j=3;j<10;j++){ //Currently we only support 10 entries in the process's fd table
 
-		if(parent == curproc->fd_table[j]){
-			//the dir is still open. We can continue ahead
-			break;
-		}
-	}
+	// 	if(inode_number == curproc->fd_table[j]){
+	// 		//the dir is still open. We can continue ahead
+	// 		break;
+	// 	}
+	// }
 
-	if(j==10){
+	// if(j==10){
 
-		return -1;
-	}
+	// 	//printf("this directory was closed before reading\n");
+	// 	return -1;
+	// }
 
 	int len=0;
 	while(i++<numOfEntries){
 
-		if(tarfs_fs[i].par_ind == parent){
+		if(tarfs_fs[i].par_ind == inode_number){
 
 			//extract the part of name till last but one / symbol
 
@@ -366,89 +359,17 @@ uint64_t kreaddir(void *dir,char* userBuff){
 }
 
 
-int kclosedir(void* dir){
-
-	/*
-		This function will close the directory stream.
-		It simply marks the entry of fd_table entry corresponding to this directory as -1
-	*/
-
-	struct posix_header_ustar *dirStream = (struct posix_header_ustar *)dir; 
-
-	char temp[100];
-
-	int i=0;
-	
-	//find the index of the directory in tarfs table
-	//fd_table will have this index
-	//however start searching the fd_table from 4th entry!!!
-	//As because 1st 3 entries = 0,1,2
-	//If any directory has index in tarfs table as 0,1,2 then we will wrongly close a stdin/stdout/sterr
-	//All indices after 3rd entry are always unique
-	
-	
-	//handle special case for / dir which has a pointer value of -999
-	if((uint64_t)dir == -999){
-
-		i =0;
-	}
-
-	else{
-
-		//Locate the index of this directory sream in tarfs table
-		while(1){
-
-			temp[0]='/';
-			temp[1]='\0';
-
-			kstrcat(temp,dirStream->name);
-
-			if(kstrcmp(tarfs_fs[i].name,temp) ==  0){
-				break;
-			}
-	        i++;
-		}
-
-	}
-
-
-
-	
-
-
-	//Search the fd_table starting at index 3
-	int j=3;
-	for(;j<10;j++){
-		if(curproc->fd_table[j] == i){
-			curproc->fd_table[j] = -1;
-			//printf("Closed fd[%d]:%d",j,i);
-			
-			return 0; //succesfully closed the directory stream
-		}
-	}
-
-	if(j == 10){
-
-		return -1; //Bad directory
-	}
-
-	return 0;
-
-}
-
-
-
 /*
 					################# DEVICE FUNCTIONS #################
 */
 
 
-int read_file(char *buf,int file_table_index, int numBytesToRead){
+int read_file(int file_table_index,char *buf,int numBytesToRead){
 
 	int readBytes=0; //This is the number of bytes that can be read after considerign cursor position
 	int inode_number = file_table[file_table_index].inode_num;
 
-	printf("In FILE READ\n");
+	//printf("In FILE READ\n");
 	if(((uint64_t)file_table[file_table_index].size - file_table[file_table_index].cursor) < numBytesToRead){
 
 		readBytes = (uint64_t)file_table[file_table_index].size - file_table[file_table_index].cursor ; 
@@ -473,29 +394,45 @@ int read_file(char *buf,int file_table_index, int numBytesToRead){
 	return readBytes;
 }
 
-int write_file(char *buf,int numBytesToWrite){
+int write_file(int file_table_index,char *buf,int numBytesToWrite){
 
 
-	printf("In write file\n");
-	while(1);
+	printf("Operation not supported for tarfs.Exiting\n");
+	return -1;
 }
 
+int close_file(int file_table_index){
 
-int terminal_read(char *buf,int file_table_index, int numBytesToRead){
+	file_table[file_table_index].ref_count--; //reduce the ref count as the process has closed this file
 
-	printf("In terminal read\n");
+	
+	curproc->fd_table[file_table_index] = -1;
+
+	//What to do if the ref count goes to zero?
+	//If ref count goes to zero remove this entry from file_table
+	if(file_table[file_table_index].ref_count == 0){
+		file_table[file_table_index].present = 0;
+	}
+
+	return 0;
+
+}
+int terminal_read(int file_table_index,char *buf,int numBytesToRead){
+
+	//printf("In terminal read\n");
 	return kscanf(buf);
 
 }
 
 
-int terminal_write(char *buff,int numBytesToWrite){
+int terminal_write(int file_table_index,char *buff,int numBytesToWrite){
 
+	//printf("In terninal write\n");
 	kprintf((char*)buff,(int)numBytesToWrite);
 	return numBytesToWrite;
 }
 
-void convert_to_absolute_path(const char* path,char* absPath){
+void convert_to_absolute_path_file(const char* path,char* absPath){
 
 	char temp[100];
 	temp[0]='/';
@@ -518,6 +455,32 @@ void convert_to_absolute_path(const char* path,char* absPath){
 
 }
 
+void convert_to_absolute_path_dir(const char* path,char* absPath){
+
+	char temp[100];
+	temp[0]='/';
+	temp[1]='\0';
+
+	int pathLen = kstrlen(path);
+
+	if(path[0] != '/'){
+		kstrcat(temp,path);
+	}
+	else{
+		kstrcpy(temp,path);
+	}
+
+	if(path[pathLen -1 ]!='/'){
+		kstrcat(temp,"/");
+	}
+
+	kstrcpy(absPath,temp);
+
+}
+
+
+
+
 /*
 					################# TOP LVEL FUNCTIONS #################
 */
@@ -532,67 +495,86 @@ int kopen(const char* name){
 	int i =0;
 
 	char absPath[100];
-	convert_to_absolute_path(name,absPath);
-	//printf("To search %s\n", absPath);
+	convert_to_absolute_path_file(name,absPath);
 
-	//find first free entry in the table. Present bit == 0 means free
-	int firstFreeFileTableEntry=-1;
-	while(file_table[++firstFreeFileTableEntry].present != 0); //Be sure to initialize the present bit on 0,1,2
+	//printf("In open file abspath : %s\n",absPath);
+	
 
 	for(i=0;i<numOfEntries;i++){
 
 		char temp[100];
 
 		kstrcpy(temp,tarfs_fs[i].name);
-		//temp[kstrlen(temp)-1]='\0';
-
-		//printf("Seraching :%s:", temp);
 
 		if(kstrcmp(temp,absPath)==0 && (tarfs_fs[i].typeflag == FILE_TYPE)){
-
-
-			file_table[firstFreeFileTableEntry].inode_num = i; 
-			file_table[firstFreeFileTableEntry].cursor = 0;  //initially set the value of the cursor to the begining of the file
-			file_table[firstFreeFileTableEntry].ref_count = file_table[i].ref_count + 1 ; //Assuming extern variables have a default initial value of zero
-			file_table[firstFreeFileTableEntry].size = tarfs_fs[i].size;
-			file_table[firstFreeFileTableEntry].present = 1;
-			file_table[firstFreeFileTableEntry].read = read_file;
-			file_table[firstFreeFileTableEntry].write = write_file;
-
-
-			//Update the current process's fd_table
-			//find the first free entry in fd_table
-			int j=-1;
-			while(curproc->fd_table[++j]!=-1);
-
-			curproc->fd_table[j] = firstFreeFileTableEntry;
-
-			//printf("File ref count: for file_table[%d]:%d\n",i,file_table[i].ref_count);
-			//show_fd_table();
-			//show_file_table(firstFreeFileTableEntry);
-			return j;
+			break;
 		}
 	}
 
-	printf("No such file or directory\n",name);
+	//printf("INODE IN FILE OPEN: %d\n",i);
+
+	//i now has the entry of tarfs table corresponding to the file
+
+	if(i==numOfEntries){
+		printf("No such file or directory\n");
+		return -1;
+	}
+
+	int firstFreeFileTableEntry=3;
+
+
+
+	while(!(file_table[firstFreeFileTableEntry].present == 0 || file_table[firstFreeFileTableEntry].inode_num == i)){
+		firstFreeFileTableEntry++;
+	}
+
+	if(file_table[firstFreeFileTableEntry].present == 0){
+
+		file_table[firstFreeFileTableEntry].inode_num = i; 
+		file_table[firstFreeFileTableEntry].cursor = 0;  //initially set the value of the cursor to the begining of the file
+		file_table[firstFreeFileTableEntry].ref_count = file_table[i].ref_count + 1 ; //Assuming extern variables have a default initial value of zero
+		file_table[firstFreeFileTableEntry].size = tarfs_fs[i].size;
+		file_table[firstFreeFileTableEntry].present = 1;
+		file_table[firstFreeFileTableEntry].read = read_file;
+		file_table[firstFreeFileTableEntry].write = write_file;
+		file_table[firstFreeFileTableEntry].close = close_file;
+
+	}
+	else{
+
+
+		file_table[firstFreeFileTableEntry].ref_count++;
+
+	}
+	int j=-1;
+	while(curproc->fd_table[++j]!=-1);
+	curproc->fd_table[j]=j;
 
 
 	//show_fd_table();
-	return -1;
-
+	//show_file_table(firstFreeFileTableEntry);
+	
+	return firstFreeFileTableEntry;
 }
+
 
 int kread(int fd,char* buf, int numBytesToRead){
 
+	
 	if(curproc->fd_table[fd] == -1){
 
 		//fd was closed
+		errno = EBADF;
 		return -1;
 	}
 
 	int file_table_index = curproc->fd_table[fd];
 
-	return file_table[file_table_index].read(buf,file_table_index,numBytesToRead);
+	// printf("In read fd passed :%d",fd);
+	// printf("file_table_index %d\n",file_table_index );
+	// printf("read: %p\n",file_table[file_table_index].read );
+
+	return file_table[file_table_index].read(file_table_index,buf,numBytesToRead);
 
 }
 
@@ -601,34 +583,46 @@ int kwrite(int fd,char* buf, int numBytesToWrite){
 
 	//Top level write function
 
+	//printf("In top level write\n");
+
 	int file_table_index = curproc->fd_table[fd];
 
-	return file_table[file_table_index].write(buf,numBytesToWrite);
+	if(curproc->fd_table[fd] == -1){
+
+		//fd was closed
+		return -1;
+	}
+
+	// printf("file_table_index %d\n",file_table_index );
+	// printf("write: %p\n",file_table[file_table_index].write );
+
+
+
+	return file_table[file_table_index].write(file_table_index,buf,numBytesToWrite);
 
 }
 
-
 int kclose(int fd){
 
+	
 	if(fd == 0 || fd == 1 || fd == 2){
 		return -1; //should not close stdin,stdout,stderr
 	}
 
 	int file_table_index = curproc->fd_table[fd];
+
+	return file_table[file_table_index].close(file_table_index);
 	
 	file_table[file_table_index].ref_count--; //reduce the ref count as the process has closed this file
 
 	
-	curproc->fd_table[fd] = -1;
+	curproc->fd_table[file_table_index] = -1;
 
 	//What to do if the ref count goes to zero?
 	//If ref count goes to zero remove this entry from file_table
 	if(file_table[file_table_index].ref_count == 0){
 		file_table[file_table_index].present = 0;
 	}
-
-	//show_file_table(3);
-	//When does close give error?
 
 	return 0;
 
