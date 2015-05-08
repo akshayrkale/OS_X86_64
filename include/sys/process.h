@@ -6,6 +6,7 @@ enum ProcStatus{
 FREE,
 RUNNABLE,
 RUNNING,
+WAITING
 };
 
 enum ProcType
@@ -59,7 +60,8 @@ struct mm_struct *mm;
 uint64_t kstack[512];
 int fd_table[10];  //per process file descriptor array
 char cwd[50]; //store the current working directory of a process
-
+int waitingfor;
+int num_child;
 }ProcStruct;
 
 
@@ -91,6 +93,8 @@ int copyvmas(ProcStruct *proc);
 int get_running_process();
 uint64_t inc_brk(uint64_t n);
 int proc_sleep(void* t);
+uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[]);
+int copy_args_to_stack(uint64_t stacktop,int argc);
 
 #define POPA \
 	"\tmovq 0(%%rsp),%%r15\n" \

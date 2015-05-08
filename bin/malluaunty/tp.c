@@ -13,7 +13,9 @@ int main(int argc, char* argv[], char* envp[])
 	//directroy_test_case();
 	//sleep_test_case();
 
-	fork_test_case();
+//	fork_test_case();
+
+    printf("In Mallu");
 
 	// void *x = malloc(10);
 	// printf("After malloc\n");

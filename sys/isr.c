@@ -287,7 +287,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                  }
                  else
                  {
-                     printf("Segmentation Fault:%d",curproc->proc_id);
+                     printf("Segmentation Fault:%d %p",curproc->proc_id,vaddr);
                      proc_free(curproc);
                      curproc->status=FREE;
                      //proccount--;
@@ -440,7 +440,10 @@ void isr128_handler(struct Trapframe* tf){
                     syscall_ret_value  = sys_sleep((void*)tf->tf_regs.reg_rdi);
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
-
+                case SYS_execve:
+                    syscall_ret_value  = sys_execve((const char*)tf->tf_regs.reg_rdi,(const char**)tf->tf_regs.reg_rsi,(const char**)tf->tf_regs.reg_rdx);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
                 default:
                         break;
 

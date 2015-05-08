@@ -127,7 +127,7 @@ void tarfs_init(){
 
 	 
 	
-	while(1){
+	for(int i=1;i <8;i++){
 
 		kstrcpy(name,fileSystemEntry->name);
 

@@ -67,11 +67,14 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->tf.tf_cs = (uint16_t)(U_CS|RPL3);
     NewProc->tf.tf_eflags = 0x200;//9th bit=IF flag
     NewProc->status = RUNNABLE;
+    NewProc->waitingfor = -1;
+    NewProc->num_child=0;
+    ((ProcStruct*)(procs+parentid+1))->num_child++;
     proccount++;
     PageStruct *pa=allocate_page();
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
     kmemset((void *)(NewProc->mm), 0, sizeof(mm_struct));
-
+    
     //printf("Before copying the fd table to child\n");
 
     //while(1);
@@ -92,7 +95,6 @@ ProcStruct* allocate_process(unsigned char parentid)
       NewProc->fd_table[8] = -1; 
       NewProc->fd_table[9] = -1;
     }
-
     else{
 
       //printf("In else\n");
@@ -151,7 +153,7 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
     for(char* i=start; i<end; i+=PGSIZE)
     {
         pa = allocate_page();
-	pa->ref_count++;
+	    pa->ref_count++;
         if(!pa)
            return -1;
         newpage = pageToPhysicalAddress(pa);
@@ -241,8 +243,8 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_offset = ph->p_offset;  
        
          int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
-         physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
-//printf("stack page:%p-%d ",p,e->proc_id);
+        // physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
+printf("stack page:%p-%d ",p,e->proc_id);
          e->tf.tf_rip    = elf->e_entry;
          e->tf.tf_rsp    = USERSTACKTOP;
        
@@ -257,7 +259,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_next = NULL;
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
-	 e->mm->start_brk=e->mm->end_brk=max_addr;
+	    e->mm->start_brk=e->mm->end_brk=max_addr;
          lcr3(boot_cr3);
     } else {
         return -1;
@@ -314,7 +316,7 @@ int scheduler()
     else 
         start = start->next;
     
-    int num_procs=proccount;
+    int num_procs=proccount+1;
         
     while((start->status!=RUNNABLE || start->wakeuptime >= timeTillNow) && num_procs>0)
     {
@@ -372,9 +374,9 @@ int proc_free(ProcStruct *proc)
                                 {
 //printf("in pml4e ipdpe=%d ipml4e=%d ipde=%d ipte=%d entry=%p",ipdpe,ipml4e,ipde,ipte,pte[ipte]);
  //                                   printf("herepteis=%p pte[]=%d",pte,pte[0]);
+printf("Removed page:%p-%d ",((uint64_t)pte[ipte]&~0xFFF),physicalAddressToPage(((uint64_t*)((uint64_t)pte[ipte]&~0xFFF)))->ref_count);
 
                                     remove_page((uint64_t*)((uint64_t)pte[ipte]&~0xFFF));
-//printf("Removed page:%p",((uint64_t)pte[ipte]&~0xFFF));
 
                                     pte[ipte]=0;
 
@@ -403,63 +405,7 @@ int proc_free(ProcStruct *proc)
         return 0;
 }
 
-/*
-uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
-{
-    
-     uint64_t* elf;
-     for(int i=0; i<numOfEntries; i++)
-     {
-        if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
-        {
-            printf("found:%s ",tarfs_fs[i].name);
-            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
-            break;
-        }
-     }
-          
-     proc_free(curproc);
-     load_elf(curproc,elf);
-     printf("REPLACED");
-     vma_struct* vma=curproc->mm->mmap;
 
-     for(int i=0;i<curproc->mm->count;i++)
-         if(vma->vm_type==STACK)
-             break;
-     
-
-     int argc=copy_args_to_stack(vma->vm_end,arg1,arg2);
-     printf("REPLACED");
-   
-     return argc;
-}   
-
-int copy_args_to_stack(uint64_t stacktop,const char* arg1,const char** arg2)
-{
-
-     char* argv[10];
-     int len=kstrlen(arg1);
-
-     kstrcpy((char*)(stacktop=stacktop-len-1),arg1);
-     argv[0]=(char*)stacktop;
-     int argc=1;
-     
-     while(arg2[argc-1]!=NULL)
-     {
-        len = kstrlen(arg2[argc-1]);
-        kstrcpy((char*)(stacktop=stacktop-len-1),arg2[argc-1]);
-        argv[argc]=(char*)stacktop;
-        argc++;
-     }
-     for(int i=argc-1;i>=0;i--)
-     {
-         stacktop=stacktop-8;
-        *((uint64_t*)stacktop)=(uint64_t)argv[i];
-     }
-     curproc->tf.tf_rsp=stacktop;
-     return argc;
-}
-*/
 int fork_process(struct Trapframe* tf)
 {
     ProcStruct* NewProc=NULL;
@@ -563,7 +509,7 @@ int copypagetables(ProcStruct *proc)
             chpte[ipte]=(chpte[ipte]&~PTE_W)| PTE_COW;
             pte[ipte]=(pte[ipte]&~PTE_W)| PTE_COW;
             physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
-printf("inc %p",pte[ipte]);
+printf("inc %p %d",pte[ipte],physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count);
         }
         //printf("ret=%p",pdpe);
     }
@@ -689,3 +635,79 @@ int proc_sleep(void* t){
 
 
 }
+
+
+char args[15][60];
+uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
+{
+    
+     uint64_t* elf;
+     for(int i=0; i<numOfEntries; i++)
+     {
+        if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
+        {
+            printf("found:%s ",tarfs_fs[i].name);
+            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
+            break;
+        }
+     }
+     kstrcpy(args[0],arg1);
+     int argc=1;
+     while(arg2[argc-1]!=NULL)
+     {
+        kstrcpy(args[argc],arg2[argc-1]);
+        argc++;
+     } 
+        
+     proc_free(curproc);
+     load_elf(curproc,elf);
+     printf("REPLACED");
+     vma_struct* vma=curproc->mm->mmap;
+
+     for(int i=0;i<curproc->mm->count;i++)
+     {
+         if(vma->vm_type==STACK)
+             break;
+         vma=vma->vm_next;
+     }
+     
+     printf("calling");
+    lcr3(curproc->cr3);
+          //lcr3(boot_cr3);
+ argc=copy_args_to_stack(vma->vm_end,argc);
+
+     printf("REPLACED");
+        curproc->status=RUNNABLE; 
+     scheduler();
+     return -1;
+}   
+
+int copy_args_to_stack(uint64_t stacktop,int argc)
+{
+
+     uint64_t argv[15];
+
+     int i=argc;
+     
+     while(i)
+     {
+        int len = kstrlen(args[i-1])+1;
+        kstrcpy((char*)(stacktop=stacktop-len-1),args[i-1]);
+        argv[i-1]=stacktop;
+        i--;
+     }
+     for(int i=0;i<argc;i++)
+     {
+         stacktop=stacktop-8;
+        *((uint64_t*)stacktop)=(uint64_t)argv[i];
+     }
+     curproc->tf.tf_rsp=stacktop;
+     return argc;
+}
+
+
+
+
+
+
+

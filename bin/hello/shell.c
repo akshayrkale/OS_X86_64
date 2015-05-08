@@ -17,7 +17,15 @@ void ls(){
 
                                         printf("Name of dir %s\n", entry->d_name);
                                             }
-} 
+}
+
+int fact(int n)
+{
+    if (n==0|| n==1)
+        return 1;
+
+return fact(n-1)+fact(n-2);
+}
 int main(int argc, char* argv[], char* envp[])
 {
 //char buf[200];
@@ -39,12 +47,48 @@ closedir(dir);*/
 //printf("Bytes READ:%s",buf);
 
 
+        int pipeFD[2];
+
+            pipe(pipeFD);
+
+                int status;
+
+
+                    int pid = fork();
+
+                        if(pid == 0){
+
+                                    //printf("In parent process\n");
+                                    close(pipeFD[0]);
+                                    dup2(pipeFD[1],1);
+                                    printf("This is child writing in pipe\n");
+
+                                  }
+
+                            else{
+
+                                  char buff[100];
+                                   close(pipeFD[1]);
+                                  waitpid(pid,&status,0);
+                                  int i=4999999;
+                                  while(i--);
+                                       printf("The parent has woken up\n");
+                                                                        read(pipeFD[0],buff,100);
+                                                                                printf("The child wrote: %s\n",buff);
+
+                                                                                    }
+
+
+
+
+/*
        int pid = fork();
 
         if(pid == 0){
              int i = 499999;
              while(i--);
          ps();
+            execve("/bin/malluaunty",NULL,NULL);
             printf("Child done\n");
        }
        else{
@@ -54,7 +98,7 @@ closedir(dir);*/
      }
 
 
-/*
+
 printf("In fork\n");
 
 	char buff[100];

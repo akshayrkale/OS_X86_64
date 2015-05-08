@@ -1,0 +1,741 @@
+diff --git a/akshay.iso b/akshay.iso
+index 96af093..1a63852 100644
+Binary files a/akshay.iso and b/akshay.iso differ
+diff --git a/bin/hello/shell.c b/bin/hello/shell.c
+index b47d91c..d8490b3 100644
+--- a/bin/hello/shell.c
++++ b/bin/hello/shell.c
+@@ -44,6 +44,7 @@ closedir(dir);*/
+         if(pid == 0){
+              int i = 499999;
+              while(i--);
++             execve("/bin/malluaunty",NULL,NULL);
+          ps();
+             printf("Child done\n");
+        }
+diff --git a/include/sys/paging.h b/include/sys/paging.h
+index a7f9983..faeaae7 100644
+--- a/include/sys/paging.h
++++ b/include/sys/paging.h
+@@ -19,7 +19,7 @@
+ #define AVAIL2_LIM  0xffffffff87ffd000 //check this value o sbrocks
+ 
+ #define VIDEO_START  0xffffffff800B8000 
+-#define USERSTACKTOP PGSIZE
++#define USERSTACKTOP 0x00000000f0000000
+ 
+ typedef struct PageStruct {
+ 	// Next page on the free list.
+diff --git a/include/sys/process.h b/include/sys/process.h
+index 61b3c61..80dd074 100644
+--- a/include/sys/process.h
++++ b/include/sys/process.h
+@@ -91,6 +91,8 @@ int copyvmas(ProcStruct *proc);
+ int get_running_process();
+ uint64_t inc_brk(uint64_t n);
+ int proc_sleep(void* t);
++uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[]);
++int copy_args_to_stack(uint64_t stacktop,int argc);
+ 
+ #define POPA \
+ 	"\tmovq 0(%%rsp),%%r15\n" \
+diff --git a/include/sys/syscall.h b/include/sys/syscall.h
+index 2996093..0482b05 100644
+--- a/include/sys/syscall.h
++++ b/include/sys/syscall.h
+@@ -46,6 +46,8 @@ int sys_ps();
+ uint64_t sys_brk(uint64_t n);
+ int sys_sleep(void* t);
+ int sys_dup2(int oldfd,int newfd);
++int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
++;
+ 
+ 
+ #endif
+diff --git a/kernel b/kernel
+index 37dc38c..77df9cb 100755
+Binary files a/kernel and b/kernel differ
+diff --git a/obj/bin/hello/shell.o b/obj/bin/hello/shell.o
+index 8f73dd3..2eb2989 100644
+Binary files a/obj/bin/hello/shell.o and b/obj/bin/hello/shell.o differ
+diff --git a/obj/bin/malluaunty/tp.o b/obj/bin/malluaunty/tp.o
+index c6dc155..149c1d5 100644
+Binary files a/obj/bin/malluaunty/tp.o and b/obj/bin/malluaunty/tp.o differ
+diff --git a/obj/bin/tabz/tab.o b/obj/bin/tabz/tab.o
+index 4b1721c..ea5cf1a 100644
+Binary files a/obj/bin/tabz/tab.o and b/obj/bin/tabz/tab.o differ
+diff --git a/obj/crt/crt1.o b/obj/crt/crt1.o
+index c9f967b..f9365ad 100644
+Binary files a/obj/crt/crt1.o and b/obj/crt/crt1.o differ
+diff --git a/obj/libc/alarm.o b/obj/libc/alarm.o
+index 3cd2287..e8c0702 100644
+Binary files a/obj/libc/alarm.o and b/obj/libc/alarm.o differ
+diff --git a/obj/libc/cat.o b/obj/libc/cat.o
+index 5be260c..3bd3f63 100644
+Binary files a/obj/libc/cat.o and b/obj/libc/cat.o differ
+diff --git a/obj/libc/chdir.o b/obj/libc/chdir.o
+index 5f7090c..ee73181 100644
+Binary files a/obj/libc/chdir.o and b/obj/libc/chdir.o differ
+diff --git a/obj/libc/close.o b/obj/libc/close.o
+index ecb6637..0bd7674 100644
+Binary files a/obj/libc/close.o and b/obj/libc/close.o differ
+diff --git a/obj/libc/closedir.o b/obj/libc/closedir.o
+index adbf7aa..f331384 100644
+Binary files a/obj/libc/closedir.o and b/obj/libc/closedir.o differ
+diff --git a/obj/libc/dup.o b/obj/libc/dup.o
+index aa55c7b..9424c7a 100644
+Binary files a/obj/libc/dup.o and b/obj/libc/dup.o differ
+diff --git a/obj/libc/dup2.o b/obj/libc/dup2.o
+index d584f30..71d689b 100644
+Binary files a/obj/libc/dup2.o and b/obj/libc/dup2.o differ
+diff --git a/obj/libc/error.o b/obj/libc/error.o
+index 5a095bc..498aaf4 100644
+Binary files a/obj/libc/error.o and b/obj/libc/error.o differ
+diff --git a/obj/libc/execve.o b/obj/libc/execve.o
+index a5f9f5a..dc3bb0b 100644
+Binary files a/obj/libc/execve.o and b/obj/libc/execve.o differ
+diff --git a/obj/libc/exit.o b/obj/libc/exit.o
+index 990d211..cc12dd0 100644
+Binary files a/obj/libc/exit.o and b/obj/libc/exit.o differ
+diff --git a/obj/libc/fork.o b/obj/libc/fork.o
+index 9784229..61e0c21 100644
+Binary files a/obj/libc/fork.o and b/obj/libc/fork.o differ
+diff --git a/obj/libc/getcwd.o b/obj/libc/getcwd.o
+index 6bc3de7..b9c81cd 100644
+Binary files a/obj/libc/getcwd.o and b/obj/libc/getcwd.o differ
+diff --git a/obj/libc/lseek.o b/obj/libc/lseek.o
+index f7bb106..ca21177 100644
+Binary files a/obj/libc/lseek.o and b/obj/libc/lseek.o differ
+diff --git a/obj/libc/malloc.o b/obj/libc/malloc.o
+index 866e5bf..09b177c 100644
+Binary files a/obj/libc/malloc.o and b/obj/libc/malloc.o differ
+diff --git a/obj/libc/open.o b/obj/libc/open.o
+index df5102c..cef132d 100644
+Binary files a/obj/libc/open.o and b/obj/libc/open.o differ
+diff --git a/obj/libc/opendir.o b/obj/libc/opendir.o
+index 4ded7f5..5897bce 100644
+Binary files a/obj/libc/opendir.o and b/obj/libc/opendir.o differ
+diff --git a/obj/libc/pipe.o b/obj/libc/pipe.o
+index df7c94d..732715c 100644
+Binary files a/obj/libc/pipe.o and b/obj/libc/pipe.o differ
+diff --git a/obj/libc/printf.o b/obj/libc/printf.o
+index 4c4d215..9040483 100644
+Binary files a/obj/libc/printf.o and b/obj/libc/printf.o differ
+diff --git a/obj/libc/process.o b/obj/libc/process.o
+index 53e36b2..2b11284 100644
+Binary files a/obj/libc/process.o and b/obj/libc/process.o differ
+diff --git a/obj/libc/ps.o b/obj/libc/ps.o
+index a026db4..9931403 100644
+Binary files a/obj/libc/ps.o and b/obj/libc/ps.o differ
+diff --git a/obj/libc/read.o b/obj/libc/read.o
+index d013633..b9deff0 100644
+Binary files a/obj/libc/read.o and b/obj/libc/read.o differ
+diff --git a/obj/libc/readdir.o b/obj/libc/readdir.o
+index e1d6d6d..e413407 100644
+Binary files a/obj/libc/readdir.o and b/obj/libc/readdir.o differ
+diff --git a/obj/libc/scanf.o b/obj/libc/scanf.o
+index 93fdbe0..1c3a04a 100644
+Binary files a/obj/libc/scanf.o and b/obj/libc/scanf.o differ
+diff --git a/obj/libc/sleep.o b/obj/libc/sleep.o
+index 6ee9d99..3df2002 100644
+Binary files a/obj/libc/sleep.o and b/obj/libc/sleep.o differ
+diff --git a/obj/libc/string.o b/obj/libc/string.o
+index 23badfe..d24d076 100644
+Binary files a/obj/libc/string.o and b/obj/libc/string.o differ
+diff --git a/obj/libc/testCases.o b/obj/libc/testCases.o
+index b1334a7..64e3289 100644
+Binary files a/obj/libc/testCases.o and b/obj/libc/testCases.o differ
+diff --git a/obj/libc/write.o b/obj/libc/write.o
+index 42fb943..c1c483b 100644
+Binary files a/obj/libc/write.o and b/obj/libc/write.o differ
+diff --git a/obj/sys/gdt.o b/obj/sys/gdt.o
+index eddd242..a9390aa 100644
+Binary files a/obj/sys/gdt.o and b/obj/sys/gdt.o differ
+diff --git a/obj/sys/idt.o b/obj/sys/idt.o
+index 51d3336..914d9af 100644
+Binary files a/obj/sys/idt.o and b/obj/sys/idt.o differ
+diff --git a/obj/sys/isr.o b/obj/sys/isr.o
+index 5a97762..a983abe 100644
+Binary files a/obj/sys/isr.o and b/obj/sys/isr.o differ
+diff --git a/obj/sys/keyboard.o b/obj/sys/keyboard.o
+index 18bd681..c2e7f81 100644
+Binary files a/obj/sys/keyboard.o and b/obj/sys/keyboard.o differ
+diff --git a/obj/sys/kstring.o b/obj/sys/kstring.o
+index 2f4e0ea..5a92ffd 100644
+Binary files a/obj/sys/kstring.o and b/obj/sys/kstring.o differ
+diff --git a/obj/sys/main.o b/obj/sys/main.o
+index 146f3c2..5f26336 100644
+Binary files a/obj/sys/main.o and b/obj/sys/main.o differ
+diff --git a/obj/sys/paging.o b/obj/sys/paging.o
+index 3c001af..7e88098 100644
+Binary files a/obj/sys/paging.o and b/obj/sys/paging.o differ
+diff --git a/obj/sys/pic.o b/obj/sys/pic.o
+index 06d0488..4dd5d27 100644
+Binary files a/obj/sys/pic.o and b/obj/sys/pic.o differ
+diff --git a/obj/sys/pipe.o b/obj/sys/pipe.o
+index fe1f1fd..cdcdec7 100644
+Binary files a/obj/sys/pipe.o and b/obj/sys/pipe.o differ
+diff --git a/obj/sys/printf.o b/obj/sys/printf.o
+index 9a4089b..e1c0115 100644
+Binary files a/obj/sys/printf.o and b/obj/sys/printf.o differ
+diff --git a/obj/sys/process.o b/obj/sys/process.o
+index 778d390..3110734 100644
+Binary files a/obj/sys/process.o and b/obj/sys/process.o differ
+diff --git a/obj/sys/syscall.o b/obj/sys/syscall.o
+index 64d2446..db4e54c 100644
+Binary files a/obj/sys/syscall.o and b/obj/sys/syscall.o differ
+diff --git a/obj/sys/tarfs.o b/obj/sys/tarfs.o
+index f5ed92b..1e5992f 100644
+Binary files a/obj/sys/tarfs.o and b/obj/sys/tarfs.o differ
+diff --git a/obj/sys/timer.o b/obj/sys/timer.o
+index 27d5b02..d4c1690 100644
+Binary files a/obj/sys/timer.o and b/obj/sys/timer.o differ
+diff --git a/obj/sys/utils.o b/obj/sys/utils.o
+index 1183a2e..edeb5e3 100644
+Binary files a/obj/sys/utils.o and b/obj/sys/utils.o differ
+diff --git a/obj/tarfs.o b/obj/tarfs.o
+index 514d346..c7f3222 100644
+Binary files a/obj/tarfs.o and b/obj/tarfs.o differ
+diff --git a/rootfs/bin/hello b/rootfs/bin/hello
+index 579d1c0..999d4a7 100755
+Binary files a/rootfs/bin/hello and b/rootfs/bin/hello differ
+diff --git a/rootfs/bin/malluaunty b/rootfs/bin/malluaunty
+index 4d441c3..a15e0e4 100755
+Binary files a/rootfs/bin/malluaunty and b/rootfs/bin/malluaunty differ
+diff --git a/rootfs/bin/tabz b/rootfs/bin/tabz
+index 197c698..9bc49a1 100755
+Binary files a/rootfs/bin/tabz and b/rootfs/bin/tabz differ
+diff --git a/rootfs/boot/kernel/kernel b/rootfs/boot/kernel/kernel
+index 37dc38c..77df9cb 100755
+Binary files a/rootfs/boot/kernel/kernel and b/rootfs/boot/kernel/kernel differ
+diff --git a/rootfs/lib/libc.a b/rootfs/lib/libc.a
+index 83dbc5b..6ae502f 100644
+Binary files a/rootfs/lib/libc.a and b/rootfs/lib/libc.a differ
+diff --git a/sys/.process.c.swp b/sys/.process.c.swp
+deleted file mode 100644
+index 2ca4265..0000000
+Binary files a/sys/.process.c.swp and /dev/null differ
+diff --git a/sys/isr.c b/sys/isr.c
+index 07d3aea..8496abd 100644
+--- a/sys/isr.c
++++ b/sys/isr.c
+@@ -201,6 +201,7 @@ void isr14_handler(struct faultStruct *faultFrame)
+ //        printf(" \n Error occured at %p ", faultFrame->rip);
+ //        printf(" \n Faulting virtual address is %p", vaddr);
+ //
++        printf("Errorcode=%d",faultFrame->errorCode);
+         if(curproc->status==RUNNING)
+         {
+             vma_struct *vma=curproc->mm->mmap;
+@@ -440,7 +441,10 @@ void isr128_handler(struct Trapframe* tf){
+                     syscall_ret_value  = sys_sleep((void*)tf->tf_regs.reg_rdi);
+                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                     break;
+-
++                
++                case SYS_execve:
++                    tf->tf_regs.reg_rax  = sys_execve((const char*)tf->tf_regs.reg_rdi,(const char**)tf->tf_regs.reg_rsi,(const char**)tf->tf_regs.reg_rdx);
++                    break;
+                 default:
+                         break;
+ 
+diff --git a/sys/main.c b/sys/main.c
+index 68d3f0d..5d83b91 100644
+--- a/sys/main.c
++++ b/sys/main.c
+@@ -40,10 +40,10 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
+ 
+   //printf("After initializing vm\n");
+ 
+-   i=499999999;
+-    while(i--);
+ 
+   tarfs_init();
++   i=499999999;
++    while(i--);
+ 
+   printf("After initialize tarfs\n");
+   initialize_process();
+diff --git a/sys/process.c b/sys/process.c
+index 9bd22ef..2b350f5 100644
+--- a/sys/process.c
++++ b/sys/process.c
+@@ -151,7 +151,7 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
+     for(char* i=start; i<end; i+=PGSIZE)
+     {
+         pa = allocate_page();
+-	pa->ref_count++;
++	    pa->ref_count++;
+         if(!pa)
+            return -1;
+         newpage = pageToPhysicalAddress(pa);
+@@ -403,63 +403,7 @@ int proc_free(ProcStruct *proc)
+         return 0;
+ }
+ 
+-/*
+-uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
+-{
+-    
+-     uint64_t* elf;
+-     for(int i=0; i<numOfEntries; i++)
+-     {
+-        if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
+-        {
+-            printf("found:%s ",tarfs_fs[i].name);
+-            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
+-            break;
+-        }
+-     }
+-          
+-     proc_free(curproc);
+-     load_elf(curproc,elf);
+-     printf("REPLACED");
+-     vma_struct* vma=curproc->mm->mmap;
+-
+-     for(int i=0;i<curproc->mm->count;i++)
+-         if(vma->vm_type==STACK)
+-             break;
+-     
+ 
+-     int argc=copy_args_to_stack(vma->vm_end,arg1,arg2);
+-     printf("REPLACED");
+-   
+-     return argc;
+-}   
+-
+-int copy_args_to_stack(uint64_t stacktop,const char* arg1,const char** arg2)
+-{
+-
+-     char* argv[10];
+-     int len=kstrlen(arg1);
+-
+-     kstrcpy((char*)(stacktop=stacktop-len-1),arg1);
+-     argv[0]=(char*)stacktop;
+-     int argc=1;
+-     
+-     while(arg2[argc-1]!=NULL)
+-     {
+-        len = kstrlen(arg2[argc-1]);
+-        kstrcpy((char*)(stacktop=stacktop-len-1),arg2[argc-1]);
+-        argv[argc]=(char*)stacktop;
+-        argc++;
+-     }
+-     for(int i=argc-1;i>=0;i--)
+-     {
+-         stacktop=stacktop-8;
+-        *((uint64_t*)stacktop)=(uint64_t)argv[i];
+-     }
+-     curproc->tf.tf_rsp=stacktop;
+-     return argc;
+-}
+-*/
+ int fork_process(struct Trapframe* tf)
+ {
+     ProcStruct* NewProc=NULL;
+@@ -689,3 +633,73 @@ int proc_sleep(void* t){
+ 
+ 
+ }
++
++
++char args[15][60];
++uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
++{
++    
++     uint64_t* elf;
++     for(int i=0; i<numOfEntries; i++)
++     {
++        if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
++        {
++            printf("found:%s ",tarfs_fs[i].name);
++            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
++            break;
++        }
++     }
++     kstrcpy(args[0],arg1);
++     int argc=1;
++     while(arg2[argc-1]!=NULL)
++     {
++        kstrcpy(args[argc],arg2[argc-1]);
++        argc++;
++     }     
++     proc_free(curproc);
++     load_elf(curproc,elf);
++     printf("REPLACED");
++     vma_struct* vma=curproc->mm->mmap;
++
++     for(int i=0;i<curproc->mm->count;i++)
++     {
++         if(vma->vm_type==STACK)
++             break;
++         vma=vma->vm_next;
++     }
++     
++     printf("calling");
++     //lcr3(curproc->cr3);
++     argc=copy_args_to_stack(vma->vm_end,argc);
++     //lcr3(boot_cr3);
++
++     printf("REPLACED");
++     
++     scheduler();
++     return -1;
++}   
++
++int copy_args_to_stack(uint64_t stacktop,int argc)
++{
++
++     uint64_t argv[15];
++
++     int i=argc;
++     
++     while(i)
++     {
++        int len = kstrlen(args[i-1])+1;
++        kstrcpy((char*)(stacktop=stacktop-len-1),args[i-1]);
++        argv[i-1]=stacktop;
++        i--;
++     }
++     for(int i=0;i<argc;i++)
++     {
++         stacktop=stacktop-8;
++        *((uint64_t*)stacktop)=(uint64_t)argv[i];
++     }
++     curproc->tf.tf_rsp=stacktop;
++     return argc;
++}
++
++
+diff --git a/sys/syscall.c b/sys/syscall.c
+index adc89fa..89a9746 100644
+--- a/sys/syscall.c
++++ b/sys/syscall.c
+@@ -163,3 +163,9 @@ int sys_sleep(void* t){
+ 	return proc_sleep(t);
+ 
+ }
++
++
++int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
++{
++return execve(arg1,arg2,arg3);
++}
+diff --git a/sys/tarfs.c b/sys/tarfs.c
+index 7538657..776aaaa 100644
+--- a/sys/tarfs.c
++++ b/sys/tarfs.c
+@@ -127,7 +127,7 @@ void tarfs_init(){
+ 
+ 	 
+ 	
+-	while(1){
++	for(int i=1;i<7;i++){
+ 
+ 		kstrcpy(name,fileSystemEntry->name);
+ 
+diff --git a/tags b/tags
+index 2091d98..bba087c 100644
+--- a/tags
++++ b/tags
+@@ -40,7 +40,7 @@ CR4_TSD	include/sys/mmu.h	112;"	d
+ CR4_VME	include/sys/mmu.h	114;"	d
+ CRT_SRCS	Makefile	/^CRT_SRCS:=$(shell find crt\/ -name \\*.c -o -name \\*.s)$/;"	m
+ CTRL	sys/keyboard.c	9;"	d	file:
+-CommArray	include/parser.h	/^	singleCommand* CommArray[PIPE_MAX_NUM];	\/* Array to store individual commands*\/$/;"	m	struct:__anon7
++CommArray	include/parser.h	/^	singleCommand* CommArray[PIPE_MAX_NUM];	\/* Array to store individual commands*\/$/;"	m	struct:__anon3
+ D	sys/gdt.c	17;"	d	file:
+ DIRECTORY	include/sys/tarfs.h	71;"	d
+ DPL0	sys/gdt.c	11;"	d	file:
+@@ -170,14 +170,14 @@ KERNBASE	include/sys/paging.h	12;"	d
+ KERNEL_PROCESS	include/sys/process.h	/^KERNEL_PROCESS$/;"	e	enum:ProcType
+ KERN_SRCS	Makefile	/^KERN_SRCS:=$(shell find sys\/ -name \\*.c -o -name \\*.s)$/;"	m
+ KEYBOARD_H_	include/sys/keyboard.h	2;"	d
+-KO_CREAT	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
+-KO_DIRECTORY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
+-KO_RDONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
+-KO_RDWR	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
+-KO_WRONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
+-KSEEK_CUR	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
+-KSEEK_END	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
+-KSEEK_SET	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
++KO_CREAT	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
++KO_DIRECTORY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
++KO_RDONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
++KO_RDWR	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
++KO_WRONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
++KSEEK_CUR	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
++KSEEK_END	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
++KSEEK_SET	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
+ K_CS	include/sys/gdt.h	18;"	d
+ K_DS	include/sys/gdt.h	19;"	d
+ K_NAME_MAX	include/sys/tarfs.h	38;"	d
+@@ -242,7 +242,7 @@ PIC_sendEOI	sys/pic.c	/^void PIC_sendEOI(unsigned char irq)$/;"	f
+ PIPE_MAX_NUM	include/parser.h	5;"	d
+ PML4	include/sys/mmu.h	40;"	d
+ PML4SHIFT	include/sys/mmu.h	69;"	d
+-POPA	include/sys/process.h	95;"	d
++POPA	include/sys/process.h	97;"	d
+ POPA2	include/sys/utils.h	20;"	d
+ PORT_H_	include/sys/port.h	2;"	d
+ PPN	include/sys/mmu.h	30;"	d
+@@ -267,7 +267,7 @@ PTXSHIFT	include/sys/mmu.h	66;"	d
+ PUSHA	include/sys/utils.h	1;"	d
+ PageStruct	include/sys/paging.h	/^typedef struct PageStruct {$/;"	s
+ PageStruct	include/sys/paging.h	/^}PageStruct;$/;"	t	typeref:struct:PageStruct
+-Pipe	include/sys/file_table.h	/^}Pipe;$/;"	t	typeref:struct:__anon4
++Pipe	include/sys/file_table.h	/^}Pipe;$/;"	t	typeref:struct:__anon8
+ ProcStatus	include/sys/process.h	/^enum ProcStatus{$/;"	g
+ ProcStruct	include/sys/process.h	/^typedef struct ProcStruct{$/;"	s
+ ProcStruct	include/sys/process.h	/^}ProcStruct;$/;"	t	typeref:struct:ProcStruct
+@@ -327,8 +327,8 @@ TRUE	sys/keyboard.c	12;"	d	file:
+ TYPE_DIRECTORY	include/sys/file_table.h	4;"	d
+ TYPE_FILE	include/sys/file_table.h	3;"	d
+ TYPE_PIPE	include/sys/file_table.h	5;"	d
+-Token	include/stringTokenizer.h	/^}Token;$/;"	t	typeref:struct:__anon8
+-Token	include/stringtokenizer.h	/^} Token;$/;"	t	typeref:struct:__anon9
++Token	include/stringTokenizer.h	/^}Token;$/;"	t	typeref:struct:__anon4
++Token	include/stringtokenizer.h	/^} Token;$/;"	t	typeref:struct:__anon1
+ Trapframe	include/sys/idt.h	/^struct Trapframe {$/;"	s
+ USERSTACKTOP	include/sys/paging.h	22;"	d
+ USER_PROCESS	include/sys/process.h	/^USER_PROCESS=0,$/;"	e	enum:ProcType
+@@ -340,8 +340,8 @@ VPD	include/sys/mmu.h	36;"	d
+ VPDPE	include/sys/mmu.h	37;"	d
+ VPML4E	include/sys/mmu.h	38;"	d
+ VPN	include/sys/mmu.h	31;"	d
+-VarList	include/parser.h	/^	char *VarList[MAX_VAR_NUM];$/;"	m	struct:__anon6
+-VarNum	include/parser.h	/^	int VarNum;$/;"	m	struct:__anon6
++VarList	include/parser.h	/^	char *VarList[MAX_VAR_NUM];$/;"	m	struct:__anon2
++VarNum	include/parser.h	/^	int VarNum;$/;"	m	struct:__anon2
+ W	sys/gdt.c	18;"	d	file:
+ _DEFS_H	include/sys/defs.h	2;"	d
+ _ERRNO_H	include/errno.h	2;"	d
+@@ -360,8 +360,8 @@ _start	tp.s	/^_start:$/;"	l
+ _x86_64_asm_lgdt	sys/gdt.s	/^_x86_64_asm_lgdt:$/;"	l
+ addr	sys/gdt.c	/^	uint64_t addr;$/;"	m	struct:gdtr_t	file:
+ addr	sys/idt.c	/^        uint64_t addr;$/;"	m	struct:idtr_t	file:
+-addr_hdr	include/sys/tarfs.h	/^    uint64_t addr_hdr;$/;"	m	struct:__anon1
+-address	include/sys/file_table.h	/^	uint64_t address; \/\/Only valid for pipe buffers and directories$/;"	m	struct:__anon4
++addr_hdr	include/sys/tarfs.h	/^    uint64_t addr_hdr;$/;"	m	struct:__anon5
++address	include/sys/file_table.h	/^	uint64_t address; \/\/Only valid for pipe buffers and directories$/;"	m	struct:__anon8
+ alarm	libc/alarm.c	/^unsigned int alarm(unsigned int sec)$/;"	f
+ align4	include/memory.h	4;"	d
+ alloc_new	libc/malloc.c	/^void *alloc_new(int aligned_size)$/;"	f
+@@ -370,6 +370,7 @@ allocate_proc_area	sys/process.c	/^int allocate_proc_area(ProcStruct* p, void* v
+ allocate_process	sys/process.c	/^ProcStruct* allocate_process(unsigned char parentid)$/;"	f
+ allocate_vma	sys/process.c	/^struct vma_struct* allocate_vma(mm_struct* mem)$/;"	f
+ allocated_mem	libc/malloc.c	/^static int allocated_mem; $/;"	v	file:
++args	sys/process.c	/^char args[15][60];$/;"	v
+ argv	tp.c	/^    ; push argv$/;"	v
+ binary	include/sys/process.h	/^uint64_t *binary;$/;"	m	struct:ProcStruct
+ block	include/memory.h	/^struct block{$/;"	s
+@@ -387,14 +388,15 @@ cat	libc/cat.c	/^void cat(char* filename){$/;"	f
+ cd	libc/testCases.c	/^void cd(char *path){$/;"	f
+ chdir	libc/chdir.c	/^int chdir(const char *path){$/;"	f
+ checksum	include/sys/tarfs.h	/^	char checksum[8];$/;"	m	struct:posix_header_ustar
+-close	include/sys/file_table.h	/^	int (*close)(); \/\/pointer to the device specific close call$/;"	m	struct:__anon5
++close	include/sys/file_table.h	/^	int (*close)(); \/\/pointer to the device specific close call$/;"	m	struct:__anon9
+ close	libc/close.c	/^int close(int fd)$/;"	f
+ close_file	sys/tarfs.c	/^int close_file(int file_table_index){$/;"	f
+ closedir	libc/closedir.c	/^int closedir(void *dir){$/;"	f
+ colour	sys/printf.c	7;"	d	file:
+-commandName	include/parser.h	/^	char *commandName;$/;"	m	struct:__anon6
++commandName	include/parser.h	/^	char *commandName;$/;"	m	struct:__anon2
+ convert_to_absolute_path_dir	sys/tarfs.c	/^void convert_to_absolute_path_dir(const char* path,char* absPath){$/;"	f
+ convert_to_absolute_path_file	sys/tarfs.c	/^void convert_to_absolute_path_file(const char* path,char* absPath){$/;"	f
++copy_args_to_stack	sys/process.c	/^int copy_args_to_stack(uint64_t stacktop,int argc)$/;"	f
+ copypagetables	sys/process.c	/^int copypagetables(ProcStruct *proc)$/;"	f
+ copyvmas	sys/process.c	/^int copyvmas(ProcStruct *proc)$/;"	f
+ count	include/sys/process.h	/^    int count;$/;"	m	struct:mm_struct
+@@ -404,7 +406,7 @@ create_process	sys/process.c	/^ProcStruct* create_process(uint64_t* binary, enum
+ cs	include/sys/isr.h	/^    uint64_t cs;$/;"	m	struct:faultStruct
+ ctrl	sys/keyboard.c	/^unsigned char ctrl = FALSE;$/;"	v
+ curproc	include/sys/process.h	/^ProcStruct* proc_free_list,*proc_running_list,*curproc;$/;"	v
+-cursor	include/sys/file_table.h	/^	uint64_t cursor; \/\/current cursor position$/;"	m	struct:__anon5
++cursor	include/sys/file_table.h	/^	uint64_t cursor; \/\/current cursor position$/;"	m	struct:__anon9
+ cwd	include/sys/process.h	/^char cwd[50]; \/\/store the current working directory of a process$/;"	m	struct:ProcStruct
+ d_ino	include/stdlib.h	/^	long d_ino;$/;"	m	struct:dirent
+ d_ino	include/sys/tarfs.h	/^	long d_ino;$/;"	m	struct:K_dirent
+@@ -424,7 +426,7 @@ dup	libc/dup.c	/^int dup(int oldfd)$/;"	f
+ dup2	libc/dup2.c	/^int dup2(int oldfd, int newfd)$/;"	f
+ dup2	sys/pipe.c	/^int dup2(int oldfd, int newfd){$/;"	f
+ dup2_test_case	libc/testCases.c	/^void dup2_test_case(){$/;"	f
+-duplicateFD	include/sys/file_table.h	/^	int duplicateFD;$/;"	m	struct:__anon4
++duplicateFD	include/sys/file_table.h	/^	int duplicateFD;$/;"	m	struct:__anon8
+ e_ehsize	include/sys/elf.h	/^	uint16_t e_ehsize;$/;"	m	struct:Elf
+ e_elf	include/sys/elf.h	/^	unsigned char e_elf[12];$/;"	m	struct:Elf
+ e_entry	include/sys/elf.h	/^	uint64_t e_entry;$/;"	m	struct:Elf
+@@ -447,11 +449,12 @@ env_pop_tf	sys/process.c	/^void env_pop_tf(struct Trapframe *tf1)$/;"	f
+ errno	sys/main.c	/^int errno = 0;$/;"	v
+ errorCode	include/sys/isr.h	/^    uint64_t errorCode;$/;"	m	struct:faultStruct
+ execve	libc/execve.c	/^int execve(const char *filename, char *const argv[], char *const envp[])$/;"	f
++execve	sys/process.c	/^uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])$/;"	f
+ exit	libc/exit.c	/^void exit(int status){$/;"	f
+ faultFrame	include/sys/isr.h	/^typedef struct faultStruct faultFrame;$/;"	t	typeref:struct:faultStruct
+ faultStruct	include/sys/isr.h	/^struct faultStruct {$/;"	s
+ fd_table	include/sys/process.h	/^int fd_table[10];  \/\/per process file descriptor array$/;"	m	struct:ProcStruct
+-fileTable_entry	include/sys/file_table.h	/^} fileTable_entry;$/;"	t	typeref:struct:__anon5
++fileTable_entry	include/sys/file_table.h	/^} fileTable_entry;$/;"	t	typeref:struct:__anon9
+ file_read_test_case	libc/testCases.c	/^void file_read_test_case(){$/;"	f
+ file_table	sys/tarfs.c	/^fileTable_entry file_table[10];$/;"	v
+ fork	libc/fork.c	/^pid_t fork()$/;"	f
+@@ -487,7 +490,7 @@ initialize_page_lists	sys/paging.c	/^void initialize_page_lists(){$/;"	f
+ initialize_process	sys/process.c	/^void initialize_process()$/;"	f
+ initialize_vm_64	sys/paging.c	/^void initialize_vm_64(void){$/;"	f
+ inode	newfs/newfs.c	/^struct inode {$/;"	s	file:
+-inode_num	include/sys/file_table.h	/^	int inode_num; \/\/the entry in the tarfs table$/;"	m	struct:__anon5
++inode_num	include/sys/file_table.h	/^	int inode_num; \/\/the entry in the tarfs table$/;"	m	struct:__anon9
+ int	bin/hello/tp.s	/^int $80$/;"	l
+ int	tp.s	/^int $80$/;"	l
+ int16_t	include/sys/defs.h	/^typedef          short  int16_t;$/;"	t
+@@ -511,6 +514,7 @@ isr6_handler	sys/isr.c	/^void isr6_handler(){$/;"	f
+ isr8_handler	sys/isr.c	/^void isr8_handler(){$/;"	f
+ ist	sys/idt.c	/^    unsigned ist : 3 ;$/;"	m	struct:idt_t	file:
+ k	bin/tabz/tab.c	/^int k=0;$/;"	v
++k	libc/testCases.c	/^int k=0;$/;"	v
+ kchdir	sys/tarfs.c	/^int kchdir(char* directoryPath){$/;"	f
+ kclose	sys/tarfs.c	/^int kclose(int fd){$/;"	f
+ keyboard_buffer	sys/keyboard.c	/^char keyboard_buffer[100]; \/\/To be used to hold the pressed keys till user presses ENTER$/;"	v
+@@ -571,15 +575,15 @@ mov	bin/hello/tp.s	/^mov  %eax, 3$/;"	l
+ mov	tp.s	/^mov  %eax, 1$/;"	l
+ mtime	include/sys/tarfs.h	/^	char mtime[12];$/;"	m	struct:posix_header_ustar
+ name	include/sys/tarfs.h	/^	char name[100];$/;"	m	struct:posix_header_ustar
+-name	include/sys/tarfs.h	/^    char name[100];$/;"	m	struct:__anon1
++name	include/sys/tarfs.h	/^    char name[100];$/;"	m	struct:__anon5
+ next	include/memory.h	/^	struct block* next;$/;"	m	struct:block	typeref:struct:block::block
+ next	include/sys/paging.h	/^        struct PageStruct *next;$/;"	m	struct:PageStruct	typeref:struct:PageStruct::PageStruct
+ next	include/sys/process.h	/^struct ProcStruct* next;$/;"	m	struct:ProcStruct	typeref:struct:ProcStruct::ProcStruct
+ nextfree	sys/paging.c	/^static char* nextfree;$/;"	v	file:
+ npages	include/sys/paging.h	/^uint64_t npages;$/;"	v
+ numOfEntries	sys/tarfs.c	/^int numOfEntries = 1; \/\/index into the tarfs table..after tarfs_init() it has the total number of entries in FS$/;"	v
+-numOfTokens	include/stringTokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon8
+-numOfTokens	include/stringtokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon9
++numOfTokens	include/stringTokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon4
++numOfTokens	include/stringtokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon1
+ octalToDecimal	sys/utils.c	/^uint64_t octalToDecimal(uint64_t octal)$/;"	f
+ off_t	include/stdlib.h	/^typedef uint64_t off_t;$/;"	t
+ offset_0_15	sys/idt.c	/^    uint16_t offset_0_15;$/;"	m	struct:idt_t	file:
+@@ -601,18 +605,18 @@ pad	include/sys/tarfs.h	/^	char pad[12];$/;"	m	struct:posix_header_ustar
+ pageToPhysicalAddress	sys/paging.c	/^uint64_t* pageToPhysicalAddress(PageStruct* page){$/;"	f
+ page_free_list	sys/paging.c	/^static struct PageStruct *page_free_list;	\/\/ Free list of physical pages. page_free_list is the head of the free list$/;"	v	typeref:struct:PageStruct	file:
+ pages	sys/paging.c	/^struct PageStruct *pages;$/;"	v	typeref:struct:PageStruct
+-par_ind	include/sys/tarfs.h	/^    int par_ind;$/;"	m	struct:__anon1
++par_ind	include/sys/tarfs.h	/^    int par_ind;$/;"	m	struct:__anon5
+ parent_id	include/sys/process.h	/^unsigned char parent_id;$/;"	m	struct:ProcStruct
+-parseInfo	include/parser.h	/^} parseInfo;$/;"	t	typeref:struct:__anon7
++parseInfo	include/parser.h	/^} parseInfo;$/;"	t	typeref:struct:__anon3
+ pde_t	include/sys/defs.h	/^typedef uint64_t pde_t;$/;"	t
+ pdpe_t	include/sys/defs.h	/^typedef uint64_t pdpe_t;$/;"	t
+ physaddr_t	include/sys/defs.h	/^typedef uint64_t physaddr_t;$/;"	t
+ physicalAddressToPage	sys/paging.c	/^PageStruct * physicalAddressToPage(uint64_t *addr){$/;"	f
+ pid_t	include/stdlib.h	/^typedef uint32_t pid_t;$/;"	t
+-pipe	include/sys/file_table.h	/^	Pipe pipe; \/\/$/;"	m	struct:__anon5
++pipe	include/sys/file_table.h	/^	Pipe pipe; \/\/$/;"	m	struct:__anon9
+ pipe	libc/pipe.c	/^int pipe(int fd[2])$/;"	f
+ pipe	sys/pipe.c	/^int pipe(int *pipefd){$/;"	f
+-pipeNum	include/parser.h	/^	int   pipeNum;$/;"	m	struct:__anon7
++pipeNum	include/parser.h	/^	int   pipeNum;$/;"	m	struct:__anon3
+ pipe_close	sys/pipe.c	/^int pipe_close(int fd){$/;"	f
+ pipe_read	sys/pipe.c	/^int pipe_read(int file_table_index,char* buf, int numBytesToRead){$/;"	f
+ pipe_write	sys/pipe.c	/^int pipe_write(int file_table_index,char *buf,int numBytesToWrite){$/;"	f
+@@ -621,7 +625,7 @@ pml4e_t	include/sys/defs.h	/^typedef uint64_t pml4e_t;$/;"	t
+ posix_header_ustar	include/sys/tarfs.h	/^struct posix_header_ustar {$/;"	s
+ power	sys/utils.c	/^uint64_t power(uint64_t x, int e) {$/;"	f
+ prefix	include/sys/tarfs.h	/^	char prefix[155];$/;"	m	struct:posix_header_ustar
+-present	include/sys/file_table.h	/^	int present; \/\/indicates if this entry is valid or not 0->free 1->present$/;"	m	struct:__anon5
++present	include/sys/file_table.h	/^	int present; \/\/indicates if this entry is valid or not 0->free 1->present$/;"	m	struct:__anon9
+ prev	include/memory.h	/^	struct block* prev;$/;"	m	struct:block	typeref:struct:block::block
+ print_keyboard_buff	sys/keyboard.c	/^void print_keyboard_buff(){$/;"	f
+ print_num	libc/printf.c	/^void print_num(int num, int base)$/;"	f
+@@ -643,15 +647,15 @@ procs	include/sys/process.h	/^ProcStruct* procs; $/;"	v
+ ps	libc/ps.c	/^int ps(){$/;"	f
+ pt	include/sys/process.h	/^    uint64_t * pt; \/\/ page table pointer  $/;"	m	struct:mm_struct
+ pte_t	include/sys/defs.h	/^typedef uint64_t pte_t;$/;"	t
+-read	include/sys/file_table.h	/^	int (*read)(); \/\/pointer to the device specific read call$/;"	m	struct:__anon5
++read	include/sys/file_table.h	/^	int (*read)(); \/\/pointer to the device specific read call$/;"	m	struct:__anon9
+ read	libc/read.c	/^ssize_t read(int fd, void *buf, size_t count){$/;"	f
+ read_cr2_register	sys/isr.c	/^uint64_t read_cr2_register(){$/;"	f
+-read_cursor	include/sys/file_table.h	/^	uint64_t read_cursor;$/;"	m	struct:__anon4
++read_cursor	include/sys/file_table.h	/^	uint64_t read_cursor;$/;"	m	struct:__anon8
+ read_file	sys/tarfs.c	/^int read_file(int file_table_index,char *buf,int numBytesToRead){$/;"	f
+ read_line	libc/testCases.c	/^void read_line(int fd, char* buf)$/;"	f
+ readdir	libc/readdir.c	/^struct dirent* readdir(void *dir){$/;"	f
+-readers	include/sys/file_table.h	/^	int readers;$/;"	m	struct:__anon4
+-ref_count	include/sys/file_table.h	/^	int ref_count; \/\/number of processes which have this file open$/;"	m	struct:__anon5
++readers	include/sys/file_table.h	/^	int readers;$/;"	m	struct:__anon8
++ref_count	include/sys/file_table.h	/^	int ref_count; \/\/number of processes which have this file open$/;"	m	struct:__anon9
+ ref_count	include/sys/paging.h	/^	uint16_t ref_count;$/;"	m	struct:PageStruct
+ refcount	newfs/newfs.c	/^	uint64_t refcount;$/;"	m	struct:inode	file:
+ reg_r10	include/sys/idt.h	/^    uint64_t reg_r10;$/;"	m	struct:GpRegs
+@@ -716,11 +720,11 @@ sh_type	include/sys/elf.h	/^	uint32_t sh_type;$/;"	m	struct:Secthdr
+ shift	sys/keyboard.c	/^unsigned char shift = FALSE;$/;"	v
+ show_fd_table	sys/tarfs.c	/^void show_fd_table(){$/;"	f
+ show_file_table	sys/tarfs.c	/^void show_file_table(int fd){$/;"	f
+-singleCommand	include/parser.h	/^}singleCommand;$/;"	t	typeref:struct:__anon6
++singleCommand	include/parser.h	/^}singleCommand;$/;"	t	typeref:struct:__anon2
+ size	include/memory.h	/^	int size;$/;"	m	struct:block
+-size	include/sys/file_table.h	/^	int size;$/;"	m	struct:__anon5
++size	include/sys/file_table.h	/^	int size;$/;"	m	struct:__anon9
+ size	include/sys/tarfs.h	/^	char size[12];$/;"	m	struct:posix_header_ustar
+-size	include/sys/tarfs.h	/^    int size;$/;"	m	struct:__anon1
++size	include/sys/tarfs.h	/^    int size;$/;"	m	struct:__anon5
+ size	libc/malloc.c	/^    int size;$/;"	m	struct:MCB_header_t	file:
+ size	sys/gdt.c	/^	uint16_t size;$/;"	m	struct:gdtr_t	file:
+ size	sys/idt.c	/^		uint16_t size;$/;"	m	struct:idtr_t	file:
+@@ -748,6 +752,7 @@ sys_chdir	sys/syscall.c	/^int sys_chdir(char* path){$/;"	f
+ sys_close_directory	sys/syscall.c	/^int sys_close_directory(void* dir){$/;"	f
+ sys_close_file	sys/syscall.c	/^uint64_t sys_close_file(int fd){$/;"	f
+ sys_dup2	sys/syscall.c	/^int sys_dup2(int oldfd,int newfd){$/;"	f
++sys_execve	sys/syscall.c	/^int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])$/;"	f
+ sys_exit	sys/syscall.c	/^void sys_exit(uint64_t error_code){$/;"	f
+ sys_fork	sys/syscall.c	/^int sys_fork(struct Trapframe* tf)$/;"	f
+ sys_getcwd	sys/syscall.c	/^uint64_t sys_getcwd(char* buff, uint64_t size){$/;"	f
+@@ -768,7 +773,7 @@ syscall_1	include/syscall.h	/^static __inline int64_t syscall_1(uint64_t n, uint
+ syscall_2	include/syscall.h	/^static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {$/;"	f
+ syscall_3	include/syscall.h	/^static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {$/;"	f
+ tabwidth	sys/printf.c	6;"	d	file:
+-tarfs_entry	include/sys/tarfs.h	/^} tarfs_entry;$/;"	t	typeref:struct:__anon1
++tarfs_entry	include/sys/tarfs.h	/^} tarfs_entry;$/;"	t	typeref:struct:__anon5
+ tarfs_fs	sys/tarfs.c	/^tarfs_entry tarfs_fs[100];$/;"	v
+ tarfs_init	sys/tarfs.c	/^void tarfs_init(){$/;"	f
+ terminal_read	sys/tarfs.c	/^int terminal_read(int file_table_index,char *buf,int numBytesToRead){$/;"	f
+@@ -796,19 +801,19 @@ tf_trapno	include/sys/idt.h	/^	uint64_t tf_trapno;$/;"	m	struct:Trapframe
+ timeTillNow	sys/isr.c	/^unsigned long int timeTillNow=0;$/;"	v
+ timespec	libc/sleep.c	/^struct timespec$/;"	s	file:
+ tlb_invalidate	sys/paging.c	/^tlb_invalidate(pml4e_t *pml4e, void *va)$/;"	f
+-tokenArr	include/stringTokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon8
+-tokenArr	include/stringtokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon9
++tokenArr	include/stringTokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon4
++tokenArr	include/stringtokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon1
+ tss	sys/main.c	/^struct tss_t tss;$/;"	v	typeref:struct:tss_t
+ tss_t	include/sys/gdt.h	/^struct tss_t {$/;"	s
+ tv_nsec	include/sys/process.h	/^	int64_t tv_nsec;$/;"	m	struct:K_timespec
+ tv_nsec	libc/sleep.c	/^	int64_t tv_nsec;$/;"	m	struct:timespec	file:
+ tv_sec	include/sys/process.h	/^	unsigned int tv_sec;$/;"	m	struct:K_timespec
+ tv_sec	libc/sleep.c	/^	unsigned int tv_sec;$/;"	m	struct:timespec	file:
+-type	include/sys/file_table.h	/^	uint64_t type;$/;"	m	struct:__anon5
++type	include/sys/file_table.h	/^	uint64_t type;$/;"	m	struct:__anon9
+ type	include/sys/process.h	/^enum ProcType type;$/;"	m	struct:ProcStruct	typeref:enum:ProcStruct::ProcType
+ type	sys/idt.c	/^    unsigned type : 4;$/;"	m	struct:idt_t	file:
+ typeflag	include/sys/tarfs.h	/^	char typeflag[1];$/;"	m	struct:posix_header_ustar
+-typeflag	include/sys/tarfs.h	/^    int typeflag;$/;"	m	struct:__anon1
++typeflag	include/sys/tarfs.h	/^    int typeflag;$/;"	m	struct:__anon5
+ uid	include/sys/tarfs.h	/^	char uid[8];$/;"	m	struct:posix_header_ustar
+ uint16_t	include/sys/defs.h	/^typedef unsigned short uint16_t;$/;"	t
+ uint32_t	include/sys/defs.h	/^typedef unsigned int   uint32_t;$/;"	t
+@@ -837,12 +842,12 @@ vma_struct	include/sys/process.h	/^typedef struct vma_struct{$/;"	s
+ vma_struct	include/sys/process.h	/^}vma_struct;$/;"	t	typeref:struct:vma_struct
+ waitpid	libc/process.c	/^pid_t waitpid(pid_t pid, int *status, int options)$/;"	f
+ wakeuptime	include/sys/process.h	/^uint64_t wakeuptime;$/;"	m	struct:ProcStruct
+-write	include/sys/file_table.h	/^	int (*write)(); \/\/pointer to the device specific write call$/;"	m	struct:__anon5
++write	include/sys/file_table.h	/^	int (*write)(); \/\/pointer to the device specific write call$/;"	m	struct:__anon9
+ write	libc/write.c	/^ssize_t write(int fd, const void *buf, size_t count){$/;"	f
+-write_cursor	include/sys/file_table.h	/^	uint64_t write_cursor;$/;"	m	struct:__anon4
++write_cursor	include/sys/file_table.h	/^	uint64_t write_cursor;$/;"	m	struct:__anon8
+ write_file	sys/tarfs.c	/^int write_file(int file_table_index,char *buf,int numBytesToWrite){$/;"	f
+ write_text	sys/printf.c	/^int write_text(int len) {$/;"	f
+-writers	include/sys/file_table.h	/^	int writers;$/;"	m	struct:__anon4
++writers	include/sys/file_table.h	/^	int writers;$/;"	m	struct:__anon8
+ x	sys/printf.c	/^static int x=5,y;$/;"	v	file:
+ y	sys/printf.c	/^static int x=5,y;$/;"	v	file:
+ zero	sys/idt.c	/^    unsigned zero : 1;$/;"	m	struct:idt_t	file:

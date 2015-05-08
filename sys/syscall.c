@@ -19,14 +19,23 @@ void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
 
 
 }
+
 void sys_exit(uint64_t error_code){
 //    printf("Exiting Process%p %d",curproc,curproc->proc_id);
     if(curproc)
     {
-        proc_free(curproc);
+    proc_free(curproc);
     remove_page(curproc->cr3);
     remove_page((uint64_t*)PADDR((uint64_t)curproc->mm));
 
+    ProcStruct* parent =((ProcStruct*)procs+curproc->parent_id+1);
+
+    if(parent->status == WAITING && (parent->waitingfor == curproc->proc_id || parent->waitingfor == 0))
+    {
+        parent->status=RUNNABLE;
+    }
+         parent->num_child--;  
+    
     printf("Exited\n");
     
    // kmemset((void*)proc,0,sizeof(ProcStruct));
@@ -162,4 +171,35 @@ int sys_sleep(void* t){
 
 	return proc_sleep(t);
 
+}
+
+
+int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
+{
+return execve(arg1,arg2,arg3);
+}
+
+
+uint64_t sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions)
+{
+
+    if( curproc->num_child==0)
+    {
+        *((uint64_t*)chstatus) =-1;
+        return -1;
+    }
+
+if(chpid>0)
+{
+curproc->waitingfor = chpid;
+}
+else
+{
+curproc->waitingfor = 0;
+}
+
+curproc->status =WAITING;
+if(chstatus!=0)
+     *((uint64_t*)chstatus) =0;
+return curproc->waitingfor;
 }
