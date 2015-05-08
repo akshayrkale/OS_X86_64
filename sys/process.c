@@ -69,7 +69,7 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->status = RUNNABLE;
     NewProc->waitingfor = -1;
     NewProc->num_child=0;
-    ((ProcStruct*)(procs+parentid+1))->num_child++;
+    ((ProcStruct*)(procs+parentid-1))->num_child++;
     proccount++;
     PageStruct *pa=allocate_page();
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
@@ -216,6 +216,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
             max_addr=vma->vm_end;
         vma->vm_mm=e->mm;
         vma->vm_size = ph->p_memsz;
+        vma->vm_filesz = ph->p_filesz;
         vma->vm_next = NULL;
         vma->vm_type=LOAD;
         vma->vm_file = (uint64_t*)elf;
@@ -563,17 +564,17 @@ uint64_t inc_brk(uint64_t n)
 {
 vma_struct* vma=curproc->mm->mmap;
 
-printf("inc_brk\n");
+//printf("inc_brk\n");
 while(vma->vm_type!=HEAP)
 {
 vma=vma->vm_next;
 }
 
-printf("inc_brk: after loop\n");
+//printf("inc_brk: after loop\n");
 
 if(vma)
 {
-    printf("inc_brk:in if\n");
+    //printf("inc_brk:in if\n");
     vma->vm_end=vma->vm_end+n;
     curproc->mm->end_brk+=n;
     return vma->vm_end;

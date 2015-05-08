@@ -270,8 +270,16 @@ void isr14_handler(struct faultStruct *faultFrame)
                      allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
                      if(vma->vm_type == LOAD)
 		     {
+
 			uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
-                     kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
+            int size=PGSIZE;
+            if(ROUNDDOWN(vaddr,PGSIZE)+size>vma->vm_start+vma->filesz)
+                size= vma->vm_start+vma->vm_filesz-ROUNDDOWN(vaddr,PGSIZE); 
+            if(size<0)
+                size=0;
+            printf("sizecpd=%d",size);
+                     kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),size);
+                    
                      }
  
                 }
@@ -444,6 +452,12 @@ void isr128_handler(struct Trapframe* tf){
                     syscall_ret_value  = sys_execve((const char*)tf->tf_regs.reg_rdi,(const char**)tf->tf_regs.reg_rsi,(const char**)tf->tf_regs.reg_rdx);
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
+                case SYS_wait4:
+                    syscall_ret_value  = sys_waitpid(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    scheduler();
+                break;
+
                 default:
                         break;
 

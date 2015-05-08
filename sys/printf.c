@@ -49,7 +49,7 @@ int write_text(int len) {
 
     if( x==21){
 
-//			update_screen();
+			update_screen();
 
 		}
 

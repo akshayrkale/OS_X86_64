@@ -82,7 +82,7 @@ int pipe(int *pipefd){
 
 	curproc->fd_table[fd2]=k; //erite end
 
-	//printf("fd1 : %d fd2 : %d",fd1,fd2);
+	printf("fd1 : %d fd2 : %d",fd1,fd2);
 	//printf("file_table_index_read: %d file_table_index_write: %d",file_table[])
 	
 

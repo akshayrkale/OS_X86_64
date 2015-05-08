@@ -28,7 +28,7 @@ void sys_exit(uint64_t error_code){
     remove_page(curproc->cr3);
     remove_page((uint64_t*)PADDR((uint64_t)curproc->mm));
 
-    ProcStruct* parent =((ProcStruct*)procs+curproc->parent_id+1);
+    ProcStruct* parent =((ProcStruct*)procs+curproc->parent_id-1);
 
     if(parent->status == WAITING && (parent->waitingfor == curproc->proc_id || parent->waitingfor == 0))
     {
@@ -96,7 +96,7 @@ uint64_t sys_open_file(const char* name){
 }
 
 uint64_t sys_read_file(int fd, char* buf , int numBytes){
-
+    printf("FDD DDD=%d",fd);
 	return kread(fd,buf,numBytes);
 	
 
@@ -183,23 +183,30 @@ return execve(arg1,arg2,arg3);
 uint64_t sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions)
 {
 
+   printf("In sys_waitpid... FD=%d) ",curproc->fd_table[3]);
     if( curproc->num_child==0)
     {
-        *((uint64_t*)chstatus) =-1;
+
+    	printf("In sys_waitpid 1st if... FD=%d) ",curproc->fd_table[3]);
+        *((int*)chstatus) =-1;
         return -1;
     }
 
 if(chpid>0)
 {
+
+	printf("In sys_waitpid 2nd if... FD=%d) ",curproc->fd_table[3]);
 curproc->waitingfor = chpid;
 }
 else
 {
+	printf("In sys_waitpid 2nd else... FD=%d) ",curproc->fd_table[3]);
 curproc->waitingfor = 0;
 }
 
 curproc->status =WAITING;
+
 if(chstatus!=0)
-     *((uint64_t*)chstatus) =0;
+     *((int*)chstatus) =0;
 return curproc->waitingfor;
 }

@@ -8,21 +8,24 @@
 
 void dup2_test_case(){
 
-	int pipeFD[2];
+
+	int *pipeFD=(int*)malloc(2*sizeof(int));
 
 	pipe(pipeFD);
+
+    printf("After malloc pipeFD[0]: %d pipeFD[1]: %d\n",pipeFD[0],pipeFD[1]);
 
 	int pid=fork();
 
 	//printf("DUP2 TEST CASE\n");
 
-	if(pid!=0){
+	if(pid==0){
 
 		//child writes parent reads
 		//close(pipeFD[0]);
-		printf("In parent process\n");
+		printf("In child process\n");
 		dup2(pipeFD[1],1);
-		printf("This is parent writing in pipe\n");
+		printf("This is child writing in pipe\n");
 		//close(pipeFD[1]);
 	}
 	else{
@@ -35,7 +38,7 @@ void dup2_test_case(){
 
 		read(pipeFD[0],buff,100);
 
-		printf("Child read: %s\n",buff);
+		printf("Parent read: %s\n",buff);
 
 		//close(pipeFD[0]);
 
@@ -338,3 +341,51 @@ k=9;
     printf("Oot fgfgg\n");
 
 } 
+
+
+
+void waitpid_test(){
+
+
+
+
+
+    int pipeFD[2];
+
+            pipe(pipeFD);
+//printf("PIPEFD: %d %d",pipeFD[0],pipeFD[1]);
+                int status;
+
+
+                    int pid = fork();
+
+                        if(pid == 0){
+
+                                    //printf("In parent process\n");
+                                    close(pipeFD[0]);
+                                    dup2(pipeFD[1],1);
+                                    printf("This is child writing in pipe\n");
+
+                                  }
+
+                            else{
+                                  //printf("ThePARENT %d\n",pipeFD[0]);
+
+                                  char buff[100];
+                                  close(pipeFD[1]);
+                                  //printf("ThePARENT1 %d\n",pipeFD[0]);
+int ret=waitpid(pid,&status,0);
+                                   //printf("ThePARENT2 %d\n",pipeFD[0]);
+                                 int i=4999999;
+                                  while(i--);
+                                  printf("The parent has woken up%d %d\n",ret,pipeFD[0]);
+                                  read(pipeFD[0],buff,100);
+                                  printf("The child wrote: %s\n",buff);
+                            }
+
+
+
+
+
+    
+}

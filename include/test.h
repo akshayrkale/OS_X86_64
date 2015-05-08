@@ -9,3 +9,4 @@ void cd(char* path);
 void ls();
 void sleep_test_case();
 void read_line(int,char*);
+void waitpid_test();

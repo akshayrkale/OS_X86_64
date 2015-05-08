@@ -597,9 +597,9 @@ int kread(int fd,char* buf, int numBytesToRead){
 
 	int file_table_index = curproc->fd_table[fd];
 
-	// printf("In read fd passed :%d",fd);
-	// printf("file_table_index %d\n",file_table_index );
-	// printf("read: %p\n",file_table[file_table_index].read );
+	 printf("In read fd passed :%d",fd);
+	 printf("file_table_index %d\n",file_table_index );
+	 printf("read: %p\n",file_table[file_table_index].read );
 
 	return file_table[file_table_index].read(file_table_index,buf,numBytesToRead);
 

@@ -62,6 +62,7 @@ static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
 static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
 
 	uint64_t ret;
+    
 	__asm__("movq %1,%%rax;"
 			"movq %2,%%rdi;"
 			"movq %3, %%rsi;"

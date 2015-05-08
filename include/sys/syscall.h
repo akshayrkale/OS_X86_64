@@ -48,6 +48,7 @@ int sys_sleep(void* t);
 int sys_dup2(int oldfd,int newfd);
 int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
 ;
+uint64_t sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions);
 
 
 #endif
