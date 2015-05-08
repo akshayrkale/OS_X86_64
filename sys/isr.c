@@ -11,6 +11,7 @@
 #include<sys/utils.h>
 #include<sys/mmu.h>
 #include<sys/tarfs.h>
+#include <errno.h>
 
 
 
@@ -100,6 +101,7 @@ INTERRUPT(5);
 INTERRUPT(6);
 INTERRUPT_NO_ERRORCODE(128);
 
+unsigned long int timeTillNow=0;
 
 void isr32_handler(struct Trapframe *tf){
 static unsigned long int ticks=0;
@@ -114,6 +116,9 @@ volatile char *video = (volatile char*)VIDEO_START+2*(24*80+73);
 print_time(ticks++/1000,video);
 PIC_sendEOI(0);
 
+//update time till now for use in sleep
+timeTillNow=ticks/1000;
+
 if(ticks%900 == 0)
 {
     if((tf->tf_cs & 3) == 3)
@@ -122,7 +127,7 @@ if(ticks%900 == 0)
         tf=&curproc->tf;
         if(curproc->status==RUNNING)
             curproc->status =RUNNABLE;
-        printf("RIP",tf->tf_rip);
+        //printf("RIP",tf->tf_rip);
         
     }
 
@@ -195,7 +200,7 @@ void isr14_handler(struct faultStruct *faultFrame)
 //        printf("Address of faultFrame %p",faultFrame);
 //        printf(" \n Error occured at %p ", faultFrame->rip);
 //        printf(" \n Faulting virtual address is %p", vaddr);
-
+//
         if(curproc->status==RUNNING)
         {
             vma_struct *vma=curproc->mm->mmap;
@@ -225,27 +230,27 @@ void isr14_handler(struct faultStruct *faultFrame)
                     if(physicalAddressToPage((uint64_t*)(pte[PTX(vaddr)]&~0xfff))->ref_count<=1)
                    {
 
-                        curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
+                      /*  curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
                         curproc->pml4e[PML4(vaddr)] |=PTE_W;
                         pdpe[PDPE(vaddr)] &=~PTE_COW;
                         pdpe[PDPE(vaddr)] |=PTE_W;
                         pde[PDX(vaddr)] &=~PTE_COW;
-                        pde[PDX(vaddr)] |=PTE_W;
+                        pde[PDX(vaddr)] |=PTE_W;*/
                         pte[PTX(vaddr)] &=~PTE_COW;
                         pte[PTX(vaddr)] |=PTE_W;
-                   
+                  	printf("accesing%d %p %p",curproc->proc_id,vaddr,pte[PTX(vaddr)]); 
                    } 
                    else
                    {
-                        curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
+                       /* curproc->pml4e[PML4(vaddr)] &=~PTE_COW;
                         curproc->pml4e[PML4(vaddr)] |=PTE_W;
                         pdpe[PDPE(vaddr)] &=~PTE_COW;
                         pdpe[PDPE(vaddr)] |=PTE_W;
                         pde[PDX(vaddr)] &=~PTE_COW;
                         pde[PDX(vaddr)] |=PTE_W;
                         pte[PTX(vaddr)] &=~PTE_COW;
-                        pte[PTX(vaddr)] |=PTE_W;
-
+                        pte[PTX(vaddr)] |=PTE_W;*/
+		printf("Copying %d %p %p",curproc->proc_id,vaddr,pte[PTX(vaddr)]);
                       physicalAddressToPage((uint64_t*)(pte[PTX(vaddr)]&~0xfff))->ref_count--;
                       uint64_t page= pte[PTX(vaddr)]&~0xfff;
                       uint64_t newpage=allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE);
@@ -255,13 +260,19 @@ void isr14_handler(struct faultStruct *faultFrame)
                      lcr3(curproc->cr3);
                    
                    }
-                } //handle other permission violations else{} here
+                }
+			else{
+	printf("Permission Violation");
+} //handle other permission violations else{} here
                 }
                 else //always LOAD type
-                {printf("OLD");
+                {//printf("OLD");
                      allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
-                     uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
+                     if(vma->vm_type == LOAD)
+		     {
+			uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
                      kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),PGSIZE);
+                     }
  
                 }
             }
@@ -273,6 +284,14 @@ void isr14_handler(struct faultStruct *faultFrame)
 
                      allocate_proc_area(curproc, (void*)stack->vm_start-PGSIZE,PGSIZE);
                  //stack or heap
+                 }
+                 else
+                 {
+                     printf("Segmentation Fault:%d",curproc->proc_id);
+                     proc_free(curproc);
+                     curproc->status=FREE;
+                     //proccount--;
+                     //kill process
                  }
                  heap++;
             }
@@ -289,6 +308,7 @@ void isr128_handler(struct Trapframe* tf){
         switch(syscall_number){
     
                 case SYS_write:
+                        //printf("In sys write isr\n");
                         syscall_ret_value = sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
                         tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                         break;
@@ -296,7 +316,7 @@ void isr128_handler(struct Trapframe* tf){
 
                 case SYS_exit:
                         sys_exit(2);
-                        printf("exited");
+                        //printf("exited");
                         break;
 
                 case SYS_fork:
@@ -341,7 +361,7 @@ void isr128_handler(struct Trapframe* tf){
           //              printf("Going to open Normal file\n");
                         syscall_ret_value  = sys_open_file((char*)tf->tf_regs.reg_rdi);
                         tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
-
+                        
 
 
                     }
@@ -397,7 +417,29 @@ void isr128_handler(struct Trapframe* tf){
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
 
+                case SYS_ps:
+                    tf->tf_regs.reg_rax=sys_ps();
+                    break;
+		      case SYS_brk:
+        			tf->tf_regs.reg_rax = sys_brk(tf->tf_regs.reg_rdi);
+        			break;
 
+
+
+                case SYS_dup2:
+
+                    //printf("Inside isr.c dup2\n");
+                    syscall_ret_value  = sys_dup2((int)tf->tf_regs.reg_rdi,(int)tf->tf_regs.reg_rsi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
+
+                    
+                case SYS_nanosleep:
+
+                    printf("IN ISR\n");
+                    syscall_ret_value  = sys_sleep((void*)tf->tf_regs.reg_rdi);
+                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                    break;
 
                 default:
                         break;

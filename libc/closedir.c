@@ -22,8 +22,7 @@ int closedir(void *dir){
 	//printf("closedir syscall returned %d\n",retvalue );
 
 	if(retvalue<0){
-		errno = - retvalue;
-		//printf("Directory not closed Error\n\n");
+		
 		return -1;
 
 	}

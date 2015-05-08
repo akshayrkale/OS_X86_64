@@ -72,7 +72,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
 {
     uint64_t* pdpe,*pde,*pte;
 //extract the upper 9 bits of VA to get the index into pml4e.
-    for(uint64_t i=0; i<=size; i+=PGSIZE)
+    for(uint64_t i=0; i<size; i+=PGSIZE)
     {
     if((pml4e[PML4(va+i)] & (uint64_t)PTE_P) == 0)
     {

@@ -12,6 +12,8 @@
 #include <sys/file_table.h>
 
 uint16_t proccount=0;
+extern unsigned long int timeTillNow;
+
 void initialize_process()
 {
 unsigned char i;
@@ -149,10 +151,11 @@ int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)
     for(char* i=start; i<end; i+=PGSIZE)
     {
         pa = allocate_page();
-
+	pa->ref_count++;
         if(!pa)
            return -1;
         newpage = pageToPhysicalAddress(pa);
+	
         //printf("Mapping..%p to %p",i,newpage);
         map_vm_pm(p->pml4e, (uint64_t)i,(uint64_t)newpage,PGSIZE,PTE_P |PTE_U|PTE_W);
 
@@ -195,7 +198,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
     uint64_t max_addr=0;
     
     if (elf && elf->e_magic == ELF_MAGIC) {
-        printf("this is elf");
+        //printf("this is elf");
         lcr3(e->cr3);       
         ph  = (struct Proghdr *)((unsigned char *)elf + elf->e_phoff);
         eph = ph + elf->e_phnum;
@@ -239,7 +242,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
        
          int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
          physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
-printf("stack page:%p-%d ",p,e->proc_id);
+//printf("stack page:%p-%d ",p,e->proc_id);
          e->tf.tf_rip    = elf->e_entry;
          e->tf.tf_rsp    = USERSTACKTOP;
        
@@ -254,6 +257,7 @@ printf("stack page:%p-%d ",p,e->proc_id);
          vma->vm_next = NULL;
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
+	 e->mm->start_brk=e->mm->end_brk=max_addr;
          lcr3(boot_cr3);
     } else {
         return -1;
@@ -309,9 +313,10 @@ int scheduler()
     }
     else 
         start = start->next;
-   
+    
+    int num_procs=proccount;
         
-    while(start->status!=RUNNABLE && proccount>0)
+    while((start->status!=RUNNABLE || start->wakeuptime >= timeTillNow) && num_procs>0)
     {
         while(start->next!=NULL && start->next->status == FREE) //if proc_rinning_list->status==free it wont be added to free list immediately
         {
@@ -319,15 +324,19 @@ int scheduler()
             start->next = proc_free_list;
             proc_free_list = start->next;
             start->next=newnext;
+            proccount--;
+            num_procs--;
         }
         if(start->next!=NULL)
             start=start->next;
         else 
             start=proc_running_list;
+
+        num_procs--;
     }
     if(start->status == RUNNABLE)
     {
-        printf("Running process:%d",start->proc_id);
+        //printf("Running process:%d",start->proc_id);
         proc_run(start);
     }
     return 0;
@@ -491,13 +500,13 @@ int copypagetables(ProcStruct *proc)
     {
         chpdpe = pageToPhysicalAddress(allocate_page());
         chpml4e[ipml4e]= ((uint64_t)chpdpe &(~0xFFF)) | (pml4e[ipml4e]&(0xfff));
-
+/*
         if(chpml4e[ipml4e] & PTE_W)
         {
             chpml4e[ipml4e]=(chpml4e[ipml4e]&~PTE_W)|PTE_COW;
             pml4e[ipml4e]=(pml4e[ipml4e]&~PTE_W)|PTE_COW;
         }
-
+*/
         //printf("ret=%p",pdpe);
     
     pdpe = (uint64_t*) (KADDR(pml4e[ipml4e]) & (~0xFFF));
@@ -512,12 +521,12 @@ int copypagetables(ProcStruct *proc)
         chpde = pageToPhysicalAddress(allocate_page());
         chpdpe[ipdpe]= ((uint64_t)chpde &(~0xFFF)) | (pdpe[ipdpe]&(0xfff));
 
-        if(chpdpe[ipdpe] & PTE_W)
+  /*      if(chpdpe[ipdpe] & PTE_W)
         {
             chpdpe[ipdpe]=(chpdpe[ipdpe]&~PTE_W) | PTE_COW;
             pdpe[ipdpe]=(pdpe[ipdpe]&~PTE_W) | PTE_COW;
         }
-
+*/
         //printf("ret=%p",pdpe);
     
       pde = (uint64_t*) (KADDR(pdpe[ipdpe]) & (~0xFFF));
@@ -530,14 +539,14 @@ int copypagetables(ProcStruct *proc)
         chpte = pageToPhysicalAddress(allocate_page());
         chpde[ipde]= ((uint64_t)chpte &(~0xFFF)) | (pde[ipde]&(0xfff));
 
-        if(chpde[ipde] & PTE_W)
+  /*      if(chpde[ipde] & PTE_W)
         {
             chpde[ipde]=(chpde[ipde]&~PTE_W)| PTE_COW;
             pde[ipde]=(pde[ipde]&~PTE_W)| PTE_COW;
 
         }
 
-        //printf("ret=%p",pdpe);
+    */    //printf("ret=%p",pdpe);
     
     
     pte = (uint64_t*) (KADDR(pde[ipde]) & (~0xFFF));
@@ -554,6 +563,7 @@ int copypagetables(ProcStruct *proc)
             chpte[ipte]=(chpte[ipte]&~PTE_W)| PTE_COW;
             pte[ipte]=(pte[ipte]&~PTE_W)| PTE_COW;
             physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
+printf("inc %p",pte[ipte]);
         }
         //printf("ret=%p",pdpe);
     }
@@ -581,5 +591,101 @@ int copyvmas(ProcStruct *proc)
     }
     return 0;
 }
+/* OLD
+uint64_t inc_brk(uint64_t n)
+{
+vma_struct* vma=curproc->mm->mmap;
+while(vma->vm_type!=HEAP)
+{
+vma=vma->vm_next;
+}
+
+if(vma)
+{
+    vma->vm_end=vma->vm_end+n;
+    curproc->mm->end_brk+=n;
+    return vma->vm_end;
+}
+else
+    return -1;
+}
+*/
 
 
+
+uint64_t inc_brk(uint64_t n)
+{
+vma_struct* vma=curproc->mm->mmap;
+
+printf("inc_brk\n");
+while(vma->vm_type!=HEAP)
+{
+vma=vma->vm_next;
+}
+
+printf("inc_brk: after loop\n");
+
+if(vma)
+{
+    printf("inc_brk:in if\n");
+    vma->vm_end=vma->vm_end+n;
+    curproc->mm->end_brk+=n;
+    return vma->vm_end;
+
+}
+
+
+else
+    return -1;
+}
+
+
+
+
+int get_running_process(){
+
+
+  //int i;
+  int j = proccount;
+  
+  ProcStruct* temp = proc_running_list;
+    
+  if(temp==NULL){
+
+    return -1;
+
+  }
+      
+  printf("\nNumber of running process in the list: %d\n", proccount);
+  while(j!=0){
+
+    if(temp->status == RUNNABLE || temp->status == RUNNING){
+      printf("Process ID : %d \n", temp->proc_id);
+    }         
+    
+    j--;
+    temp = temp->next;
+
+  }
+    return 0;
+}
+
+
+int proc_sleep(void* t){
+ 
+  printf("In sleep syscall\n");
+
+  struct K_timespec* x = t;
+
+  curproc->wakeuptime = timeTillNow + x->tv_sec;
+
+  printf("Current Time %d\nProcess%d Wakeup time %d", timeTillNow,curproc->proc_id,curproc->wakeuptime);
+
+  curproc->status = RUNNABLE;
+
+  scheduler();
+
+  return 0;
+
+
+}

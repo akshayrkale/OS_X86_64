@@ -12,7 +12,7 @@
 
 int pipe(int *pipefd){
 
-	//printf("Inside PIPE\n");
+	printf("Inside PIPE\n");
 
 	//create a shared space using malloc
 	char pipeBuffer[1024];
@@ -82,7 +82,7 @@ int pipe(int *pipefd){
 
 	curproc->fd_table[fd2]=k; //erite end
 
-	printf("fd1 : %d fd2 : %d",fd1,fd2);
+	//printf("fd1 : %d fd2 : %d",fd1,fd2);
 	//printf("file_table_index_read: %d file_table_index_write: %d",file_table[])
 	
 
@@ -99,7 +99,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 
 	int duplicateFD=-1;
 
-	//printf("In pipe write\n");
+	printf("In pipe write\n");
 
 	//If writing to a read pipe then fail
 
@@ -141,7 +141,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 
 			file_table[duplicateFD].cursor += numBytesToWrite;
 
-			//printf("After writing in pipe\n");
+			printf("After writing in pipe : %s\n",ch);
 
 		}
 
@@ -156,7 +156,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 int pipe_read(int file_table_index,char* buf, int numBytesToRead){
 
 	
-	//printf("In pipe read\n");
+	printf("In pipe read\n");
 
 	//If reading from a write pipe return BADFD
 
@@ -187,6 +187,8 @@ int pipe_read(int file_table_index,char* buf, int numBytesToRead){
 	//Assumption always read from the start of the buffer
 	kmemcpy(buf,(char*)file_table[file_table_index].pipe.address,bytesCanBeRead);
 	buf[bytesCanBeRead]='\0';
+
+	printf("After reading %d bytes content: %s\n",bytesCanBeRead,buf);
 
 	return bytesCanBeRead;
 
@@ -222,6 +224,36 @@ int pipe_close(int fd){
 
 		file_table[file_table_index].ref_count = 0;
 	}
+
+	return 0;
+}
+
+
+int dup2(int oldfd, int newfd){
+
+	
+	//Check if oldFD itself is valid
+
+	if(curproc->fd_table[oldfd] == -1){
+
+		//invalid or unused entry
+		printf("sys/pipe.c: Invalid oldfd\n");
+		return -1;
+	}
+
+	//Check if old and new fd are same
+	if(oldfd == newfd){
+
+		//Nothing to do
+		return 0;
+	}
+	
+	int file_table_index = curproc->fd_table[oldfd];
+
+	//printf("In DUP2 ---> oldFD :%d NewFD :%d file_table_index: %d\n",oldfd,newfd,file_table_index);
+
+	curproc->fd_table[newfd] = file_table_index;
+	
 
 	return 0;
 }

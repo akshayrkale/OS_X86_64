@@ -10,6 +10,5 @@ off_t lseek(int fildes, off_t offset, int whence)
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 }

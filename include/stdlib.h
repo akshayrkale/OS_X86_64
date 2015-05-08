@@ -3,7 +3,9 @@
 
 #include <sys/defs.h>
 
-extern __thread int errno;
+//extern __thread int errno;
+
+
 
 int main(int argc, char* argv[], char* envp[]);
 void exit(int status);
@@ -27,7 +29,7 @@ unsigned int alarm(unsigned int seconds);
 // paths
 char *getcwd(char *buf, size_t size);
 int chdir(const char *path);
-
+int ps();
 // files
 typedef int64_t ssize_t;
 enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };

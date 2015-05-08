@@ -11,7 +11,6 @@ int close(int fd)
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 
 }

@@ -34,19 +34,6 @@ struct dirent* readdir(void *dir){
 
 	char buff[1024];
 
-	//printf("in readdir Value of dir %d\n", (uint64_t)dir );
-
-	// if(dir){
-	// 	printf("dir is null\n");
-	// 	return NULL;
-	// }
-
-	// if( *(int*)dir <= 0 || *(int*)dir >=10){
-
-	// 	printf("Bad directory stream\n");
-	// 	return NULL;
-	// }
-
 	if((uint64_t)dir == -1){
 
 		printf("Bad directory stream\n");

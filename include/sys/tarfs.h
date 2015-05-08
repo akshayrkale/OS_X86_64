@@ -69,6 +69,6 @@ int terminal_read(int file_table_index,char *buf,int numBytesToRead);
 int terminal_write(int file_table_index,char *buf,int numBytesToWrite);
 
 #define DIRECTORY 5
-#define FILE_TYPE 0
+#define FILE_TYPE 0	
 
 #endif

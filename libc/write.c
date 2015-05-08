@@ -1,7 +1,10 @@
-#include<sys/defs.h>
-#include<sys/syscall.h>
-#include<syscall.h>
-#include<stdlib.h>
+#include <sys/defs.h>
+#include <sys/syscall.h>
+#include <syscall.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+
 
 ssize_t write(int fd, const void *buf, size_t count){
 
@@ -9,7 +12,6 @@ ssize_t write(int fd, const void *buf, size_t count){
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 }
 

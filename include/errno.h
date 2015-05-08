@@ -1,9 +1,11 @@
 #ifndef _ERRNO_H
 #define _ERRNO_H
 
-#include<sys/defs.h>
+#include <sys/defs.h>
+
 
 extern int errno;
+
 
 #define EPERM        1  /* Operation not permitted */
 #define ENOENT       2  /* No such file or directory */
@@ -41,8 +43,6 @@ extern int errno;
 #define ERANGE      34  /* Math result not representable */
 #define EDEADLK     35  /* Deadlock would occur */
 #define ENAMETOOLONG	36 /* he path is too long to search */
-
-uint64_t stderr(int);
 
 #endif
 

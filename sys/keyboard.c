@@ -140,16 +140,18 @@ while (inb(0x64) & 0x01) // While there is data available.
  keyboard_buffer[length_of_command++] = theChar;
  if((int)scancode == 0x1c){
   enter_pressed = 1;
+  printf("\n");
+  break;
  
  }
 
- //printf("%c pressed\n",theChar);
+ printf("%c",theChar);
  
- volatile char 	*video = (volatile char*) VIDEO_START + 2*(24*80 + 78);
- *video = special;
- *(video+1) = 0x1F; 
- *(video+2) = theChar; 
- *(video+3) = 0x1F;
+ // volatile char 	*video = (volatile char*) VIDEO_START + 2*(24*80 + 78);
+ // *video = special;
+ // *(video+1) = 0x1F; 
+ // *(video+2) = theChar; 
+ // *(video+3) = 0x1F;
  
 }
 }

@@ -15,7 +15,7 @@ unsigned int alarm(unsigned int sec)
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
+
 	return -1;
 
 

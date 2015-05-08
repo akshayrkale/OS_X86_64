@@ -2,6 +2,8 @@
 #include <sys/syscall.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+
 
 pid_t fork()
 {
@@ -12,7 +14,6 @@ pid_t fork()
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 
 }

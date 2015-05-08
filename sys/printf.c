@@ -8,12 +8,52 @@
 // update errno.
 char screen[1024];
 int screen_ctr;
-static int x=10,y;
+static int x=5,y;
+
+
+void update_screen(){
+
+	int i,j;
+	volatile char *video =(volatile char*)VIDEO_START;
+
+	
+	for(i=6;i<21;i++){
+
+		for(j=0;j<80;j++){
+
+			//screen_buffer[i-1][j]=screen_buffer[i][j];
+
+			*(video + 2*((i-1)*80 + j)) = *(video + 2*(i*80 + j));
+			*(video + 2*((i-1)*80 + j)+1) = *(video + 2*(i*80 + j)+1);
+
+
+		}
+	}
+
+	for(j=0;j<80;j++){
+
+		*(video + 2*((20)*80 + j)) = 32;
+		*(video + 2*((20)*80 + j)+1) = 0;
+	}
+
+	x--;
+	y=0;
+
+}
+
 
 int write_text(int len) {
 	int  i;
 	
     volatile char *video =(volatile char*)VIDEO_START; // 
+
+    if( x==21){
+
+//			update_screen();
+
+		}
+
+    
  for(i=0;i<len;i++)
     {
 		if(screen[i]=='\n')
@@ -33,7 +73,11 @@ int write_text(int len) {
 			continue;
 		}
 		else
-		{
+		{	
+
+			// screen_buffer[x*160][2*y]=screen[i];
+			// screen_buffer[x*160][2*y+1]=colour;
+
 			*(video + 2*(x*80 + y)) = screen[i];
 			*(video + 2*(x*80 + y)+1) = colour;
 			y=y+1;
@@ -43,9 +87,15 @@ int write_text(int len) {
 				y=0;
 			}
 		}
+
+
+		
 	}
 	return 0;
  }
+
+
+
 
 
 void print_ptr(long unsigned int num, long unsigned int base)

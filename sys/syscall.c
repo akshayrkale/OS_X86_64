@@ -6,6 +6,9 @@
 #include <sys/keyboard.h>
 #include <sys/paging.h>
 #include <sys/pipe.h>
+#include <errno.h>
+
+
 
 void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
 
@@ -24,11 +27,11 @@ void sys_exit(uint64_t error_code){
     remove_page(curproc->cr3);
     remove_page((uint64_t*)PADDR((uint64_t)curproc->mm));
 
-    printf("Last removal");
+    printf("Exited\n");
     
    // kmemset((void*)proc,0,sizeof(ProcStruct));
     curproc->status = FREE;
-    proccount--;
+    //proccount--
     scheduler();
     }
 }
@@ -79,6 +82,7 @@ int sys_close_directory(void* dir){
 uint64_t sys_open_file(const char* name){
 
 	return kopen(name);
+	//return x;
 
 }
 
@@ -130,5 +134,32 @@ int sys_chdir(char* path){
 int sys_pipe(int* pipeFD){
 
 	return pipe(pipeFD);
+
+}
+
+int sys_ps()
+{
+return get_running_process();
+}
+
+
+uint64_t sys_brk(uint64_t n)
+{
+return inc_brk(n); 
+}
+
+
+
+int sys_dup2(int oldfd,int newfd){
+
+	return dup2(oldfd,newfd);
+}
+
+
+int sys_sleep(void* t){
+
+	//t=t;
+
+	return proc_sleep(t);
 
 }

@@ -82,6 +82,7 @@ int get_per_ind_file(char* dir){
     int len = kstrlen(dir);
     kstrcpy(&name[0], dir);
     len = len-1;
+    
     // print("  {%d} ", len); 
     while(name[len] != '/')
     {
@@ -92,8 +93,13 @@ int get_per_ind_file(char* dir){
     // print("  {%d} ", len); 
     name[++len] = '\0';
     int i = 0;
-    while(kstrcmp(&name[0], &(tarfs_fs[i].name[0])) !=  0)
+    while(kstrcmp(&name[0], &(tarfs_fs[i].name[0])) !=  0){
+
+    	if(i==100){
+    		return -999;
+    	}
         i++;
+    }
     // print("parent {%d}", i);
     return i;
 }
@@ -119,32 +125,46 @@ void tarfs_init(){
 
 	struct posix_header_ustar* fileSystemEntry = (struct posix_header_ustar *)(&_binary_tarfs_start + next);
 
-
+	 
+	
 	while(1){
 
 		kstrcpy(name,fileSystemEntry->name);
 
-		if(kstrlen(name)==0){
+		
+		if((uint64_t*)fileSystemEntry>(uint64_t*)&_binary_tarfs_end){
+
+			//printf("breaking out\n");
 
 			break;
 		}
-		
+
+		// if(kstrlen(name)==0){
+
+		// 	break;
+		// }
+
+
 		actualSize = octalToDecimal(stoi(fileSystemEntry->size));
 		sizeOfFS = sizeOfFS + actualSize; //for calculating the size of the root fs
 		sizeOfEntry = ROUNDUP(octalToDecimal(stoi(fileSystemEntry->size)),512);
 		next = next + sizeof(struct posix_header_ustar) + sizeOfEntry;
-
+		
+        //printf("name=%s type=%d, addr=%p", name, stoi(fileSystemEntry->typeflag), fileSystemEntry);
 		kstrcpy(tarfs_fs[numOfEntries].name,name);
 		tarfs_fs[numOfEntries].size = actualSize;
 		tarfs_fs[numOfEntries].typeflag = stoi(fileSystemEntry->typeflag);
 		tarfs_fs[numOfEntries].addr_hdr = (uint64_t)fileSystemEntry;
+
+		//printf("name: %s size: %d next: %d\n",tarfs_fs[numOfEntries].name,sizeOfEntry,next);
+
 
 		if(tarfs_fs[numOfEntries].typeflag == DIRECTORY){
 
 			tarfs_fs[numOfEntries].par_ind = get_per_ind(name);
 
 		}
-		else{
+		else if(tarfs_fs[numOfEntries].typeflag == FILE_TYPE){
 
 			tarfs_fs[numOfEntries].par_ind = get_per_ind_file(name);
 		}
@@ -159,7 +179,11 @@ void tarfs_init(){
 
 	} //end of whle loop
 
+	printf("tarfs begin: %p\n",&_binary_tarfs_start);
+	printf("tarfs end: %p\n",&_binary_tarfs_end);
 
+
+	//printf("Exit while loop\n");
 
 	//loop again for initializing the dierectory structure
 	char root[100];
@@ -198,8 +222,8 @@ void tarfs_init(){
 	file_table[1].present = 1;
 	file_table[2].present = 1;
 
-//	 i=0;
-//	 for(i=0;i<numOfEntries;i++){
+	 i=0;
+//	 for(i=0;i<12;i++){
 //	 	printf("%d.Name: %s Type: %d Size: %d Parent %d\n",i,tarfs_fs[i].name,tarfs_fs[i].typeflag,tarfs_fs[i].size,tarfs_fs[i].par_ind);
 //	 }
 	
@@ -223,8 +247,8 @@ uint64_t kopendir(const char *name){
 	char absPath[100];
 	convert_to_absolute_path_dir(name,absPath);
 
-	//printf("Path passed :%s\n",name);
-	//printf("In open dir abspath : %s\n",absPath);
+	// printf("Path passed :%s\n",name);
+	// printf("In open dir abspath : %s\n",absPath);
 	
 
 	for(i=0;i<numOfEntries;i++){
@@ -232,6 +256,7 @@ uint64_t kopendir(const char *name){
 		char temp[100];
 
 		kstrcpy(temp,tarfs_fs[i].name);
+        //printf("FIN:%s",tarfs_fs[i].name);
 
 		if(kstrcmp(temp,absPath)==0 && (tarfs_fs[i].typeflag == DIRECTORY)){
 			break;
@@ -242,7 +267,7 @@ uint64_t kopendir(const char *name){
 	//i now has the entry of tarfs table corresponding to the file
 
 	if(i==numOfEntries){
-		printf("No such file or directory\n");
+		errno = ENOENT;
 		return -1;
 	}
 
@@ -297,7 +322,7 @@ int kreaddir(void *dir,char* userBuff){
 
 	int inode_number = file_table[file_table_index].inode_num; //this is the index of tarfs entry in the tarfs_table
 
-	if(curproc->fd_table[file_table_index] == -1){
+	if(file_table_index==-1 ||curproc->fd_table[file_table_index] == -1){
 
 		//fd was closed
 		//printf("In read dir returning -1\n");
@@ -427,7 +452,7 @@ int terminal_read(int file_table_index,char *buf,int numBytesToRead){
 
 int terminal_write(int file_table_index,char *buff,int numBytesToWrite){
 
-	//printf("In terninal write\n");
+	//printf("In terninal write.. bytes to write%d\n",numBytesToWrite);
 	kprintf((char*)buff,(int)numBytesToWrite);
 	return numBytesToWrite;
 }
@@ -517,6 +542,7 @@ int kopen(const char* name){
 
 	if(i==numOfEntries){
 		printf("No such file or directory\n");
+		errno = ENOENT;
 		return -1;
 	}
 
@@ -561,9 +587,10 @@ int kopen(const char* name){
 int kread(int fd,char* buf, int numBytesToRead){
 
 	
-	if(curproc->fd_table[fd] == -1){
+	if(fd==-1 ||curproc->fd_table[fd] == -1){
 
 		//fd was closed
+		printf("Bad file descriptor given to read file\n");
 		errno = EBADF;
 		return -1;
 	}
@@ -585,16 +612,17 @@ int kwrite(int fd,char* buf, int numBytesToWrite){
 
 	//printf("In top level write\n");
 
-	int file_table_index = curproc->fd_table[fd];
-
-	if(curproc->fd_table[fd] == -1){
+	
+	if(fd==-1 ||curproc->fd_table[fd] == -1){
 
 		//fd was closed
+		printf("Bad file descriptor given to write file\n");
 		return -1;
 	}
+	int file_table_index = curproc->fd_table[fd];
 
 	// printf("file_table_index %d\n",file_table_index );
-	// printf("write: %p\n",file_table[file_table_index].write );
+	//printf("Top level write: %p\n",file_table[file_table_index].write );
 
 
 
@@ -605,7 +633,8 @@ int kwrite(int fd,char* buf, int numBytesToWrite){
 int kclose(int fd){
 
 	
-	if(fd == 0 || fd == 1 || fd == 2){
+	if(fd==-1 ||fd == 0 || fd == 1 || fd == 2){
+		printf("Bad file descriptor given to close file\n");
 		return -1; //should not close stdin,stdout,stderr
 	}
 
@@ -716,7 +745,7 @@ int kchdir(char* directoryPath){
 		effect
 	*/
 
-	//printf("In kchdir %s <--\n", path );
+	//printf("In kchdir:%s<--\n", path );
 	if(kstrcmp(path,"..")==0){
 
 		//printf("In .. path\n");

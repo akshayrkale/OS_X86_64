@@ -10,7 +10,6 @@ pid_t getpid()
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 
 
@@ -23,7 +22,7 @@ pid_t getppid()
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
+
 	return -1;
 
 
@@ -36,7 +35,7 @@ pid_t waitpid(pid_t pid, int *status, int options)
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
+
 	return -1;
 
 }

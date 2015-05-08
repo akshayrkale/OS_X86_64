@@ -12,7 +12,6 @@ int chdir(const char *path){
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
 	return -1;
 
 }

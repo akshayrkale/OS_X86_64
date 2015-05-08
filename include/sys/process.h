@@ -38,6 +38,7 @@ typedef struct mm_struct {
     uint64_t * pt; // page table pointer  
     struct vma_struct * mmap;
     struct vma_struct * mmap_avl;
+    uint64_t end_brk,start_brk;
 }mm_struct;
 
 vma_struct* allocate_vma();
@@ -52,6 +53,7 @@ enum ProcStatus status;
 struct ProcStruct* next;
 struct Trapframe tf;
 physaddr_t* cr3;
+uint64_t wakeuptime;
 uint64_t *elf;
 struct mm_struct *mm;
 uint64_t kstack[512];
@@ -60,6 +62,12 @@ char cwd[50]; //store the current working directory of a process
 
 }ProcStruct;
 
+
+struct K_timespec
+{
+	unsigned int tv_sec;
+	int64_t tv_nsec;
+};
 
 ProcStruct* proc_free_list,*proc_running_list,*curproc;
 ProcStruct* procs; 
@@ -80,7 +88,9 @@ int fork_process(struct Trapframe* );
 uint64_t execvpe(char *arg1,char *arg2[], char* arg3[]);
 int copypagetables(ProcStruct *proc);
 int copyvmas(ProcStruct *proc);
-
+int get_running_process();
+uint64_t inc_brk(uint64_t n);
+int proc_sleep(void* t);
 
 #define POPA \
 	"\tmovq 0(%%rsp),%%r15\n" \

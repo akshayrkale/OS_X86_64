@@ -10,6 +10,6 @@ int pipe(int fd[2])
 	if(retvalue >=0){
 		return retvalue;
 	}
-	errno = -retvalue;
+
 	return -1;
 }

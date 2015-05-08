@@ -1,4 +1,11 @@
+void ps_test_case();
 void fork_test_case();
 void file_read_test_case();
 void directroy_test_case();
 void pipe_test_case();
+void dup2_test_case();
+void sleep_test_case();
+void cd(char* path);
+void ls();
+void sleep_test_case();
+void read_line(int,char*);

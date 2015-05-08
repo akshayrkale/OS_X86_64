@@ -26,7 +26,6 @@ char* kstrcpy(char* dst, const char* src)
 int kstrcmp(const char *str1, const char *str2)
 {
 
-	//printf("In strcmp\n");
 	while(1)
 	{
 		////printf("In strcmp\n");
@@ -44,6 +43,8 @@ int kstrcmp(const char *str1, const char *str2)
 	}
 
 	return 0;
+
+
 }
 
 const char *kstrstr(const char *haystack, const char *needle)
