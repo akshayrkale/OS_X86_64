@@ -313,9 +313,10 @@ void isr128_handler(struct Trapframe* tf){
 
         int syscall_number = tf->tf_trapno;
         int syscall_ret_value;
-        //printf("SYSCALNO %d ",syscall_number);
+        //printf("SYSCALNO %d ",syscall_number); 
         curproc->tf=*tf;
-                        tf=&curproc->tf;
+        //tf=&curproc->tf;
+
 
         switch(syscall_number){
     
@@ -333,12 +334,11 @@ void isr128_handler(struct Trapframe* tf){
                         break;
 
                 case SYS_fork:
-                        curproc->tf=*tf;
-                        tf=&curproc->tf;
+                        //curproc->tf=*tf;
+                       // tf=&curproc->tf;
                         //curproc->status =RUNNABLE;
-                        uint64_t id = sys_fork(tf);
-  __asm__ __volatile__("movq %0, %%rax;":: "r"(id)); //?
-                        break;
+                        tf->tf_regs.reg_rax  =(uint64_t) sys_fork(tf);
+                         break;
                 case SYS_getpid:
 
                     printf("In sys getpid call in kernel\n");
@@ -433,9 +433,15 @@ void isr128_handler(struct Trapframe* tf){
                 case SYS_ps:
                     tf->tf_regs.reg_rax=sys_ps();
                     break;
-		      case SYS_brk:
-        			tf->tf_regs.reg_rax = sys_brk(tf->tf_regs.reg_rdi);
-        			break;
+		      
+                
+                case SYS_brk:
+                //curproc->tf=*tf;
+                //tf=&curproc->tf;
+        		syscall_ret_value   = sys_brk(tf->tf_regs.reg_rdi);
+        		tf->tf_regs.reg_rax=(uint64_t)syscall_ret_value;
+                //printf("mallocreturn=%d",tf->tf_regs.reg_rax);
+break;
 
 
 
@@ -443,7 +449,7 @@ void isr128_handler(struct Trapframe* tf){
 
                     //printf("Inside isr.c dup2\n");
                     syscall_ret_value  = sys_dup2((int)tf->tf_regs.reg_rdi,(int)tf->tf_regs.reg_rsi);
-                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                                        tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
 
                     

@@ -19,7 +19,7 @@
 #define AVAIL2_LIM  0xffffffff87ffd000 //check this value o sbrocks
 
 #define VIDEO_START  0xffffffff800B8000 
-#define USERSTACKTOP PGSIZE
+#define USERSTACKTOP 0x000000000f000000
 
 typedef struct PageStruct {
 	// Next page on the free list.

@@ -4,7 +4,7 @@
 #include <sys/defs.h>
 
 
-extern int errno;
+ int errno;
 
 
 #define EPERM        1  /* Operation not permitted */

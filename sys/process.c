@@ -576,6 +576,7 @@ if(vma)
     //printf("inc_brk:in if\n");
     vma->vm_end=vma->vm_end+n;
     curproc->mm->end_brk+=n;
+//    printf("incbrk return%d ",vma->vm_end);
     return vma->vm_end;
 
 }

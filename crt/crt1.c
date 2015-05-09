@@ -7,8 +7,10 @@ void _start(void) {
 //	char* argv[0];
 //	char* envp[0];
 	int res;
-	res = main(0, NULL, NULL);
-   
+//	res = main(0, NULL, NULL);
+ volatile int x=89;
+  res=  main(*((uint64_t*)(&x+0x3UL)),(char**)(uint64_t*)(&x+0x5UL), (char **)((&x+5) +  (2*(*(&x+3)+ 1))));
+
     exit(res);
   }
 

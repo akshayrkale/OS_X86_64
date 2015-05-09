@@ -41,7 +41,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
   //printf("After initializing vm\n");
 
    i=499999999;
-    while(i--);
+   while(i--);
 
   tarfs_init();
 
