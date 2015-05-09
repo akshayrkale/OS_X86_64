@@ -9,7 +9,8 @@ int main(int argc, char* argv[], char* envp[])
 {
 
 	
-     dup2_test_case();
+//     dup2_test_case();
+    printf("IN MALLUU");
 
 }
 

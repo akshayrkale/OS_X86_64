@@ -47,7 +47,7 @@ if((NewProc=allocate_process(0)) != NULL)
 return NULL;
 }
 
-
+int maxcount=0;
 ProcStruct* allocate_process(unsigned char parentid)
 {
     ProcStruct* NewProc=NULL; 
@@ -70,7 +70,8 @@ ProcStruct* allocate_process(unsigned char parentid)
     NewProc->waitingfor = -1;
     NewProc->num_child=0;
     ((ProcStruct*)(procs+parentid-1))->num_child++;
-    proccount++;
+    maxcount=proccount++;
+    
     PageStruct *pa=allocate_page();
     NewProc->mm=(mm_struct*)KADDR(pageToPhysicalAddress(pa));
     kmemset((void *)(NewProc->mm), 0, sizeof(mm_struct));
@@ -182,13 +183,14 @@ void
 proc_run(struct ProcStruct *proc)
 {
    
-    if(curproc && curproc->status!=FREE)
+    if(curproc && curproc->status!=FREE &&curproc->status!=WAITING)
         curproc->status =RUNNABLE;
          
         proc->status = RUNNING;
         lcr3(proc->cr3);
         tss.rsp0 =(uint64_t) &proc->kstack[511];
         curproc = proc;
+        printf("\nRUN:%d",curproc->proc_id);
         env_pop_tf(&(proc->tf));
 }
 
@@ -230,9 +232,6 @@ int load_elf(ProcStruct *e,uint64_t* binary)
         }
         vma_struct* vma;
         vma = allocate_vma(e->mm);
-/*      uint64_t* pdpe = (uint64_t*)KADDR(e->pml4e[0]);
-        uint64_t* pde = (uint64_t*)KADDR(pdpe[0]);
-        uint64_t* pte = (uint64_t*)KADDR(pde[0]);*/
          
          vma->vm_mm=e->mm;
          vma->vm_start = USERSTACKTOP-PGSIZE;
@@ -243,9 +242,9 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
        
-         int p=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+         allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
         // physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
-printf("stack page:%p-%d ",p,e->proc_id);
+//printf("stack page:%p-%d ",p,e->proc_id);
          e->tf.tf_rip    = elf->e_entry;
          e->tf.tf_rsp    = USERSTACKTOP;
        
@@ -319,7 +318,7 @@ int scheduler()
     
     int num_procs=proccount+1;
         
-    while((start->status!=RUNNABLE || start->wakeuptime >= timeTillNow) && num_procs>0)
+    while((start->status!=RUNNABLE || start->wakeuptime > timeTillNow) && num_procs>0)
     {
         while(start->next!=NULL && start->next->status == FREE) //if proc_rinning_list->status==free it wont be added to free list immediately
         {
@@ -337,7 +336,7 @@ int scheduler()
 
         num_procs--;
     }
-    if(start->status == RUNNABLE)
+    if(start->status == RUNNABLE )
     {
         //printf("Running process:%d",start->proc_id);
         proc_run(start);
@@ -375,7 +374,7 @@ int proc_free(ProcStruct *proc)
                                 {
 //printf("in pml4e ipdpe=%d ipml4e=%d ipde=%d ipte=%d entry=%p",ipdpe,ipml4e,ipde,ipte,pte[ipte]);
  //                                   printf("herepteis=%p pte[]=%d",pte,pte[0]);
-printf("Removed page:%p-%d ",((uint64_t)pte[ipte]&~0xFFF),physicalAddressToPage(((uint64_t*)((uint64_t)pte[ipte]&~0xFFF)))->ref_count);
+//printf("Removed page:%p-%d ",((uint64_t)pte[ipte]&~0xFFF),physicalAddressToPage(((uint64_t*)((uint64_t)pte[ipte]&~0xFFF)))->ref_count);
 
                                     remove_page((uint64_t*)((uint64_t)pte[ipte]&~0xFFF));
 
@@ -505,12 +504,12 @@ int copypagetables(ProcStruct *proc)
         
        chpte[ipte]= pte[ipte];
 
-        if(chpte[ipte] & PTE_W)
+        if(chpte[ipte] & PTE_W || chpte[ipte] & PTE_COW)
         {
             chpte[ipte]=(chpte[ipte]&~PTE_W)| PTE_COW;
             pte[ipte]=(pte[ipte]&~PTE_W)| PTE_COW;
             physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
-printf("inc %p %d",pte[ipte],physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count);
+//printf("inc %p %d",pte[ipte],physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count);
         }
         //printf("ret=%p",pdpe);
     }
@@ -647,7 +646,7 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
      {
         if(kstrcmp(arg1,tarfs_fs[i].name) == 0)
         {
-            printf("found:%s ",tarfs_fs[i].name);
+            printf("foundbinaryto:%d ",curproc->proc_id);
             elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
             break;
         }
@@ -662,7 +661,7 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
         
      proc_free(curproc);
      load_elf(curproc,elf);
-     printf("REPLACED");
+     //printf("REPLACED");
      vma_struct* vma=curproc->mm->mmap;
 
      for(int i=0;i<curproc->mm->count;i++)
@@ -672,10 +671,10 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
          vma=vma->vm_next;
      }
      
-     printf("calling");
+     //printf("calling");
     lcr3(curproc->cr3);
           //lcr3(boot_cr3);
- argc=copy_args_to_stack(vma->vm_end,argc);
+     argc=copy_args_to_stack(vma->vm_end,argc);
 
      printf("REPLACED");
         curproc->status=RUNNABLE; 

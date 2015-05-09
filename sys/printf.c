@@ -47,15 +47,16 @@ int write_text(int len) {
 	
     volatile char *video =(volatile char*)VIDEO_START; // 
 
-    if( x==21){
+        
+ for(i=0;i<len;i++)
+    {
+        if( x==21){
 
 			update_screen();
 
 		}
 
-    
- for(i=0;i<len;i++)
-    {
+
 		if(screen[i]=='\n')
 		{
 			x++;

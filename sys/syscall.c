@@ -15,7 +15,7 @@ void sys_write(uint64_t fd,uint64_t buff,uint64_t len){
 	//printf(" In kernel printf.. in buffer %s",buff);
 	
 	//while(1);
-	kwrite(fd,(char*)buff,(int)len);
+	 kwrite(fd,(char*)buff,(int)len);
 
 
 }
@@ -30,19 +30,20 @@ void sys_exit(uint64_t error_code){
 
     ProcStruct* parent =((ProcStruct*)procs+curproc->parent_id-1);
 
-    if(parent->status == WAITING && (parent->waitingfor == curproc->proc_id || parent->waitingfor == 0))
+    if(parent)
+        parent->num_child--; 
+    if((parent) && (parent->status == WAITING) && (parent->waitingfor == curproc->proc_id || parent->waitingfor == 0 || (parent->num_child==0)))
     {
         parent->status=RUNNABLE;
+        parent->waitingfor=-1;
     }
-         parent->num_child--;  
-    
-    printf("Exited\n");
+                      
+    printf("Exited%d ",curproc->proc_id);
     
    // kmemset((void*)proc,0,sizeof(ProcStruct));
     curproc->status = FREE;
     //proccount--
-    scheduler();
-    }
+        }
 }
 
 int sys_fork(struct Trapframe* tf)
@@ -96,7 +97,7 @@ uint64_t sys_open_file(const char* name){
 }
 
 uint64_t sys_read_file(int fd, char* buf , int numBytes){
-    printf("FDD DDD=%d",fd);
+   // printf("FDD DDD=%d",fd);
 	return kread(fd,buf,numBytes);
 	
 
@@ -180,33 +181,34 @@ return execve(arg1,arg2,arg3);
 }
 
 
-uint64_t sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions)
+int sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions)
 {
 
-   printf("In sys_waitpid... FD=%d) ",curproc->fd_table[3]);
+   printf("sys_waitpid %d) ",curproc->proc_id);
     if( curproc->num_child==0)
     {
 
-    	printf("In sys_waitpid 1st if... FD=%d) ",curproc->fd_table[3]);
-        *((int*)chstatus) =-1;
+//    	printf("In sys_waitpid 1st if... FD=%d) ",curproc->fd_table[3]);
+     //   *((int*)chstatus) =-1;
         return -1;
     }
 
 if(chpid>0)
 {
 
-	printf("In sys_waitpid 2nd if... FD=%d) ",curproc->fd_table[3]);
+	//printf("In sys_waitpid 2nd if... FD=%d) ",curproc->fd_table[3]);
 curproc->waitingfor = chpid;
 }
 else
 {
-	printf("In sys_waitpid 2nd else... FD=%d) ",curproc->fd_table[3]);
+	printf("sys_waitpid RARE:%d ",curproc->proc_id);
 curproc->waitingfor = 0;
 }
 
 curproc->status =WAITING;
 
-if(chstatus!=0)
-     *((int*)chstatus) =0;
+//if(chstatus!=0)
+   // * ((int*)chstatus) =0;
+
 return curproc->waitingfor;
 }

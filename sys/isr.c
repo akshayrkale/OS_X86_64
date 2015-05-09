@@ -131,7 +131,7 @@ if(ticks%900 == 0)
         
     }
 
-    scheduler();
+   // scheduler();
 
 }
 
@@ -267,7 +267,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                 }
                 else //always LOAD type
                 {//printf("OLD");
-                     allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); 
+                     int x=allocate_proc_area(curproc, (void*)ROUNDDOWN(vaddr,PGSIZE),PGSIZE); printf("(%p %p)",vaddr,x);
                      if(vma->vm_type == LOAD)
 		     {
 
@@ -296,6 +296,7 @@ void isr14_handler(struct faultStruct *faultFrame)
                  else
                  {
                      printf("Segmentation Fault:%d %p",curproc->proc_id,vaddr);
+                     while(1);
                      proc_free(curproc);
                      curproc->status=FREE;
                      //proccount--;
@@ -313,6 +314,9 @@ void isr128_handler(struct Trapframe* tf){
         int syscall_number = tf->tf_trapno;
         int syscall_ret_value;
         //printf("SYSCALNO %d ",syscall_number);
+        curproc->tf=*tf;
+                        tf=&curproc->tf;
+
         switch(syscall_number){
     
                 case SYS_write:
@@ -323,13 +327,14 @@ void isr128_handler(struct Trapframe* tf){
 
 
                 case SYS_exit:
-                        sys_exit(2);
-                        //printf("exited");
+                      sys_exit(2);
+                                              scheduler();
+                         //printf("exited");
                         break;
 
                 case SYS_fork:
                         curproc->tf=*tf;
-//                        tf=&curproc->tf;
+                        tf=&curproc->tf;
                         //curproc->status =RUNNABLE;
                         uint64_t id = sys_fork(tf);
   __asm__ __volatile__("movq %0, %%rax;":: "r"(id)); //?
@@ -453,8 +458,11 @@ void isr128_handler(struct Trapframe* tf){
                     tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
                     break;
                 case SYS_wait4:
-                    syscall_ret_value  = sys_waitpid(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
-                    tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
+                     tf->tf_regs.reg_rax = sys_waitpid(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
+
+curproc->tf=*tf;
+        tf=&curproc->tf;
+
                     scheduler();
                 break;
 

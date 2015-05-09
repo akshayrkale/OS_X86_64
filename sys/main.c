@@ -75,7 +75,8 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 ltr((uint16_t)(0x28));
 
   __asm__("sti");
-
+scheduler();
+printf("ENDING");
     while(1);
     // kernel starts here
 }

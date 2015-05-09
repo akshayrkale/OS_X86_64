@@ -10,7 +10,7 @@
 struct PageStruct *pages;
 //boot_alloc function to create the initial space for pages array and page_free_list and PMLE4
 static char* nextfree;
-
+int free_pages=1;
 static struct PageStruct *page_free_list;	// Free list of physical pages. page_free_list is the head of the free list
 
 int Allocations;
@@ -52,19 +52,17 @@ void initialize_vm_64(void){
 	boot_cr3 = (physaddr_t*)PADDR(pml4e);
 	kmemset(boot_pml4e,0,PGSIZE);
          initialize_page_lists();
-    PageStruct *last =page_free_list;
-    
+    printf("Total free=%d",free_pages); 
 
-    uint64_t i=299999999;
-//    while(i--);
-     map_vm_pm(boot_pml4e, (uint64_t)PHYSBASE,PADDR(PHYSBASE),(uint64_t)(boot_alloc(0)-PHYSBASE),PTE_P|PTE_W);
-     map_vm_pm(boot_pml4e, (uint64_t)KERNBASE+PGSIZE,0x1000,0x200000-0x1000,PTE_P|PTE_W);//KERNELSTACK =tss.rsp0
-     map_vm_pm(boot_pml4e, (uint64_t)VIDEO_START,PADDR(VIDEO_START),10*0x1000,PTE_P|PTE_W);
-     last =page_free_list;
-     i=1;
-     while((uint64_t)last && i++)
-        last=last->next;
-
+  //    while(i--);
+   if(  map_vm_pm(boot_pml4e, (uint64_t)PHYSBASE,PADDR(PHYSBASE),(uint64_t)(boot_alloc(0)-PHYSBASE),PTE_P|PTE_W)==-1)
+       while(1);
+   if(  map_vm_pm(boot_pml4e, (uint64_t)KERNBASE+PGSIZE,0x1000,0x7000000-0x1000,PTE_P|PTE_W)==-1)//KERNELSTACK =tss.rspp0       
+   while(1);
+   if( map_vm_pm(boot_pml4e, (uint64_t)VIDEO_START,PADDR(VIDEO_START),10*0x1000,PTE_P|PTE_W)==-1)
+    while(1);
+    printf("TotalFREE=%d",free_pages);
+   
      lcr3(boot_cr3);
 }
 
@@ -74,6 +72,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
 //extract the upper 9 bits of VA to get the index into pml4e.
     for(uint64_t i=0; i<size; i+=PGSIZE)
     {
+        
     if((pml4e[PML4(va+i)] & (uint64_t)PTE_P) == 0)
     {
         pdpe = pageToPhysicalAddress(allocate_page());
@@ -88,7 +87,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
         else
         {
             printf("Failed in PML4E:%x",pdpe);
-            return 0;
+            return -1;
         }
     }
     pdpe = (uint64_t*) (KADDR(pml4e[PML4(va+i)]) & (~0xFFF));
@@ -106,7 +105,7 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
         else
         {
             printf("Failed in PDPE:%x",pde);
-            return 0;
+            return -1;
         }
      }
     pde = (uint64_t*)(KADDR(pdpe[PDPE(va+i)]) & ~0xFFF);
@@ -122,17 +121,16 @@ uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint1
         else
         {
             printf("Failed in PDE:%x",pte);
-            return 0;
+            return -1;
         }
      }  
     pte = (uint64_t*)(KADDR(pde[PDX(va+i)]) & ~0xFFF);   
-    if(deleteme)
-    {      }
-    pte[PTX(va+i)] = ((pa+i) & (~0xFFF))|(perm|PTE_P);;
+        pte[PTX(va+i)] = ((pa+i) & (~0xFFF))|(perm|PTE_P);;
+        //printf("MAPPED");
     tlb_invalidate(pml4e,(void*)va+i);
    }//for loop end
-//   printf("Mapped Region:%p-%p to %p-%p\n",ROUNDDOWN(va,PGSIZE),ROUNDDOWN(va+size,PGSIZE), ROUNDDOWN(pa,PGSIZE),ROUNDDOWN(pa+size,PGSIZE));	
-   return 1;
+   //printf("Mapped Region:%p-%p to %p-%p\n",ROUNDDOWN(va,PGSIZE),ROUNDDOWN(va+size,PGSIZE), ROUNDDOWN(pa,PGSIZE),ROUNDDOWN(pa+size,PGSIZE));	
+   return 0;
 }
 
 void initialize_page_lists(){
@@ -159,9 +157,16 @@ void initialize_page_lists(){
 
 		if (free) {
 			if (last !=NULL)
-				last->next = &pages[i];
+            {
+                last->next = &pages[i];
+                free_pages++;
+
+            }
 			else
-				page_free_list = &pages[i];
+            {
+                page_free_list = &pages[i];
+            }
+
 			last = &pages[i];
 		}
         }
@@ -204,7 +209,7 @@ PageStruct* allocate_page(){
 	if(pageToReturn){
 
 //	printf("Allocating page: %p\t", pageToPhysicalAddress(pageToReturn));
-        Allocations++;
+        free_pages--;
 		page_free_list = page_free_list->next;
 
 		pageToReturn->next = NULL;
@@ -223,9 +228,9 @@ pstruct->ref_count--;
 
 if(pstruct->ref_count <= 0)
 {
-    pstruct->next=page_free_list;
+   pstruct->next=page_free_list;
     page_free_list = pstruct;
-
+ free_pages++;
 }return 0;
 }
 

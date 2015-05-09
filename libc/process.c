@@ -30,8 +30,8 @@ pid_t getppid()
 
 pid_t waitpid(pid_t pid, int *status, int options)
 {
-	int retvalue;
-	retvalue = syscall_3(SYS_wait4,pid,(uint64_t)status,options);
+	pid_t retvalue;
+	retvalue = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);
 	if(retvalue >=0){
 		return retvalue;
 	}

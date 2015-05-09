@@ -40,7 +40,7 @@ CR4_TSD	include/sys/mmu.h	112;"	d
 CR4_VME	include/sys/mmu.h	114;"	d
 CRT_SRCS	Makefile	/^CRT_SRCS:=$(shell find crt\/ -name \\*.c -o -name \\*.s)$/;"	m
 CTRL	sys/keyboard.c	9;"	d	file:
-CommArray	include/parser.h	/^	singleCommand* CommArray[PIPE_MAX_NUM];	\/* Array to store individual commands*\/$/;"	m	struct:__anon7
+CommArray	include/parser.h	/^	singleCommand* CommArray[PIPE_MAX_NUM];	\/* Array to store individual commands*\/$/;"	m	struct:__anon3
 D	sys/gdt.c	17;"	d	file:
 DIRECTORY	include/sys/tarfs.h	71;"	d
 DPL0	sys/gdt.c	11;"	d	file:
@@ -134,7 +134,6 @@ FL_VIP	include/sys/mmu.h	141;"	d
 FL_VM	include/sys/mmu.h	138;"	d
 FL_ZF	include/sys/mmu.h	125;"	d
 FREE	include/sys/process.h	/^FREE,$/;"	e	enum:ProcStatus
-FREE	libc/malloc.c	/^enum {FREE, IN_USE};$/;"	e	enum:__anon13	file:
 Feb	include/stringtokenizer.h	/^ *  Created on: Feb 2, 2015$/;"	v
 GDT_CS	sys/gdt.c	7;"	d	file:
 GDT_DS	sys/gdt.c	8;"	d	file:
@@ -153,12 +152,11 @@ ICW4_BUF_SLAVE	include/sys/pic.h	29;"	d
 ICW4_SFNM	include/sys/pic.h	31;"	d
 IDT_H_	include/sys/idt.h	9;"	d
 INCLUDES	Makefile	/^INCLUDES:=$(shell find include\/ -type f -name \\*.h)$/;"	m
-INITIAL_STACK_SIZE	sys/main.c	83;"	d	file:
+INITIAL_STACK_SIZE	sys/main.c	84;"	d	file:
 INTERRUPT	sys/idt.c	6;"	d	file:
 INTERRUPT	sys/isr.c	19;"	d	file:
 INTERRUPTP_ERRORCODE	sys/isr.c	43;"	d	file:
 INTERRUPT_NO_ERRORCODE	sys/isr.c	71;"	d	file:
-IN_USE	libc/malloc.c	/^enum {FREE, IN_USE};$/;"	e	enum:__anon13	file:
 IRQ0	include/sys/pic.h	35;"	d
 IRQ1	include/sys/pic.h	36;"	d
 IRQ2	include/sys/pic.h	37;"	d
@@ -170,14 +168,14 @@ KERNBASE	include/sys/paging.h	12;"	d
 KERNEL_PROCESS	include/sys/process.h	/^KERNEL_PROCESS$/;"	e	enum:ProcType
 KERN_SRCS	Makefile	/^KERN_SRCS:=$(shell find sys\/ -name \\*.c -o -name \\*.s)$/;"	m
 KEYBOARD_H_	include/sys/keyboard.h	2;"	d
-KO_CREAT	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
-KO_DIRECTORY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
-KO_RDONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
-KO_RDWR	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
-KO_WRONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon3
-KSEEK_CUR	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
-KSEEK_END	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
-KSEEK_SET	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon2
+KO_CREAT	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
+KO_DIRECTORY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
+KO_RDONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
+KO_RDWR	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
+KO_WRONLY	include/sys/tarfs.h	/^enum { KO_RDONLY = 0, KO_WRONLY = 1, KO_RDWR = 2, KO_CREAT = 0x40, KO_DIRECTORY = 0x10000 };$/;"	e	enum:__anon7
+KSEEK_CUR	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
+KSEEK_END	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
+KSEEK_SET	include/sys/tarfs.h	/^enum { KSEEK_SET = 0, KSEEK_CUR = 1, KSEEK_END = 2 };$/;"	e	enum:__anon6
 K_CS	include/sys/gdt.h	18;"	d
 K_DS	include/sys/gdt.h	19;"	d
 K_NAME_MAX	include/sys/tarfs.h	38;"	d
@@ -193,14 +191,9 @@ MAXLINE	include/shell.h	12;"	d
 MAX_CMD_LEN	include/parser.h	7;"	d
 MAX_GDT	sys/gdt.c	5;"	d	file:
 MAX_VAR_NUM	include/parser.h	4;"	d
-MCB_P	libc/malloc.c	/^} MCB_t, *MCB_P;$/;"	t	typeref:struct:MCB_header_t	file:
-MCB_header_t	libc/malloc.c	/^typedef struct MCB_header_t {$/;"	s	file:
-MCB_t	libc/malloc.c	/^} MCB_t, *MCB_P;$/;"	t	typeref:struct:MCB_header_t	file:
 METADATA_SIZE	include/memory.h	5;"	d
 MMU_H	include/sys/mmu.h	2;"	d
 NAME_MAX	include/stdlib.h	48;"	d
-NEW_MCB	libc/malloc.c	/^enum {NEW_MCB, NO_MCB, REUSE_MCB};$/;"	e	enum:__anon12	file:
-NO_MCB	libc/malloc.c	/^enum {NEW_MCB, NO_MCB, REUSE_MCB};$/;"	e	enum:__anon12	file:
 NPDENTRIES	include/sys/mmu.h	57;"	d
 NPDPENTRIES	include/sys/mmu.h	56;"	d
 NPMLENTRIES	include/sys/mmu.h	55;"	d
@@ -214,7 +207,6 @@ O_RDWR	include/stdlib.h	/^enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT
 O_WRONLY	include/stdlib.h	/^enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };$/;"	e	enum:__anon10
 P	sys/gdt.c	15;"	d	file:
 PADDR	include/sys/paging.h	60;"	d
-PAGESIZE	libc/malloc.c	7;"	d	file:
 PAGING_H_	include/sys/paging.h	9;"	d
 PDPE	include/sys/mmu.h	44;"	d
 PDPESHIFT	include/sys/mmu.h	68;"	d
@@ -242,7 +234,7 @@ PIC_sendEOI	sys/pic.c	/^void PIC_sendEOI(unsigned char irq)$/;"	f
 PIPE_MAX_NUM	include/parser.h	5;"	d
 PML4	include/sys/mmu.h	40;"	d
 PML4SHIFT	include/sys/mmu.h	69;"	d
-POPA	include/sys/process.h	95;"	d
+POPA	include/sys/process.h	99;"	d
 POPA2	include/sys/utils.h	20;"	d
 PORT_H_	include/sys/port.h	2;"	d
 PPN	include/sys/mmu.h	30;"	d
@@ -267,13 +259,12 @@ PTXSHIFT	include/sys/mmu.h	66;"	d
 PUSHA	include/sys/utils.h	1;"	d
 PageStruct	include/sys/paging.h	/^typedef struct PageStruct {$/;"	s
 PageStruct	include/sys/paging.h	/^}PageStruct;$/;"	t	typeref:struct:PageStruct
-Pipe	include/sys/file_table.h	/^}Pipe;$/;"	t	typeref:struct:__anon4
+Pipe	include/sys/file_table.h	/^}Pipe;$/;"	t	typeref:struct:__anon8
 ProcStatus	include/sys/process.h	/^enum ProcStatus{$/;"	g
 ProcStruct	include/sys/process.h	/^typedef struct ProcStruct{$/;"	s
 ProcStruct	include/sys/process.h	/^}ProcStruct;$/;"	t	typeref:struct:ProcStruct
 ProcType	include/sys/process.h	/^enum ProcType$/;"	g
 Proghdr	include/sys/elf.h	/^struct Proghdr {$/;"	s
-REUSE_MCB	libc/malloc.c	/^enum {NEW_MCB, NO_MCB, REUSE_MCB};$/;"	e	enum:__anon12	file:
 ROOTBIN	Makefile	/^ROOTBIN=$(ROOTFS)\/bin$/;"	m
 ROOTBOOT	Makefile	/^ROOTBOOT=$(ROOTFS)\/boot$/;"	m
 ROOTFS	Makefile	/^ROOTFS=rootfs$/;"	m
@@ -327,8 +318,8 @@ TRUE	sys/keyboard.c	12;"	d	file:
 TYPE_DIRECTORY	include/sys/file_table.h	4;"	d
 TYPE_FILE	include/sys/file_table.h	3;"	d
 TYPE_PIPE	include/sys/file_table.h	5;"	d
-Token	include/stringTokenizer.h	/^}Token;$/;"	t	typeref:struct:__anon8
-Token	include/stringtokenizer.h	/^} Token;$/;"	t	typeref:struct:__anon9
+Token	include/stringTokenizer.h	/^}Token;$/;"	t	typeref:struct:__anon4
+Token	include/stringtokenizer.h	/^} Token;$/;"	t	typeref:struct:__anon1
 Trapframe	include/sys/idt.h	/^struct Trapframe {$/;"	s
 USERSTACKTOP	include/sys/paging.h	22;"	d
 USER_PROCESS	include/sys/process.h	/^USER_PROCESS=0,$/;"	e	enum:ProcType
@@ -340,9 +331,10 @@ VPD	include/sys/mmu.h	36;"	d
 VPDPE	include/sys/mmu.h	37;"	d
 VPML4E	include/sys/mmu.h	38;"	d
 VPN	include/sys/mmu.h	31;"	d
-VarList	include/parser.h	/^	char *VarList[MAX_VAR_NUM];$/;"	m	struct:__anon6
-VarNum	include/parser.h	/^	int VarNum;$/;"	m	struct:__anon6
+VarList	include/parser.h	/^	char *VarList[MAX_VAR_NUM];$/;"	m	struct:__anon2
+VarNum	include/parser.h	/^	int VarNum;$/;"	m	struct:__anon2
 W	sys/gdt.c	18;"	d	file:
+WAITING	include/sys/process.h	/^WAITING$/;"	e	enum:ProcStatus
 _DEFS_H	include/sys/defs.h	2;"	d
 _ERRNO_H	include/errno.h	2;"	d
 _GDT_H	include/sys/gdt.h	2;"	d
@@ -360,17 +352,17 @@ _start	tp.s	/^_start:$/;"	l
 _x86_64_asm_lgdt	sys/gdt.s	/^_x86_64_asm_lgdt:$/;"	l
 addr	sys/gdt.c	/^	uint64_t addr;$/;"	m	struct:gdtr_t	file:
 addr	sys/idt.c	/^        uint64_t addr;$/;"	m	struct:idtr_t	file:
-addr_hdr	include/sys/tarfs.h	/^    uint64_t addr_hdr;$/;"	m	struct:__anon1
-address	include/sys/file_table.h	/^	uint64_t address; \/\/Only valid for pipe buffers and directories$/;"	m	struct:__anon4
+addr_hdr	include/sys/tarfs.h	/^    uint64_t addr_hdr;$/;"	m	struct:__anon5
+address	include/sys/file_table.h	/^	uint64_t address; \/\/Only valid for pipe buffers and directories$/;"	m	struct:__anon8
 alarm	libc/alarm.c	/^unsigned int alarm(unsigned int sec)$/;"	f
 align4	include/memory.h	4;"	d
-alloc_new	libc/malloc.c	/^void *alloc_new(int aligned_size)$/;"	f
 allocate_page	sys/paging.c	/^PageStruct* allocate_page(){$/;"	f
 allocate_proc_area	sys/process.c	/^int allocate_proc_area(ProcStruct* p, void* va, uint64_t size)$/;"	f
 allocate_process	sys/process.c	/^ProcStruct* allocate_process(unsigned char parentid)$/;"	f
 allocate_vma	sys/process.c	/^struct vma_struct* allocate_vma(mm_struct* mem)$/;"	f
-allocated_mem	libc/malloc.c	/^static int allocated_mem; $/;"	v	file:
+args	sys/process.c	/^char args[15][60];$/;"	v
 argv	tp.c	/^    ; push argv$/;"	v
+base	libc/malloc.c	/^void *base = NULL;$/;"	v
 binary	include/sys/process.h	/^uint64_t *binary;$/;"	m	struct:ProcStruct
 block	include/memory.h	/^struct block{$/;"	s
 blockPTR	include/memory.h	/^typedef struct block *blockPTR;$/;"	t	typeref:struct:block
@@ -381,20 +373,22 @@ boot_pde	include/sys/paging.h	/^uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot
 boot_pdpe	include/sys/paging.h	/^uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot_pte;		\/\/ Kernel's initial page directory$/;"	v
 boot_pml4e	include/sys/paging.h	/^uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot_pte;		\/\/ Kernel's initial page directory$/;"	v
 boot_pte	include/sys/paging.h	/^uint64_t *boot_pml4e,*boot_pdpe,*boot_pde, *boot_pte;		\/\/ Kernel's initial page directory$/;"	v
+brk	libc/malloc.c	/^int brk(void *end_data_segment){$/;"	f
 callq	bin/hello/tp.s	/^callq main$/;"	l
 capslock	sys/keyboard.c	/^unsigned char capslock = FALSE;$/;"	v
 cat	libc/cat.c	/^void cat(char* filename){$/;"	f
 cd	libc/testCases.c	/^void cd(char *path){$/;"	f
 chdir	libc/chdir.c	/^int chdir(const char *path){$/;"	f
 checksum	include/sys/tarfs.h	/^	char checksum[8];$/;"	m	struct:posix_header_ustar
-close	include/sys/file_table.h	/^	int (*close)(); \/\/pointer to the device specific close call$/;"	m	struct:__anon5
+close	include/sys/file_table.h	/^	int (*close)(); \/\/pointer to the device specific close call$/;"	m	struct:__anon9
 close	libc/close.c	/^int close(int fd)$/;"	f
 close_file	sys/tarfs.c	/^int close_file(int file_table_index){$/;"	f
 closedir	libc/closedir.c	/^int closedir(void *dir){$/;"	f
 colour	sys/printf.c	7;"	d	file:
-commandName	include/parser.h	/^	char *commandName;$/;"	m	struct:__anon6
+commandName	include/parser.h	/^	char *commandName;$/;"	m	struct:__anon2
 convert_to_absolute_path_dir	sys/tarfs.c	/^void convert_to_absolute_path_dir(const char* path,char* absPath){$/;"	f
 convert_to_absolute_path_file	sys/tarfs.c	/^void convert_to_absolute_path_file(const char* path,char* absPath){$/;"	f
+copy_args_to_stack	sys/process.c	/^int copy_args_to_stack(uint64_t stacktop,int argc)$/;"	f
 copypagetables	sys/process.c	/^int copypagetables(ProcStruct *proc)$/;"	f
 copyvmas	sys/process.c	/^int copyvmas(ProcStruct *proc)$/;"	f
 count	include/sys/process.h	/^    int count;$/;"	m	struct:mm_struct
@@ -404,7 +398,7 @@ create_process	sys/process.c	/^ProcStruct* create_process(uint64_t* binary, enum
 cs	include/sys/isr.h	/^    uint64_t cs;$/;"	m	struct:faultStruct
 ctrl	sys/keyboard.c	/^unsigned char ctrl = FALSE;$/;"	v
 curproc	include/sys/process.h	/^ProcStruct* proc_free_list,*proc_running_list,*curproc;$/;"	v
-cursor	include/sys/file_table.h	/^	uint64_t cursor; \/\/current cursor position$/;"	m	struct:__anon5
+cursor	include/sys/file_table.h	/^	uint64_t cursor; \/\/current cursor position$/;"	m	struct:__anon9
 cwd	include/sys/process.h	/^char cwd[50]; \/\/store the current working directory of a process$/;"	m	struct:ProcStruct
 d_ino	include/stdlib.h	/^	long d_ino;$/;"	m	struct:dirent
 d_ino	include/sys/tarfs.h	/^	long d_ino;$/;"	m	struct:K_dirent
@@ -424,7 +418,7 @@ dup	libc/dup.c	/^int dup(int oldfd)$/;"	f
 dup2	libc/dup2.c	/^int dup2(int oldfd, int newfd)$/;"	f
 dup2	sys/pipe.c	/^int dup2(int oldfd, int newfd){$/;"	f
 dup2_test_case	libc/testCases.c	/^void dup2_test_case(){$/;"	f
-duplicateFD	include/sys/file_table.h	/^	int duplicateFD;$/;"	m	struct:__anon4
+duplicateFD	include/sys/file_table.h	/^	int duplicateFD;$/;"	m	struct:__anon8
 e_ehsize	include/sys/elf.h	/^	uint16_t e_ehsize;$/;"	m	struct:Elf
 e_elf	include/sys/elf.h	/^	unsigned char e_elf[12];$/;"	m	struct:Elf
 e_entry	include/sys/elf.h	/^	uint64_t e_entry;$/;"	m	struct:Elf
@@ -447,31 +441,37 @@ env_pop_tf	sys/process.c	/^void env_pop_tf(struct Trapframe *tf1)$/;"	f
 errno	sys/main.c	/^int errno = 0;$/;"	v
 errorCode	include/sys/isr.h	/^    uint64_t errorCode;$/;"	m	struct:faultStruct
 execve	libc/execve.c	/^int execve(const char *filename, char *const argv[], char *const envp[])$/;"	f
+execve	sys/process.c	/^uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])$/;"	f
 exit	libc/exit.c	/^void exit(int status){$/;"	f
+extend_heap	libc/malloc.c	/^blockPTR extend_heap(blockPTR last, size_t size){$/;"	f
 faultFrame	include/sys/isr.h	/^typedef struct faultStruct faultFrame;$/;"	t	typeref:struct:faultStruct
 faultStruct	include/sys/isr.h	/^struct faultStruct {$/;"	s
 fd_table	include/sys/process.h	/^int fd_table[10];  \/\/per process file descriptor array$/;"	m	struct:ProcStruct
-fileTable_entry	include/sys/file_table.h	/^} fileTable_entry;$/;"	t	typeref:struct:__anon5
+fileTable_entry	include/sys/file_table.h	/^} fileTable_entry;$/;"	t	typeref:struct:__anon9
 file_read_test_case	libc/testCases.c	/^void file_read_test_case(){$/;"	f
 file_table	sys/tarfs.c	/^fileTable_entry file_table[10];$/;"	v
+filesz	include/sys/process.h	/^uint64_t filesz;$/;"	m	struct:vma_struct
+find_block	libc/malloc.c	/^blockPTR find_block(blockPTR* last,size_t size){$/;"	f
 fork	libc/fork.c	/^pid_t fork()$/;"	f
 fork_process	sys/process.c	/^int fork_process(struct Trapframe* tf)$/;"	f
 fork_test_case	libc/testCases.c	/^void fork_test_case(){$/;"	f
 free	include/memory.h	/^	int free;$/;"	m	struct:block
-free	libc/malloc.c	/^void free(void *p)$/;"	f
+free	libc/malloc.c	/^void free(void *p){$/;"	f
+fuseBlocks	libc/malloc.c	/^blockPTR fuseBlocks(blockPTR b){$/;"	f
 gdt	sys/gdt.c	/^uint64_t gdt[MAX_GDT] = {$/;"	v
 gdtr	sys/gdt.c	/^static struct gdtr_t gdtr = {$/;"	v	typeref:struct:gdtr_t	file:
 gdtr_t	sys/gdt.c	/^struct gdtr_t {$/;"	s	file:
 get_per_ind	sys/tarfs.c	/^int get_per_ind(char* dir){$/;"	f
 get_per_ind_file	sys/tarfs.c	/^int get_per_ind_file(char* dir){$/;"	f
 get_running_process	sys/process.c	/^int get_running_process(){$/;"	f
+getblock	libc/malloc.c	/^blockPTR getblock(void* p){$/;"	f
 getcwd	libc/getcwd.c	/^char* getcwd(char *buf, size_t size){$/;"	f
 getnewprocess	sys/process.c	/^ProcStruct *getnewprocess()$/;"	f
 getpid	libc/process.c	/^pid_t getpid()$/;"	f
 getppid	libc/process.c	/^pid_t getppid()$/;"	f
 gid	include/sys/tarfs.h	/^	char gid[8];$/;"	m	struct:posix_header_ustar
 gname	include/sys/tarfs.h	/^	char gname[32];$/;"	m	struct:posix_header_ustar
-heap_end	libc/malloc.c	/^static char *heap_end;$/;"	v	file:
+heapProfiler	libc/malloc.c	/^void heapProfiler(){$/;"	f
 idt_entries	sys/idt.c	/^idt_t idt_entries[256];$/;"	v
 idt_ptr	sys/idt.c	/^idtr_t   idt_ptr;$/;"	v
 idt_set_gate	sys/idt.c	/^void idt_set_gate(uint16_t num, uint64_t isrAddr, uint16_t selector,uint16_t dpl,uint16_t type, uint16_t ist){$/;"	f
@@ -487,7 +487,7 @@ initialize_page_lists	sys/paging.c	/^void initialize_page_lists(){$/;"	f
 initialize_process	sys/process.c	/^void initialize_process()$/;"	f
 initialize_vm_64	sys/paging.c	/^void initialize_vm_64(void){$/;"	f
 inode	newfs/newfs.c	/^struct inode {$/;"	s	file:
-inode_num	include/sys/file_table.h	/^	int inode_num; \/\/the entry in the tarfs table$/;"	m	struct:__anon5
+inode_num	include/sys/file_table.h	/^	int inode_num; \/\/the entry in the tarfs table$/;"	m	struct:__anon9
 int	bin/hello/tp.s	/^int $80$/;"	l
 int	tp.s	/^int $80$/;"	l
 int16_t	include/sys/defs.h	/^typedef          short  int16_t;$/;"	t
@@ -495,7 +495,6 @@ int32_t	include/sys/defs.h	/^typedef          int    int32_t;$/;"	t
 int64_t	include/sys/defs.h	/^typedef          long   int64_t;$/;"	t
 invlpg	include/sys/paging.h	/^invlpg(void *addr)                             {                                               __asm __volatile("invlpg (%0)" : : "r" (addr) : "memory");         $/;"	f
 io_wait	include/sys/port.h	/^static inline void io_wait(void)$/;"	f
-is_available	libc/malloc.c	/^    int is_available;$/;"	m	struct:MCB_header_t	file:
 isr0_handler	sys/isr.c	/^void isr0_handler(){$/;"	f
 isr11_handler	sys/isr.c	/^void isr11_handler(){$/;"	f
 isr128_handler	sys/isr.c	/^void isr128_handler(struct Trapframe* tf){$/;"	f
@@ -511,6 +510,7 @@ isr6_handler	sys/isr.c	/^void isr6_handler(){$/;"	f
 isr8_handler	sys/isr.c	/^void isr8_handler(){$/;"	f
 ist	sys/idt.c	/^    unsigned ist : 3 ;$/;"	m	struct:idt_t	file:
 k	bin/tabz/tab.c	/^int k=0;$/;"	v
+k	libc/testCases.c	/^int k=0;$/;"	v
 kchdir	sys/tarfs.c	/^int kchdir(char* directoryPath){$/;"	f
 kclose	sys/tarfs.c	/^int kclose(int fd){$/;"	f
 keyboard_buffer	sys/keyboard.c	/^char keyboard_buffer[100]; \/\/To be used to hold the pressed keys till user presses ENTER$/;"	v
@@ -540,7 +540,6 @@ length_of_command	sys/keyboard.c	/^int length_of_command = 0;$/;"	v
 linkname	include/sys/tarfs.h	/^	char linkname[100];$/;"	m	struct:posix_header_ustar
 load_elf	sys/process.c	/^int load_elf(ProcStruct *e,uint64_t* binary)$/;"	f
 loader_stack	sys/main.c	/^uint32_t* loader_stack;$/;"	v
-ls	bin/hello/shell.c	/^void ls(){$/;"	f
 ls	libc/testCases.c	/^void ls(){$/;"	f
 lseek	libc/lseek.c	/^off_t lseek(int fildes, off_t offset, int whence)$/;"	f
 ltr	include/sys/paging.h	/^ltr(uint16_t sel)$/;"	f
@@ -549,16 +548,13 @@ magic	include/sys/tarfs.h	/^	char magic[6];$/;"	m	struct:posix_header_ustar
 magic	newfs/newfs.c	/^	uint32_t magic;$/;"	m	struct:superblock	file:
 main	bin/hello/shell.c	/^int main(int argc, char* argv[], char* envp[])$/;"	f
 main	bin/hello/tp.s	/^main:$/;"	l
+main	bin/init/init.c	/^int main()$/;"	f
 main	bin/malluaunty/tp.c	/^int main(int argc, char* argv[], char* envp[])$/;"	f
 main	bin/tabz/tab.c	/^int main()$/;"	f
 main	newfs/newfs.c	/^int main(int argc, char* argv[]) {$/;"	f
 main	tp.c	/^    call main$/;"	v
-make_head	libc/malloc.c	/^void make_head(char *addr, int size) $/;"	f
-malloc	libc/malloc.c	/^void* malloc(size_t elem_size)$/;"	f
+malloc	libc/malloc.c	/^void *malloc(size_t size){$/;"	f
 map_vm_pm	sys/paging.c	/^uint16_t  map_vm_pm(pml4e_t* pml4e, uint64_t va,uint64_t pa,uint64_t size, uint16_t perm)$/;"	f
-max_mem	libc/malloc.c	/^static int max_mem;$/;"	v	file:
-mcb_count	libc/malloc.c	/^static int mcb_count;$/;"	v	file:
-mem_start_p	libc/malloc.c	/^static char *mem_start_p;$/;"	v	file:
 mm	include/sys/process.h	/^struct mm_struct *mm;$/;"	m	struct:ProcStruct	typeref:struct:ProcStruct::mm_struct
 mm_struct	include/sys/process.h	/^typedef struct mm_struct {$/;"	s
 mm_struct	include/sys/process.h	/^}mm_struct;$/;"	t	typeref:struct:mm_struct
@@ -571,15 +567,16 @@ mov	bin/hello/tp.s	/^mov  %eax, 3$/;"	l
 mov	tp.s	/^mov  %eax, 1$/;"	l
 mtime	include/sys/tarfs.h	/^	char mtime[12];$/;"	m	struct:posix_header_ustar
 name	include/sys/tarfs.h	/^	char name[100];$/;"	m	struct:posix_header_ustar
-name	include/sys/tarfs.h	/^    char name[100];$/;"	m	struct:__anon1
+name	include/sys/tarfs.h	/^    char name[100];$/;"	m	struct:__anon5
 next	include/memory.h	/^	struct block* next;$/;"	m	struct:block	typeref:struct:block::block
 next	include/sys/paging.h	/^        struct PageStruct *next;$/;"	m	struct:PageStruct	typeref:struct:PageStruct::PageStruct
 next	include/sys/process.h	/^struct ProcStruct* next;$/;"	m	struct:ProcStruct	typeref:struct:ProcStruct::ProcStruct
 nextfree	sys/paging.c	/^static char* nextfree;$/;"	v	file:
 npages	include/sys/paging.h	/^uint64_t npages;$/;"	v
 numOfEntries	sys/tarfs.c	/^int numOfEntries = 1; \/\/index into the tarfs table..after tarfs_init() it has the total number of entries in FS$/;"	v
-numOfTokens	include/stringTokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon8
-numOfTokens	include/stringtokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon9
+numOfTokens	include/stringTokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon4
+numOfTokens	include/stringtokenizer.h	/^	int numOfTokens;$/;"	m	struct:__anon1
+num_child	include/sys/process.h	/^int num_child;$/;"	m	struct:ProcStruct
 octalToDecimal	sys/utils.c	/^uint64_t octalToDecimal(uint64_t octal)$/;"	f
 off_t	include/stdlib.h	/^typedef uint64_t off_t;$/;"	t
 offset_0_15	sys/idt.c	/^    uint16_t offset_0_15;$/;"	m	struct:idt_t	file:
@@ -601,18 +598,19 @@ pad	include/sys/tarfs.h	/^	char pad[12];$/;"	m	struct:posix_header_ustar
 pageToPhysicalAddress	sys/paging.c	/^uint64_t* pageToPhysicalAddress(PageStruct* page){$/;"	f
 page_free_list	sys/paging.c	/^static struct PageStruct *page_free_list;	\/\/ Free list of physical pages. page_free_list is the head of the free list$/;"	v	typeref:struct:PageStruct	file:
 pages	sys/paging.c	/^struct PageStruct *pages;$/;"	v	typeref:struct:PageStruct
-par_ind	include/sys/tarfs.h	/^    int par_ind;$/;"	m	struct:__anon1
+par_ind	include/sys/tarfs.h	/^    int par_ind;$/;"	m	struct:__anon5
+parallel_fork	bin/hello/shell.c	/^void parallel_fork(){$/;"	f
 parent_id	include/sys/process.h	/^unsigned char parent_id;$/;"	m	struct:ProcStruct
-parseInfo	include/parser.h	/^} parseInfo;$/;"	t	typeref:struct:__anon7
+parseInfo	include/parser.h	/^} parseInfo;$/;"	t	typeref:struct:__anon3
 pde_t	include/sys/defs.h	/^typedef uint64_t pde_t;$/;"	t
 pdpe_t	include/sys/defs.h	/^typedef uint64_t pdpe_t;$/;"	t
 physaddr_t	include/sys/defs.h	/^typedef uint64_t physaddr_t;$/;"	t
 physicalAddressToPage	sys/paging.c	/^PageStruct * physicalAddressToPage(uint64_t *addr){$/;"	f
 pid_t	include/stdlib.h	/^typedef uint32_t pid_t;$/;"	t
-pipe	include/sys/file_table.h	/^	Pipe pipe; \/\/$/;"	m	struct:__anon5
+pipe	include/sys/file_table.h	/^	Pipe pipe; \/\/$/;"	m	struct:__anon9
 pipe	libc/pipe.c	/^int pipe(int fd[2])$/;"	f
 pipe	sys/pipe.c	/^int pipe(int *pipefd){$/;"	f
-pipeNum	include/parser.h	/^	int   pipeNum;$/;"	m	struct:__anon7
+pipeNum	include/parser.h	/^	int   pipeNum;$/;"	m	struct:__anon3
 pipe_close	sys/pipe.c	/^int pipe_close(int fd){$/;"	f
 pipe_read	sys/pipe.c	/^int pipe_read(int file_table_index,char* buf, int numBytesToRead){$/;"	f
 pipe_write	sys/pipe.c	/^int pipe_write(int file_table_index,char *buf,int numBytesToWrite){$/;"	f
@@ -621,7 +619,7 @@ pml4e_t	include/sys/defs.h	/^typedef uint64_t pml4e_t;$/;"	t
 posix_header_ustar	include/sys/tarfs.h	/^struct posix_header_ustar {$/;"	s
 power	sys/utils.c	/^uint64_t power(uint64_t x, int e) {$/;"	f
 prefix	include/sys/tarfs.h	/^	char prefix[155];$/;"	m	struct:posix_header_ustar
-present	include/sys/file_table.h	/^	int present; \/\/indicates if this entry is valid or not 0->free 1->present$/;"	m	struct:__anon5
+present	include/sys/file_table.h	/^	int present; \/\/indicates if this entry is valid or not 0->free 1->present$/;"	m	struct:__anon9
 prev	include/memory.h	/^	struct block* prev;$/;"	m	struct:block	typeref:struct:block::block
 print_keyboard_buff	sys/keyboard.c	/^void print_keyboard_buff(){$/;"	f
 print_num	libc/printf.c	/^void print_num(int num, int base)$/;"	f
@@ -643,15 +641,15 @@ procs	include/sys/process.h	/^ProcStruct* procs; $/;"	v
 ps	libc/ps.c	/^int ps(){$/;"	f
 pt	include/sys/process.h	/^    uint64_t * pt; \/\/ page table pointer  $/;"	m	struct:mm_struct
 pte_t	include/sys/defs.h	/^typedef uint64_t pte_t;$/;"	t
-read	include/sys/file_table.h	/^	int (*read)(); \/\/pointer to the device specific read call$/;"	m	struct:__anon5
+read	include/sys/file_table.h	/^	int (*read)(); \/\/pointer to the device specific read call$/;"	m	struct:__anon9
 read	libc/read.c	/^ssize_t read(int fd, void *buf, size_t count){$/;"	f
 read_cr2_register	sys/isr.c	/^uint64_t read_cr2_register(){$/;"	f
-read_cursor	include/sys/file_table.h	/^	uint64_t read_cursor;$/;"	m	struct:__anon4
+read_cursor	include/sys/file_table.h	/^	uint64_t read_cursor;$/;"	m	struct:__anon8
 read_file	sys/tarfs.c	/^int read_file(int file_table_index,char *buf,int numBytesToRead){$/;"	f
 read_line	libc/testCases.c	/^void read_line(int fd, char* buf)$/;"	f
 readdir	libc/readdir.c	/^struct dirent* readdir(void *dir){$/;"	f
-readers	include/sys/file_table.h	/^	int readers;$/;"	m	struct:__anon4
-ref_count	include/sys/file_table.h	/^	int ref_count; \/\/number of processes which have this file open$/;"	m	struct:__anon5
+readers	include/sys/file_table.h	/^	int readers;$/;"	m	struct:__anon8
+ref_count	include/sys/file_table.h	/^	int ref_count; \/\/number of processes which have this file open$/;"	m	struct:__anon9
 ref_count	include/sys/paging.h	/^	uint16_t ref_count;$/;"	m	struct:PageStruct
 refcount	newfs/newfs.c	/^	uint64_t refcount;$/;"	m	struct:inode	file:
 reg_r10	include/sys/idt.h	/^    uint64_t reg_r10;$/;"	m	struct:GpRegs
@@ -716,12 +714,11 @@ sh_type	include/sys/elf.h	/^	uint32_t sh_type;$/;"	m	struct:Secthdr
 shift	sys/keyboard.c	/^unsigned char shift = FALSE;$/;"	v
 show_fd_table	sys/tarfs.c	/^void show_fd_table(){$/;"	f
 show_file_table	sys/tarfs.c	/^void show_file_table(int fd){$/;"	f
-singleCommand	include/parser.h	/^}singleCommand;$/;"	t	typeref:struct:__anon6
+singleCommand	include/parser.h	/^}singleCommand;$/;"	t	typeref:struct:__anon2
 size	include/memory.h	/^	int size;$/;"	m	struct:block
-size	include/sys/file_table.h	/^	int size;$/;"	m	struct:__anon5
+size	include/sys/file_table.h	/^	int size;$/;"	m	struct:__anon9
 size	include/sys/tarfs.h	/^	char size[12];$/;"	m	struct:posix_header_ustar
-size	include/sys/tarfs.h	/^    int size;$/;"	m	struct:__anon1
-size	libc/malloc.c	/^    int size;$/;"	m	struct:MCB_header_t	file:
+size	include/sys/tarfs.h	/^    int size;$/;"	m	struct:__anon5
 size	sys/gdt.c	/^	uint16_t size;$/;"	m	struct:gdtr_t	file:
 size	sys/idt.c	/^		uint16_t size;$/;"	m	struct:idtr_t	file:
 size_t	include/stdlib.h	/^typedef uint64_t size_t;$/;"	t
@@ -729,6 +726,7 @@ size_t	include/sys/defs.h	/^typedef uint64_t size_t;$/;"	t
 sleep	libc/sleep.c	/^unsigned int sleep(unsigned int sec)$/;"	f
 sleep_test_case	libc/testCases.c	/^void sleep_test_case(){$/;"	f
 special	sys/keyboard.c	/^char special=' ';$/;"	v
+splitblockPTR	libc/malloc.c	/^void splitblockPTR ( blockPTR b, size_t s){$/;"	f
 ss	include/sys/isr.h	/^    uint64_t ss;$/;"	m	struct:faultStruct
 ssize_t	include/stdlib.h	/^typedef int64_t ssize_t;$/;"	t
 stack	sys/main.c	/^char stack[INITIAL_STACK_SIZE];$/;"	v
@@ -748,6 +746,7 @@ sys_chdir	sys/syscall.c	/^int sys_chdir(char* path){$/;"	f
 sys_close_directory	sys/syscall.c	/^int sys_close_directory(void* dir){$/;"	f
 sys_close_file	sys/syscall.c	/^uint64_t sys_close_file(int fd){$/;"	f
 sys_dup2	sys/syscall.c	/^int sys_dup2(int oldfd,int newfd){$/;"	f
+sys_execve	sys/syscall.c	/^int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])$/;"	f
 sys_exit	sys/syscall.c	/^void sys_exit(uint64_t error_code){$/;"	f
 sys_fork	sys/syscall.c	/^int sys_fork(struct Trapframe* tf)$/;"	f
 sys_getcwd	sys/syscall.c	/^uint64_t sys_getcwd(char* buff, uint64_t size){$/;"	f
@@ -762,13 +761,14 @@ sys_read_file	sys/syscall.c	/^uint64_t sys_read_file(int fd, char* buf , int num
 sys_read_terminal	sys/syscall.c	/^uint64_t sys_read_terminal(char* buf){$/;"	f
 sys_segment_descriptor	sys/gdt.c	/^struct sys_segment_descriptor {$/;"	s	file:
 sys_sleep	sys/syscall.c	/^int sys_sleep(void* t){$/;"	f
+sys_waitpid	sys/syscall.c	/^int sys_waitpid(uint64_t chpid, uint64_t chstatus, uint64_t choptions)$/;"	f
 sys_write	sys/syscall.c	/^void sys_write(uint64_t fd,uint64_t buff,uint64_t len){$/;"	f
 syscall_0	include/syscall.h	/^static __inline uint64_t syscall_0(uint64_t n) {$/;"	f
 syscall_1	include/syscall.h	/^static __inline int64_t syscall_1(uint64_t n, uint64_t a1) {$/;"	f
 syscall_2	include/syscall.h	/^static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {$/;"	f
 syscall_3	include/syscall.h	/^static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {$/;"	f
 tabwidth	sys/printf.c	6;"	d	file:
-tarfs_entry	include/sys/tarfs.h	/^} tarfs_entry;$/;"	t	typeref:struct:__anon1
+tarfs_entry	include/sys/tarfs.h	/^} tarfs_entry;$/;"	t	typeref:struct:__anon5
 tarfs_fs	sys/tarfs.c	/^tarfs_entry tarfs_fs[100];$/;"	v
 tarfs_init	sys/tarfs.c	/^void tarfs_init(){$/;"	f
 terminal_read	sys/tarfs.c	/^int terminal_read(int file_table_index,char *buf,int numBytesToRead){$/;"	f
@@ -796,19 +796,19 @@ tf_trapno	include/sys/idt.h	/^	uint64_t tf_trapno;$/;"	m	struct:Trapframe
 timeTillNow	sys/isr.c	/^unsigned long int timeTillNow=0;$/;"	v
 timespec	libc/sleep.c	/^struct timespec$/;"	s	file:
 tlb_invalidate	sys/paging.c	/^tlb_invalidate(pml4e_t *pml4e, void *va)$/;"	f
-tokenArr	include/stringTokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon8
-tokenArr	include/stringtokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon9
+tokenArr	include/stringTokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon4
+tokenArr	include/stringtokenizer.h	/^	char *tokenArr[50];$/;"	m	struct:__anon1
 tss	sys/main.c	/^struct tss_t tss;$/;"	v	typeref:struct:tss_t
 tss_t	include/sys/gdt.h	/^struct tss_t {$/;"	s
 tv_nsec	include/sys/process.h	/^	int64_t tv_nsec;$/;"	m	struct:K_timespec
 tv_nsec	libc/sleep.c	/^	int64_t tv_nsec;$/;"	m	struct:timespec	file:
 tv_sec	include/sys/process.h	/^	unsigned int tv_sec;$/;"	m	struct:K_timespec
 tv_sec	libc/sleep.c	/^	unsigned int tv_sec;$/;"	m	struct:timespec	file:
-type	include/sys/file_table.h	/^	uint64_t type;$/;"	m	struct:__anon5
+type	include/sys/file_table.h	/^	uint64_t type;$/;"	m	struct:__anon9
 type	include/sys/process.h	/^enum ProcType type;$/;"	m	struct:ProcStruct	typeref:enum:ProcStruct::ProcType
 type	sys/idt.c	/^    unsigned type : 4;$/;"	m	struct:idt_t	file:
 typeflag	include/sys/tarfs.h	/^	char typeflag[1];$/;"	m	struct:posix_header_ustar
-typeflag	include/sys/tarfs.h	/^    int typeflag;$/;"	m	struct:__anon1
+typeflag	include/sys/tarfs.h	/^    int typeflag;$/;"	m	struct:__anon5
 uid	include/sys/tarfs.h	/^	char uid[8];$/;"	m	struct:posix_header_ustar
 uint16_t	include/sys/defs.h	/^typedef unsigned short uint16_t;$/;"	t
 uint32_t	include/sys/defs.h	/^typedef unsigned int   uint32_t;$/;"	t
@@ -822,6 +822,7 @@ va_copy	include/stdarg.h	7;"	d
 va_end	include/stdarg.h	6;"	d
 va_list	include/stdarg.h	/^typedef __builtin_va_list va_list;$/;"	t
 va_start	include/stdarg.h	4;"	d
+valid_addr	libc/malloc.c	/^int valid_addr(void *p){$/;"	f
 version	include/sys/tarfs.h	/^	char version[2];$/;"	m	struct:posix_header_ustar
 vm_end	include/sys/process.h	/^uint64_t    vm_end; $/;"	m	struct:vma_struct
 vm_file	include/sys/process.h	/^uint64_t    *vm_file;          \/* mapped file, if any *\/$/;"	m	struct:vma_struct
@@ -835,14 +836,16 @@ vm_start	include/sys/process.h	/^uint64_t    vm_start; $/;"	m	struct:vma_struct
 vm_type	include/sys/process.h	/^enum SegType vm_type;$/;"	m	struct:vma_struct	typeref:enum:vma_struct::SegType
 vma_struct	include/sys/process.h	/^typedef struct vma_struct{$/;"	s
 vma_struct	include/sys/process.h	/^}vma_struct;$/;"	t	typeref:struct:vma_struct
+waitingfor	include/sys/process.h	/^int waitingfor;$/;"	m	struct:ProcStruct
 waitpid	libc/process.c	/^pid_t waitpid(pid_t pid, int *status, int options)$/;"	f
+waitpid_test	libc/testCases.c	/^void waitpid_test(){$/;"	f
 wakeuptime	include/sys/process.h	/^uint64_t wakeuptime;$/;"	m	struct:ProcStruct
-write	include/sys/file_table.h	/^	int (*write)(); \/\/pointer to the device specific write call$/;"	m	struct:__anon5
+write	include/sys/file_table.h	/^	int (*write)(); \/\/pointer to the device specific write call$/;"	m	struct:__anon9
 write	libc/write.c	/^ssize_t write(int fd, const void *buf, size_t count){$/;"	f
-write_cursor	include/sys/file_table.h	/^	uint64_t write_cursor;$/;"	m	struct:__anon4
+write_cursor	include/sys/file_table.h	/^	uint64_t write_cursor;$/;"	m	struct:__anon8
 write_file	sys/tarfs.c	/^int write_file(int file_table_index,char *buf,int numBytesToWrite){$/;"	f
 write_text	sys/printf.c	/^int write_text(int len) {$/;"	f
-writers	include/sys/file_table.h	/^	int writers;$/;"	m	struct:__anon4
+writers	include/sys/file_table.h	/^	int writers;$/;"	m	struct:__anon8
 x	sys/printf.c	/^static int x=5,y;$/;"	v	file:
 y	sys/printf.c	/^static int x=5,y;$/;"	v	file:
 zero	sys/idt.c	/^    unsigned zero : 1;$/;"	m	struct:idt_t	file:
