@@ -32,7 +32,6 @@ uint64_t vm_offset;
 enum SegType vm_type;
 struct vma_struct   *vm_next;
 uint64_t    vm_flags;      /* flags */
-uint64_t filesz;
 }vma_struct;
 typedef struct mm_struct {
     int count;

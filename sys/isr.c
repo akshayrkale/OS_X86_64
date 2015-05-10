@@ -199,14 +199,14 @@ void isr14_handler(struct faultStruct *faultFrame)
 //        printf("Kernel mode Page Fault");
 //        printf("Address of faultFrame %p",faultFrame);
 //        printf(" \n Error occured at %p ", faultFrame->rip);
-//        printf(" \n Faulting virtual address is %p", vaddr);
+        printf(" \n Faulting virtual address is %p", vaddr);
 //
         if(curproc->status==RUNNING)
         {
             vma_struct *vma=curproc->mm->mmap;
             vma_struct *stack=NULL,*heap=NULL;
             int count=curproc->mm->count;
-            while(!(vma->vm_start<=vaddr && vma->vm_end>=vaddr)&& count--)
+            while(vma && !(vma->vm_start<=vaddr && vma->vm_end>=vaddr)&& count--)
             {
                 if(vma->vm_type == STACK)
                     stack=vma;
@@ -273,16 +273,15 @@ void isr14_handler(struct faultStruct *faultFrame)
 
 			uint64_t copyfrom=(uint64_t)((unsigned char*)vma->vm_file)+vma->vm_offset+ROUNDDOWN(vaddr,PGSIZE)-vma->vm_start;
             int size=PGSIZE;
-            if(ROUNDDOWN(vaddr,PGSIZE)+size>vma->vm_start+vma->filesz)
+            if((ROUNDDOWN(vaddr,PGSIZE)+size>vma->vm_start+vma->vm_filesz)&& (ROUNDDOWN(vaddr,PGSIZE) < vma->vm_start+vma->vm_filesz))
                 size= vma->vm_start+vma->vm_filesz-ROUNDDOWN(vaddr,PGSIZE); 
             if(size<0)
                 size=0;
             printf("sizecpd=%d",size);
-                     kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),size);
-                    
-                     }
+            kmemcpy((void*)(ROUNDDOWN(vaddr,PGSIZE)),(void*)(copyfrom),size);
+            }
  
-                }
+            }
             }
             else 
             {
@@ -329,7 +328,7 @@ void isr128_handler(struct Trapframe* tf){
 
                 case SYS_exit:
                       sys_exit(2);
-                                              scheduler();
+                      scheduler();
                          //printf("exited");
                         break;
 
@@ -338,7 +337,7 @@ void isr128_handler(struct Trapframe* tf){
                        // tf=&curproc->tf;
                         //curproc->status =RUNNABLE;
                         tf->tf_regs.reg_rax  =(uint64_t) sys_fork(tf);
-                         break;
+                        break;
                 case SYS_getpid:
 
                     printf("In sys getpid call in kernel\n");
@@ -443,8 +442,6 @@ void isr128_handler(struct Trapframe* tf){
                 //printf("mallocreturn=%d",tf->tf_regs.reg_rax);
 break;
 
-
-
                 case SYS_dup2:
 
                     //printf("Inside isr.c dup2\n");
@@ -466,8 +463,8 @@ break;
                 case SYS_wait4:
                      tf->tf_regs.reg_rax = sys_waitpid(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
 
-curproc->tf=*tf;
-        tf=&curproc->tf;
+//curproc->tf=*tf;
+//        tf=&curproc->tf;
 
                     scheduler();
                 break;

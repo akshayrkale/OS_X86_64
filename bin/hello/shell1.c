@@ -14,7 +14,7 @@ void parallel_fork(){
 }
 int main11(int argc, char* argv[], char* envp[])
 {
-#define tot 250
+#define tot 2
 	
 //     dup2_test_case();
 //    parallel_fork();
@@ -37,10 +37,10 @@ int main11(int argc, char* argv[], char* envp[])
 
       }
     status=status;
-     //for(i=0;i<tot;i++);;
+     for(i=0;i<tot;i++)
      {
          printf("chpid[%d]= %d",0,pid[0]);
-         waitpid(2,&status,0);
+         waitpid(pid[i],&status,0);
    }
 printf("\n***PARENT EXITNG***\n");
 

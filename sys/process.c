@@ -194,7 +194,7 @@ proc_run(struct ProcStruct *proc)
         env_pop_tf(&(proc->tf));
 }
 
-
+uint64_t stackpage=0;
 int load_elf(ProcStruct *e,uint64_t* binary)
 {
     struct Elf *elf = (struct Elf *)binary;
@@ -242,7 +242,7 @@ int load_elf(ProcStruct *e,uint64_t* binary)
          vma->vm_flags = PTE_U|PTE_W;
          vma->vm_offset = ph->p_offset;  
        
-         allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
+         stackpage=allocate_proc_area(e, (void*)(USERSTACKTOP-PGSIZE), PGSIZE);
         // physicalAddressToPage((uint64_t*)(uint64_t)p)->ref_count++;
 //printf("stack page:%p-%d ",p,e->proc_id);
          e->tf.tf_rip    = elf->e_entry;
@@ -417,7 +417,8 @@ int fork_process(struct Trapframe* tf)
         NewProc->tf = curproc->tf;       
         copypagetables(NewProc);
         copyvmas(NewProc);
-      //lcr3(NewProc->cr3);
+        lcr3(NewProc->cr3);
+        lcr3(curproc->cr3);
   //      allocate_proc_area(NewProc, (void*)(USERSTACKTOP), PGSIZE);
 //        kmemcpy((void*)(USERSTACKTOP),(void*)USERSTACKTOP-PGSIZE,PGSIZE); //?
      //   lcr3(curproc->cr3);       //?
@@ -506,10 +507,12 @@ int copypagetables(ProcStruct *proc)
 
         if(chpte[ipte] & PTE_W || chpte[ipte] & PTE_COW)
         {
+            
             chpte[ipte]=(chpte[ipte]&~PTE_W)| PTE_COW;
             pte[ipte]=(pte[ipte]&~PTE_W)| PTE_COW;
-            physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
-//printf("inc %p %d",pte[ipte],physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count);
+                physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count++;
+            if((chpte[ipte]&~0xfff)== stackpage)
+                printf("inc %p %d",pte[ipte],physicalAddressToPage((uint64_t*)(pte[ipte]&~0xfff))->ref_count);
         }
         //printf("ret=%p",pdpe);
     }
@@ -654,7 +657,7 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
      }
      kstrcpy(args[0],arg1);
      int argc=1;
-     while(arg2[argc-1]!=NULL)
+     while(arg2 && arg2[argc-1]!=NULL)
      {
         kstrcpy(args[argc],arg2[argc-1]);
         argc++;
