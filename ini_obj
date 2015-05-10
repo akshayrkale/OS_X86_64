@@ -1,0 +1,1098 @@
+
+rootfs/bin/init:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000004000e8 <_start>:
+#include <stdlib.h>
+#include <stdio.h>
+int main(int argc, char* argv[], char* envp[]);
+
+void _start(void) {
+  4000e8:	55                   	push   %rbp
+  4000e9:	48 89 e5             	mov    %rsp,%rbp
+  4000ec:	48 83 ec 10          	sub    $0x10,%rsp
+//	int argc = 1;
+//	char* argv[0];
+//	char* envp[0];
+	int res;
+//	res = main(0, NULL, NULL);
+ volatile int x=89;
+  4000f0:	c7 45 f8 59 00 00 00 	movl   $0x59,-0x8(%rbp)
+  res=  main(*((uint64_t*)(&x+0x3UL)),(char**)(uint64_t*)(&x+0x5UL), (char **)((&x+5) +  (2*(*(&x+3)+ 1))));
+  4000f7:	48 8d 45 f8          	lea    -0x8(%rbp),%rax
+  4000fb:	48 83 c0 0c          	add    $0xc,%rax
+  4000ff:	8b 00                	mov    (%rax),%eax
+  400101:	ff c0                	inc    %eax
+  400103:	48 98                	cltq   
+  400105:	48 c1 e0 03          	shl    $0x3,%rax
+  400109:	48 8d 50 14          	lea    0x14(%rax),%rdx
+  40010d:	48 8d 45 f8          	lea    -0x8(%rbp),%rax
+  400111:	48 01 c2             	add    %rax,%rdx
+  400114:	48 8d 45 f8          	lea    -0x8(%rbp),%rax
+  400118:	48 83 c0 0c          	add    $0xc,%rax
+  40011c:	48 8b 00             	mov    (%rax),%rax
+  40011f:	48 8d 4d f8          	lea    -0x8(%rbp),%rcx
+  400123:	48 83 c1 14          	add    $0x14,%rcx
+  400127:	48 89 ce             	mov    %rcx,%rsi
+  40012a:	89 c7                	mov    %eax,%edi
+  40012c:	e8 0f 00 00 00       	callq  400140 <main>
+  400131:	89 45 fc             	mov    %eax,-0x4(%rbp)
+
+    exit(res);
+  400134:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  400137:	89 c7                	mov    %eax,%edi
+  400139:	e8 73 08 00 00       	callq  4009b1 <exit>
+  }
+  40013e:	c9                   	leaveq 
+  40013f:	c3                   	retq   
+
+0000000000400140 <main>:
+#include<stdio.h>
+#include<stdlib.h>
+int main(int argc, char** arg2, char** envp)
+{
+  400140:	55                   	push   %rbp
+  400141:	48 89 e5             	mov    %rsp,%rbp
+  400144:	48 83 ec 30          	sub    $0x30,%rsp
+  400148:	89 7d ec             	mov    %edi,-0x14(%rbp)
+  40014b:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  40014f:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+
+    int pid=fork();
+  400153:	e8 ee 07 00 00       	callq  400946 <fork>
+  400158:	89 45 fc             	mov    %eax,-0x4(%rbp)
+    if(pid==0)
+  40015b:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  40015f:	75 18                	jne    400179 <main+0x39>
+    {
+        execve("/bin/sh",NULL,NULL);
+  400161:	ba 00 00 00 00       	mov    $0x0,%edx
+  400166:	be 00 00 00 00       	mov    $0x0,%esi
+  40016b:	48 8d 3d 5e 08 00 00 	lea    0x85e(%rip),%rdi        # 4009d0 <exit+0x1f>
+  400172:	e8 6e 07 00 00       	callq  4008e5 <execve>
+  400177:	eb 1d                	jmp    400196 <main+0x56>
+    }
+    else
+    {
+            int status=0;
+  400179:	c7 45 f8 00 00 00 00 	movl   $0x0,-0x8(%rbp)
+            waitpid(2,&status,0);
+  400180:	48 8d 45 f8          	lea    -0x8(%rbp),%rax
+  400184:	ba 00 00 00 00       	mov    $0x0,%edx
+  400189:	48 89 c6             	mov    %rax,%rsi
+  40018c:	bf 02 00 00 00       	mov    $0x2,%edi
+  400191:	e8 b7 00 00 00       	callq  40024d <waitpid>
+    }
+
+    printf("\n\n \tSYSTEM SHUTTING DOWN...BYE");
+  400196:	48 8d 3d 3b 08 00 00 	lea    0x83b(%rip),%rdi        # 4009d8 <exit+0x27>
+  40019d:	b8 00 00 00 00       	mov    $0x0,%eax
+  4001a2:	e8 d8 02 00 00       	callq  40047f <printf>
+    while(1);
+  4001a7:	eb fe                	jmp    4001a7 <main+0x67>
+
+00000000004001a9 <syscall_0>:
+#define _SYSCALL_H
+
+#include <sys/defs.h>
+#include <sys/syscall.h>
+
+static __inline uint64_t syscall_0(uint64_t n) {
+  4001a9:	55                   	push   %rbp
+  4001aa:	48 89 e5             	mov    %rsp,%rbp
+  4001ad:	48 83 ec 18          	sub    $0x18,%rsp
+  4001b1:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+
+	uint64_t ret;
+	__asm__("movq %1,%%rax;"
+  4001b5:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  4001b9:	cd 80                	int    $0x80
+  4001bb:	48 89 c0             	mov    %rax,%rax
+  4001be:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+			"int $0x80;"
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n));
+
+	return ret;
+  4001c2:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  4001c6:	c9                   	leaveq 
+  4001c7:	c3                   	retq   
+
+00000000004001c8 <syscall_3>:
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2));
+	return ret;
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+  4001c8:	55                   	push   %rbp
+  4001c9:	48 89 e5             	mov    %rsp,%rbp
+  4001cc:	48 83 ec 30          	sub    $0x30,%rsp
+  4001d0:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  4001d4:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  4001d8:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+  4001dc:	48 89 4d d0          	mov    %rcx,-0x30(%rbp)
+
+	uint64_t ret;
+    
+	__asm__("movq %1,%%rax;"
+  4001e0:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  4001e4:	48 8b 7d e0          	mov    -0x20(%rbp),%rdi
+  4001e8:	48 8b 75 d8          	mov    -0x28(%rbp),%rsi
+  4001ec:	48 8b 55 d0          	mov    -0x30(%rbp),%rdx
+  4001f0:	cd 80                	int    $0x80
+  4001f2:	48 89 c0             	mov    %rax,%rax
+  4001f5:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+			"movq %3, %%rsi;"
+			"movq %4, %%rdx;"
+			"int $0x80;"
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2),"m"(a3));
+	return ret;
+  4001f9:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  4001fd:	c9                   	leaveq 
+  4001fe:	c3                   	retq   
+
+00000000004001ff <getpid>:
+#include <sys/defs.h>
+#include <stdlib.h>
+#include <sys/syscall.h>
+
+pid_t getpid()
+{
+  4001ff:	55                   	push   %rbp
+  400200:	48 89 e5             	mov    %rsp,%rbp
+  400203:	48 83 ec 10          	sub    $0x10,%rsp
+	int retvalue;
+	retvalue = syscall_0(SYS_getpid);
+  400207:	bf 27 00 00 00       	mov    $0x27,%edi
+  40020c:	e8 98 ff ff ff       	callq  4001a9 <syscall_0>
+  400211:	89 45 fc             	mov    %eax,-0x4(%rbp)
+	if(retvalue >=0){
+  400214:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  400218:	78 05                	js     40021f <getpid+0x20>
+		return retvalue;
+  40021a:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  40021d:	eb 05                	jmp    400224 <getpid+0x25>
+	}
+	return -1;
+  40021f:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+
+
+}
+  400224:	c9                   	leaveq 
+  400225:	c3                   	retq   
+
+0000000000400226 <getppid>:
+
+pid_t getppid()
+{
+  400226:	55                   	push   %rbp
+  400227:	48 89 e5             	mov    %rsp,%rbp
+  40022a:	48 83 ec 10          	sub    $0x10,%rsp
+	int retvalue;
+	retvalue = syscall_0(SYS_getppid);
+  40022e:	bf 6e 00 00 00       	mov    $0x6e,%edi
+  400233:	e8 71 ff ff ff       	callq  4001a9 <syscall_0>
+  400238:	89 45 fc             	mov    %eax,-0x4(%rbp)
+	if(retvalue >=0){
+  40023b:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  40023f:	78 05                	js     400246 <getppid+0x20>
+		return retvalue;
+  400241:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  400244:	eb 05                	jmp    40024b <getppid+0x25>
+	}
+
+	return -1;
+  400246:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+
+
+}
+  40024b:	c9                   	leaveq 
+  40024c:	c3                   	retq   
+
+000000000040024d <waitpid>:
+
+pid_t waitpid(pid_t pid, int *status, int options)
+{
+  40024d:	55                   	push   %rbp
+  40024e:	48 89 e5             	mov    %rsp,%rbp
+  400251:	48 83 ec 20          	sub    $0x20,%rsp
+  400255:	89 7d ec             	mov    %edi,-0x14(%rbp)
+  400258:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  40025c:	89 55 e8             	mov    %edx,-0x18(%rbp)
+	pid_t retvalue;
+	retvalue = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);
+  40025f:	8b 45 e8             	mov    -0x18(%rbp),%eax
+  400262:	48 63 c8             	movslq %eax,%rcx
+  400265:	48 8b 55 e0          	mov    -0x20(%rbp),%rdx
+  400269:	8b 45 ec             	mov    -0x14(%rbp),%eax
+  40026c:	48 89 c6             	mov    %rax,%rsi
+  40026f:	bf 3d 00 00 00       	mov    $0x3d,%edi
+  400274:	e8 4f ff ff ff       	callq  4001c8 <syscall_3>
+  400279:	89 45 fc             	mov    %eax,-0x4(%rbp)
+	if(retvalue >=0){
+		return retvalue;
+  40027c:	8b 45 fc             	mov    -0x4(%rbp),%eax
+	}
+
+	return -1;
+
+}
+  40027f:	c9                   	leaveq 
+  400280:	c3                   	retq   
+
+0000000000400281 <print_num>:
+
+// update errno.
+char screen[1024];
+int screen_ctr;
+void print_num(int num, int base)
+{
+  400281:	55                   	push   %rbp
+  400282:	48 89 e5             	mov    %rsp,%rbp
+  400285:	48 81 ec 98 00 00 00 	sub    $0x98,%rsp
+  40028c:	89 bd 6c ff ff ff    	mov    %edi,-0x94(%rbp)
+  400292:	89 b5 68 ff ff ff    	mov    %esi,-0x98(%rbp)
+	int number[32];
+	int i=0;
+  400298:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%rbp)
+
+	if(base == 16)
+  40029f:	83 bd 68 ff ff ff 10 	cmpl   $0x10,-0x98(%rbp)
+  4002a6:	75 44                	jne    4002ec <print_num+0x6b>
+	{
+		screen[screen_ctr++] = '0';
+  4002a8:	48 8b 05 51 0d 20 00 	mov    0x200d51(%rip),%rax        # 601000 <exit+0x20064f>
+  4002af:	8b 00                	mov    (%rax),%eax
+  4002b1:	8d 48 01             	lea    0x1(%rax),%ecx
+  4002b4:	48 8b 15 45 0d 20 00 	mov    0x200d45(%rip),%rdx        # 601000 <exit+0x20064f>
+  4002bb:	89 0a                	mov    %ecx,(%rdx)
+  4002bd:	48 8b 15 44 0d 20 00 	mov    0x200d44(%rip),%rdx        # 601008 <exit+0x200657>
+  4002c4:	48 98                	cltq   
+  4002c6:	c6 04 02 30          	movb   $0x30,(%rdx,%rax,1)
+		screen[screen_ctr++] = 'x';
+  4002ca:	48 8b 05 2f 0d 20 00 	mov    0x200d2f(%rip),%rax        # 601000 <exit+0x20064f>
+  4002d1:	8b 00                	mov    (%rax),%eax
+  4002d3:	8d 48 01             	lea    0x1(%rax),%ecx
+  4002d6:	48 8b 15 23 0d 20 00 	mov    0x200d23(%rip),%rdx        # 601000 <exit+0x20064f>
+  4002dd:	89 0a                	mov    %ecx,(%rdx)
+  4002df:	48 8b 15 22 0d 20 00 	mov    0x200d22(%rip),%rdx        # 601008 <exit+0x200657>
+  4002e6:	48 98                	cltq   
+  4002e8:	c6 04 02 78          	movb   $0x78,(%rdx,%rax,1)
+	}
+	do
+	{
+		int rem=num%base;
+  4002ec:	8b 85 6c ff ff ff    	mov    -0x94(%rbp),%eax
+  4002f2:	99                   	cltd   
+  4002f3:	f7 bd 68 ff ff ff    	idivl  -0x98(%rbp)
+  4002f9:	89 55 f8             	mov    %edx,-0x8(%rbp)
+		if((rem) >= 10)
+  4002fc:	83 7d f8 09          	cmpl   $0x9,-0x8(%rbp)
+  400300:	7e 06                	jle    400308 <print_num+0x87>
+		{
+
+			rem = rem-10 + 'a';
+  400302:	83 45 f8 57          	addl   $0x57,-0x8(%rbp)
+  400306:	eb 04                	jmp    40030c <print_num+0x8b>
+		}
+		else{
+			rem = rem + '0';
+  400308:	83 45 f8 30          	addl   $0x30,-0x8(%rbp)
+		}
+		number[i]= rem;
+  40030c:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  40030f:	48 98                	cltq   
+  400311:	8b 55 f8             	mov    -0x8(%rbp),%edx
+  400314:	89 94 85 78 ff ff ff 	mov    %edx,-0x88(%rbp,%rax,4)
+		i++;
+  40031b:	ff 45 fc             	incl   -0x4(%rbp)
+	}while((num=num/base) !=0);
+  40031e:	8b 85 6c ff ff ff    	mov    -0x94(%rbp),%eax
+  400324:	99                   	cltd   
+  400325:	f7 bd 68 ff ff ff    	idivl  -0x98(%rbp)
+  40032b:	89 85 6c ff ff ff    	mov    %eax,-0x94(%rbp)
+  400331:	83 bd 6c ff ff ff 00 	cmpl   $0x0,-0x94(%rbp)
+  400338:	75 b2                	jne    4002ec <print_num+0x6b>
+
+
+	while(i-- != 0)
+  40033a:	eb 2e                	jmp    40036a <print_num+0xe9>
+	{
+
+		screen[screen_ctr++] = number[i];
+  40033c:	48 8b 05 bd 0c 20 00 	mov    0x200cbd(%rip),%rax        # 601000 <exit+0x20064f>
+  400343:	8b 00                	mov    (%rax),%eax
+  400345:	8d 48 01             	lea    0x1(%rax),%ecx
+  400348:	48 8b 15 b1 0c 20 00 	mov    0x200cb1(%rip),%rdx        # 601000 <exit+0x20064f>
+  40034f:	89 0a                	mov    %ecx,(%rdx)
+  400351:	8b 55 fc             	mov    -0x4(%rbp),%edx
+  400354:	48 63 d2             	movslq %edx,%rdx
+  400357:	8b 94 95 78 ff ff ff 	mov    -0x88(%rbp,%rdx,4),%edx
+  40035e:	48 8b 0d a3 0c 20 00 	mov    0x200ca3(%rip),%rcx        # 601008 <exit+0x200657>
+  400365:	48 98                	cltq   
+  400367:	88 14 01             	mov    %dl,(%rcx,%rax,1)
+		number[i]= rem;
+		i++;
+	}while((num=num/base) !=0);
+
+
+	while(i-- != 0)
+  40036a:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  40036d:	8d 50 ff             	lea    -0x1(%rax),%edx
+  400370:	89 55 fc             	mov    %edx,-0x4(%rbp)
+  400373:	85 c0                	test   %eax,%eax
+  400375:	75 c5                	jne    40033c <print_num+0xbb>
+	{
+
+		screen[screen_ctr++] = number[i];
+	}
+}
+  400377:	c9                   	leaveq 
+  400378:	c3                   	retq   
+
+0000000000400379 <print_ptr>:
+
+
+
+void print_ptr(long unsigned int num, long unsigned int base)
+{
+  400379:	55                   	push   %rbp
+  40037a:	48 89 e5             	mov    %rsp,%rbp
+  40037d:	48 81 ec 20 01 00 00 	sub    $0x120,%rsp
+  400384:	48 89 bd e8 fe ff ff 	mov    %rdi,-0x118(%rbp)
+  40038b:	48 89 b5 e0 fe ff ff 	mov    %rsi,-0x120(%rbp)
+	long unsigned int number[32];
+	int i=0;
+  400392:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%rbp)
+
+		screen[screen_ctr++] = '0';
+  400399:	48 8b 05 60 0c 20 00 	mov    0x200c60(%rip),%rax        # 601000 <exit+0x20064f>
+  4003a0:	8b 00                	mov    (%rax),%eax
+  4003a2:	8d 48 01             	lea    0x1(%rax),%ecx
+  4003a5:	48 8b 15 54 0c 20 00 	mov    0x200c54(%rip),%rdx        # 601000 <exit+0x20064f>
+  4003ac:	89 0a                	mov    %ecx,(%rdx)
+  4003ae:	48 8b 15 53 0c 20 00 	mov    0x200c53(%rip),%rdx        # 601008 <exit+0x200657>
+  4003b5:	48 98                	cltq   
+  4003b7:	c6 04 02 30          	movb   $0x30,(%rdx,%rax,1)
+		screen[screen_ctr++] = 'x';
+  4003bb:	48 8b 05 3e 0c 20 00 	mov    0x200c3e(%rip),%rax        # 601000 <exit+0x20064f>
+  4003c2:	8b 00                	mov    (%rax),%eax
+  4003c4:	8d 48 01             	lea    0x1(%rax),%ecx
+  4003c7:	48 8b 15 32 0c 20 00 	mov    0x200c32(%rip),%rdx        # 601000 <exit+0x20064f>
+  4003ce:	89 0a                	mov    %ecx,(%rdx)
+  4003d0:	48 8b 15 31 0c 20 00 	mov    0x200c31(%rip),%rdx        # 601008 <exit+0x200657>
+  4003d7:	48 98                	cltq   
+  4003d9:	c6 04 02 78          	movb   $0x78,(%rdx,%rax,1)
+	
+	do
+	{
+		long unsigned int rem=num%base;
+  4003dd:	48 8b 85 e8 fe ff ff 	mov    -0x118(%rbp),%rax
+  4003e4:	ba 00 00 00 00       	mov    $0x0,%edx
+  4003e9:	48 f7 b5 e0 fe ff ff 	divq   -0x120(%rbp)
+  4003f0:	48 89 55 f0          	mov    %rdx,-0x10(%rbp)
+		if((rem) >= 10)
+  4003f4:	48 83 7d f0 09       	cmpq   $0x9,-0x10(%rbp)
+  4003f9:	76 07                	jbe    400402 <print_ptr+0x89>
+		{
+			rem = rem-10 + 'a';
+  4003fb:	48 83 45 f0 57       	addq   $0x57,-0x10(%rbp)
+  400400:	eb 05                	jmp    400407 <print_ptr+0x8e>
+		}
+		else{
+			rem = rem + '0';
+  400402:	48 83 45 f0 30       	addq   $0x30,-0x10(%rbp)
+		}
+		number[i]= rem;
+  400407:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  40040a:	48 98                	cltq   
+  40040c:	48 8b 55 f0          	mov    -0x10(%rbp),%rdx
+  400410:	48 89 94 c5 f0 fe ff 	mov    %rdx,-0x110(%rbp,%rax,8)
+  400417:	ff 
+		i++;
+  400418:	ff 45 fc             	incl   -0x4(%rbp)
+	}while((num=num/base) !=0);
+  40041b:	48 8b 85 e8 fe ff ff 	mov    -0x118(%rbp),%rax
+  400422:	ba 00 00 00 00       	mov    $0x0,%edx
+  400427:	48 f7 b5 e0 fe ff ff 	divq   -0x120(%rbp)
+  40042e:	48 89 85 e8 fe ff ff 	mov    %rax,-0x118(%rbp)
+  400435:	48 83 bd e8 fe ff ff 	cmpq   $0x0,-0x118(%rbp)
+  40043c:	00 
+  40043d:	75 9e                	jne    4003dd <print_ptr+0x64>
+
+
+	while(i-- != 0)
+  40043f:	eb 2f                	jmp    400470 <print_ptr+0xf7>
+	{
+
+		screen[screen_ctr++] = number[i];
+  400441:	48 8b 05 b8 0b 20 00 	mov    0x200bb8(%rip),%rax        # 601000 <exit+0x20064f>
+  400448:	8b 00                	mov    (%rax),%eax
+  40044a:	8d 48 01             	lea    0x1(%rax),%ecx
+  40044d:	48 8b 15 ac 0b 20 00 	mov    0x200bac(%rip),%rdx        # 601000 <exit+0x20064f>
+  400454:	89 0a                	mov    %ecx,(%rdx)
+  400456:	8b 55 fc             	mov    -0x4(%rbp),%edx
+  400459:	48 63 d2             	movslq %edx,%rdx
+  40045c:	48 8b 94 d5 f0 fe ff 	mov    -0x110(%rbp,%rdx,8),%rdx
+  400463:	ff 
+  400464:	48 8b 0d 9d 0b 20 00 	mov    0x200b9d(%rip),%rcx        # 601008 <exit+0x200657>
+  40046b:	48 98                	cltq   
+  40046d:	88 14 01             	mov    %dl,(%rcx,%rax,1)
+		number[i]= rem;
+		i++;
+	}while((num=num/base) !=0);
+
+
+	while(i-- != 0)
+  400470:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  400473:	8d 50 ff             	lea    -0x1(%rax),%edx
+  400476:	89 55 fc             	mov    %edx,-0x4(%rbp)
+  400479:	85 c0                	test   %eax,%eax
+  40047b:	75 c4                	jne    400441 <print_ptr+0xc8>
+	{
+
+		screen[screen_ctr++] = number[i];
+    }
+}
+  40047d:	c9                   	leaveq 
+  40047e:	c3                   	retq   
+
+000000000040047f <printf>:
+
+
+
+
+
+int printf(const char *format, ...) {
+  40047f:	55                   	push   %rbp
+  400480:	48 89 e5             	mov    %rsp,%rbp
+  400483:	48 81 ec 90 00 00 00 	sub    $0x90,%rsp
+  40048a:	48 89 75 d8          	mov    %rsi,-0x28(%rbp)
+  40048e:	48 89 55 e0          	mov    %rdx,-0x20(%rbp)
+  400492:	48 89 4d e8          	mov    %rcx,-0x18(%rbp)
+  400496:	4c 89 45 f0          	mov    %r8,-0x10(%rbp)
+  40049a:	4c 89 4d f8          	mov    %r9,-0x8(%rbp)
+  40049e:	48 89 bd 78 ff ff ff 	mov    %rdi,-0x88(%rbp)
+	va_list val;
+	int printed = 0;
+  4004a5:	c7 45 cc 00 00 00 00 	movl   $0x0,-0x34(%rbp)
+	screen_ctr=0;
+  4004ac:	48 8b 05 4d 0b 20 00 	mov    0x200b4d(%rip),%rax        # 601000 <exit+0x20064f>
+  4004b3:	c7 00 00 00 00 00    	movl   $0x0,(%rax)
+	va_start(val, format);
+  4004b9:	c7 45 88 08 00 00 00 	movl   $0x8,-0x78(%rbp)
+  4004c0:	48 8d 45 10          	lea    0x10(%rbp),%rax
+  4004c4:	48 89 45 90          	mov    %rax,-0x70(%rbp)
+  4004c8:	48 8d 45 d0          	lea    -0x30(%rbp),%rax
+  4004cc:	48 89 45 98          	mov    %rax,-0x68(%rbp)
+
+	while(*format)
+  4004d0:	e9 0d 03 00 00       	jmpq   4007e2 <printf+0x363>
+	{
+		if(*format == '%')
+  4004d5:	48 8b 85 78 ff ff ff 	mov    -0x88(%rbp),%rax
+  4004dc:	0f b6 00             	movzbl (%rax),%eax
+  4004df:	3c 25                	cmp    $0x25,%al
+  4004e1:	0f 85 c6 02 00 00    	jne    4007ad <printf+0x32e>
+		{
+			switch(*(++format))
+  4004e7:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+  4004ee:	48 8b 85 78 ff ff ff 	mov    -0x88(%rbp),%rax
+  4004f5:	0f b6 00             	movzbl (%rax),%eax
+  4004f8:	0f be c0             	movsbl %al,%eax
+  4004fb:	83 f8 64             	cmp    $0x64,%eax
+  4004fe:	74 3c                	je     40053c <printf+0xbd>
+  400500:	83 f8 64             	cmp    $0x64,%eax
+  400503:	7f 17                	jg     40051c <printf+0x9d>
+  400505:	83 f8 25             	cmp    $0x25,%eax
+  400508:	0f 84 73 02 00 00    	je     400781 <printf+0x302>
+  40050e:	83 f8 63             	cmp    $0x63,%eax
+  400511:	0f 84 ae 00 00 00    	je     4005c5 <printf+0x146>
+  400517:	e9 c6 02 00 00       	jmpq   4007e2 <printf+0x363>
+  40051c:	83 f8 73             	cmp    $0x73,%eax
+  40051f:	0f 84 03 01 00 00    	je     400628 <printf+0x1a9>
+  400525:	83 f8 78             	cmp    $0x78,%eax
+  400528:	0f 84 7b 01 00 00    	je     4006a9 <printf+0x22a>
+  40052e:	83 f8 70             	cmp    $0x70,%eax
+  400531:	0f 84 fb 01 00 00    	je     400732 <printf+0x2b3>
+  400537:	e9 a6 02 00 00       	jmpq   4007e2 <printf+0x363>
+			{
+			case 'd':
+				printed=printed;
+				int num = va_arg(val, int);
+  40053c:	8b 45 88             	mov    -0x78(%rbp),%eax
+  40053f:	83 f8 30             	cmp    $0x30,%eax
+  400542:	73 17                	jae    40055b <printf+0xdc>
+  400544:	48 8b 55 98          	mov    -0x68(%rbp),%rdx
+  400548:	8b 45 88             	mov    -0x78(%rbp),%eax
+  40054b:	89 c0                	mov    %eax,%eax
+  40054d:	48 01 d0             	add    %rdx,%rax
+  400550:	8b 55 88             	mov    -0x78(%rbp),%edx
+  400553:	83 c2 08             	add    $0x8,%edx
+  400556:	89 55 88             	mov    %edx,-0x78(%rbp)
+  400559:	eb 0f                	jmp    40056a <printf+0xeb>
+  40055b:	48 8b 55 90          	mov    -0x70(%rbp),%rdx
+  40055f:	48 89 d0             	mov    %rdx,%rax
+  400562:	48 83 c2 08          	add    $0x8,%rdx
+  400566:	48 89 55 90          	mov    %rdx,-0x70(%rbp)
+  40056a:	8b 00                	mov    (%rax),%eax
+  40056c:	89 45 bc             	mov    %eax,-0x44(%rbp)
+				if(num<0)
+  40056f:	83 7d bc 00          	cmpl   $0x0,-0x44(%rbp)
+  400573:	79 35                	jns    4005aa <printf+0x12b>
+				{
+					screen[screen_ctr++]='-';
+  400575:	48 8b 05 84 0a 20 00 	mov    0x200a84(%rip),%rax        # 601000 <exit+0x20064f>
+  40057c:	8b 00                	mov    (%rax),%eax
+  40057e:	8d 48 01             	lea    0x1(%rax),%ecx
+  400581:	48 8b 15 78 0a 20 00 	mov    0x200a78(%rip),%rdx        # 601000 <exit+0x20064f>
+  400588:	89 0a                	mov    %ecx,(%rdx)
+  40058a:	48 8b 15 77 0a 20 00 	mov    0x200a77(%rip),%rdx        # 601008 <exit+0x200657>
+  400591:	48 98                	cltq   
+  400593:	c6 04 02 2d          	movb   $0x2d,(%rdx,%rax,1)
+					print_num(-num,10);
+  400597:	8b 45 bc             	mov    -0x44(%rbp),%eax
+  40059a:	f7 d8                	neg    %eax
+  40059c:	be 0a 00 00 00       	mov    $0xa,%esi
+  4005a1:	89 c7                	mov    %eax,%edi
+  4005a3:	e8 d9 fc ff ff       	callq  400281 <print_num>
+  4005a8:	eb 0f                	jmp    4005b9 <printf+0x13a>
+				}
+				else
+					print_num(num,10);
+  4005aa:	8b 45 bc             	mov    -0x44(%rbp),%eax
+  4005ad:	be 0a 00 00 00       	mov    $0xa,%esi
+  4005b2:	89 c7                	mov    %eax,%edi
+  4005b4:	e8 c8 fc ff ff       	callq  400281 <print_num>
+				format++;
+  4005b9:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+				continue;
+  4005c0:	e9 1d 02 00 00       	jmpq   4007e2 <printf+0x363>
+
+			case 'c':
+				printed=printed;;
+				int chr = va_arg(val, int);
+  4005c5:	8b 45 88             	mov    -0x78(%rbp),%eax
+  4005c8:	83 f8 30             	cmp    $0x30,%eax
+  4005cb:	73 17                	jae    4005e4 <printf+0x165>
+  4005cd:	48 8b 55 98          	mov    -0x68(%rbp),%rdx
+  4005d1:	8b 45 88             	mov    -0x78(%rbp),%eax
+  4005d4:	89 c0                	mov    %eax,%eax
+  4005d6:	48 01 d0             	add    %rdx,%rax
+  4005d9:	8b 55 88             	mov    -0x78(%rbp),%edx
+  4005dc:	83 c2 08             	add    $0x8,%edx
+  4005df:	89 55 88             	mov    %edx,-0x78(%rbp)
+  4005e2:	eb 0f                	jmp    4005f3 <printf+0x174>
+  4005e4:	48 8b 55 90          	mov    -0x70(%rbp),%rdx
+  4005e8:	48 89 d0             	mov    %rdx,%rax
+  4005eb:	48 83 c2 08          	add    $0x8,%rdx
+  4005ef:	48 89 55 90          	mov    %rdx,-0x70(%rbp)
+  4005f3:	8b 00                	mov    (%rax),%eax
+  4005f5:	89 45 b8             	mov    %eax,-0x48(%rbp)
+				screen[screen_ctr++] = chr;
+  4005f8:	48 8b 05 01 0a 20 00 	mov    0x200a01(%rip),%rax        # 601000 <exit+0x20064f>
+  4005ff:	8b 00                	mov    (%rax),%eax
+  400601:	8d 48 01             	lea    0x1(%rax),%ecx
+  400604:	48 8b 15 f5 09 20 00 	mov    0x2009f5(%rip),%rdx        # 601000 <exit+0x20064f>
+  40060b:	89 0a                	mov    %ecx,(%rdx)
+  40060d:	8b 55 b8             	mov    -0x48(%rbp),%edx
+  400610:	48 8b 0d f1 09 20 00 	mov    0x2009f1(%rip),%rcx        # 601008 <exit+0x200657>
+  400617:	48 98                	cltq   
+  400619:	88 14 01             	mov    %dl,(%rcx,%rax,1)
+				format++;
+  40061c:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+				continue;
+  400623:	e9 ba 01 00 00       	jmpq   4007e2 <printf+0x363>
+
+			case 's':
+				printed=printed;
+				char* str = va_arg(val, char*);
+  400628:	8b 45 88             	mov    -0x78(%rbp),%eax
+  40062b:	83 f8 30             	cmp    $0x30,%eax
+  40062e:	73 17                	jae    400647 <printf+0x1c8>
+  400630:	48 8b 55 98          	mov    -0x68(%rbp),%rdx
+  400634:	8b 45 88             	mov    -0x78(%rbp),%eax
+  400637:	89 c0                	mov    %eax,%eax
+  400639:	48 01 d0             	add    %rdx,%rax
+  40063c:	8b 55 88             	mov    -0x78(%rbp),%edx
+  40063f:	83 c2 08             	add    $0x8,%edx
+  400642:	89 55 88             	mov    %edx,-0x78(%rbp)
+  400645:	eb 0f                	jmp    400656 <printf+0x1d7>
+  400647:	48 8b 55 90          	mov    -0x70(%rbp),%rdx
+  40064b:	48 89 d0             	mov    %rdx,%rax
+  40064e:	48 83 c2 08          	add    $0x8,%rdx
+  400652:	48 89 55 90          	mov    %rdx,-0x70(%rbp)
+  400656:	48 8b 00             	mov    (%rax),%rax
+  400659:	48 89 45 c0          	mov    %rax,-0x40(%rbp)
+				while(*(str) != '\0')
+  40065d:	eb 33                	jmp    400692 <printf+0x213>
+					screen[screen_ctr++] = *str++;
+  40065f:	48 8b 05 9a 09 20 00 	mov    0x20099a(%rip),%rax        # 601000 <exit+0x20064f>
+  400666:	8b 00                	mov    (%rax),%eax
+  400668:	89 c2                	mov    %eax,%edx
+  40066a:	8d 4a 01             	lea    0x1(%rdx),%ecx
+  40066d:	48 8b 05 8c 09 20 00 	mov    0x20098c(%rip),%rax        # 601000 <exit+0x20064f>
+  400674:	89 08                	mov    %ecx,(%rax)
+  400676:	48 8b 45 c0          	mov    -0x40(%rbp),%rax
+  40067a:	48 8d 48 01          	lea    0x1(%rax),%rcx
+  40067e:	48 89 4d c0          	mov    %rcx,-0x40(%rbp)
+  400682:	0f b6 00             	movzbl (%rax),%eax
+  400685:	48 8b 0d 7c 09 20 00 	mov    0x20097c(%rip),%rcx        # 601008 <exit+0x200657>
+  40068c:	48 63 d2             	movslq %edx,%rdx
+  40068f:	88 04 11             	mov    %al,(%rcx,%rdx,1)
+				continue;
+
+			case 's':
+				printed=printed;
+				char* str = va_arg(val, char*);
+				while(*(str) != '\0')
+  400692:	48 8b 45 c0          	mov    -0x40(%rbp),%rax
+  400696:	0f b6 00             	movzbl (%rax),%eax
+  400699:	84 c0                	test   %al,%al
+  40069b:	75 c2                	jne    40065f <printf+0x1e0>
+					screen[screen_ctr++] = *str++;
+				format++;
+  40069d:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+				continue;
+  4006a4:	e9 39 01 00 00       	jmpq   4007e2 <printf+0x363>
+
+			case 'x':
+				printed=printed;
+				int hex = va_arg(val, int);
+  4006a9:	8b 45 88             	mov    -0x78(%rbp),%eax
+  4006ac:	83 f8 30             	cmp    $0x30,%eax
+  4006af:	73 17                	jae    4006c8 <printf+0x249>
+  4006b1:	48 8b 55 98          	mov    -0x68(%rbp),%rdx
+  4006b5:	8b 45 88             	mov    -0x78(%rbp),%eax
+  4006b8:	89 c0                	mov    %eax,%eax
+  4006ba:	48 01 d0             	add    %rdx,%rax
+  4006bd:	8b 55 88             	mov    -0x78(%rbp),%edx
+  4006c0:	83 c2 08             	add    $0x8,%edx
+  4006c3:	89 55 88             	mov    %edx,-0x78(%rbp)
+  4006c6:	eb 0f                	jmp    4006d7 <printf+0x258>
+  4006c8:	48 8b 55 90          	mov    -0x70(%rbp),%rdx
+  4006cc:	48 89 d0             	mov    %rdx,%rax
+  4006cf:	48 83 c2 08          	add    $0x8,%rdx
+  4006d3:	48 89 55 90          	mov    %rdx,-0x70(%rbp)
+  4006d7:	8b 00                	mov    (%rax),%eax
+  4006d9:	89 45 b4             	mov    %eax,-0x4c(%rbp)
+				if(hex<0)
+  4006dc:	83 7d b4 00          	cmpl   $0x0,-0x4c(%rbp)
+  4006e0:	79 35                	jns    400717 <printf+0x298>
+				{
+					screen[screen_ctr++]='-';
+  4006e2:	48 8b 05 17 09 20 00 	mov    0x200917(%rip),%rax        # 601000 <exit+0x20064f>
+  4006e9:	8b 00                	mov    (%rax),%eax
+  4006eb:	8d 48 01             	lea    0x1(%rax),%ecx
+  4006ee:	48 8b 15 0b 09 20 00 	mov    0x20090b(%rip),%rdx        # 601000 <exit+0x20064f>
+  4006f5:	89 0a                	mov    %ecx,(%rdx)
+  4006f7:	48 8b 15 0a 09 20 00 	mov    0x20090a(%rip),%rdx        # 601008 <exit+0x200657>
+  4006fe:	48 98                	cltq   
+  400700:	c6 04 02 2d          	movb   $0x2d,(%rdx,%rax,1)
+					print_num(-hex,16);
+  400704:	8b 45 b4             	mov    -0x4c(%rbp),%eax
+  400707:	f7 d8                	neg    %eax
+  400709:	be 10 00 00 00       	mov    $0x10,%esi
+  40070e:	89 c7                	mov    %eax,%edi
+  400710:	e8 6c fb ff ff       	callq  400281 <print_num>
+  400715:	eb 0f                	jmp    400726 <printf+0x2a7>
+				}
+				else
+					print_num(hex,16);
+  400717:	8b 45 b4             	mov    -0x4c(%rbp),%eax
+  40071a:	be 10 00 00 00       	mov    $0x10,%esi
+  40071f:	89 c7                	mov    %eax,%edi
+  400721:	e8 5b fb ff ff       	callq  400281 <print_num>
+
+				format++;
+  400726:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+				continue;
+  40072d:	e9 b0 00 00 00       	jmpq   4007e2 <printf+0x363>
+
+			case 'p':
+				printed=printed;
+				long unsigned int ptr =(unsigned long int) va_arg(val, long int );
+  400732:	8b 45 88             	mov    -0x78(%rbp),%eax
+  400735:	83 f8 30             	cmp    $0x30,%eax
+  400738:	73 17                	jae    400751 <printf+0x2d2>
+  40073a:	48 8b 55 98          	mov    -0x68(%rbp),%rdx
+  40073e:	8b 45 88             	mov    -0x78(%rbp),%eax
+  400741:	89 c0                	mov    %eax,%eax
+  400743:	48 01 d0             	add    %rdx,%rax
+  400746:	8b 55 88             	mov    -0x78(%rbp),%edx
+  400749:	83 c2 08             	add    $0x8,%edx
+  40074c:	89 55 88             	mov    %edx,-0x78(%rbp)
+  40074f:	eb 0f                	jmp    400760 <printf+0x2e1>
+  400751:	48 8b 55 90          	mov    -0x70(%rbp),%rdx
+  400755:	48 89 d0             	mov    %rdx,%rax
+  400758:	48 83 c2 08          	add    $0x8,%rdx
+  40075c:	48 89 55 90          	mov    %rdx,-0x70(%rbp)
+  400760:	48 8b 00             	mov    (%rax),%rax
+  400763:	48 89 45 a8          	mov    %rax,-0x58(%rbp)
+				print_ptr(ptr,16);
+  400767:	48 8b 45 a8          	mov    -0x58(%rbp),%rax
+  40076b:	be 10 00 00 00       	mov    $0x10,%esi
+  400770:	48 89 c7             	mov    %rax,%rdi
+  400773:	e8 01 fc ff ff       	callq  400379 <print_ptr>
+
+				format++;
+  400778:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+				continue;
+  40077f:	eb 61                	jmp    4007e2 <printf+0x363>
+
+
+			case '%':
+				printed=printed;
+				char c='%';
+  400781:	c6 45 a7 25          	movb   $0x25,-0x59(%rbp)
+
+				screen[screen_ctr++] = c;
+  400785:	48 8b 05 74 08 20 00 	mov    0x200874(%rip),%rax        # 601000 <exit+0x20064f>
+  40078c:	8b 00                	mov    (%rax),%eax
+  40078e:	8d 48 01             	lea    0x1(%rax),%ecx
+  400791:	48 8b 15 68 08 20 00 	mov    0x200868(%rip),%rdx        # 601000 <exit+0x20064f>
+  400798:	89 0a                	mov    %ecx,(%rdx)
+  40079a:	48 8b 0d 67 08 20 00 	mov    0x200867(%rip),%rcx        # 601008 <exit+0x200657>
+  4007a1:	48 63 d0             	movslq %eax,%rdx
+  4007a4:	0f b6 45 a7          	movzbl -0x59(%rbp),%eax
+  4007a8:	88 04 11             	mov    %al,(%rcx,%rdx,1)
+  4007ab:	eb 35                	jmp    4007e2 <printf+0x363>
+			}
+		}
+		else
+		{
+
+			screen[screen_ctr++] = *format;
+  4007ad:	48 8b 05 4c 08 20 00 	mov    0x20084c(%rip),%rax        # 601000 <exit+0x20064f>
+  4007b4:	8b 00                	mov    (%rax),%eax
+  4007b6:	8d 48 01             	lea    0x1(%rax),%ecx
+  4007b9:	48 8b 15 40 08 20 00 	mov    0x200840(%rip),%rdx        # 601000 <exit+0x20064f>
+  4007c0:	89 0a                	mov    %ecx,(%rdx)
+  4007c2:	48 8b 95 78 ff ff ff 	mov    -0x88(%rbp),%rdx
+  4007c9:	0f b6 12             	movzbl (%rdx),%edx
+  4007cc:	48 8b 0d 35 08 20 00 	mov    0x200835(%rip),%rcx        # 601008 <exit+0x200657>
+  4007d3:	48 98                	cltq   
+  4007d5:	88 14 01             	mov    %dl,(%rcx,%rax,1)
+			++printed;
+  4007d8:	ff 45 cc             	incl   -0x34(%rbp)
+			++format;
+  4007db:	48 ff 85 78 ff ff ff 	incq   -0x88(%rbp)
+	va_list val;
+	int printed = 0;
+	screen_ctr=0;
+	va_start(val, format);
+
+	while(*format)
+  4007e2:	48 8b 85 78 ff ff ff 	mov    -0x88(%rbp),%rax
+  4007e9:	0f b6 00             	movzbl (%rax),%eax
+  4007ec:	84 c0                	test   %al,%al
+  4007ee:	0f 85 e1 fc ff ff    	jne    4004d5 <printf+0x56>
+			++printed;
+			++format;
+		}
+	}
+
+	printed = write(1,screen, screen_ctr);
+  4007f4:	48 8b 05 05 08 20 00 	mov    0x200805(%rip),%rax        # 601000 <exit+0x20064f>
+  4007fb:	8b 00                	mov    (%rax),%eax
+  4007fd:	48 98                	cltq   
+  4007ff:	48 89 c2             	mov    %rax,%rdx
+  400802:	48 8b 05 ff 07 20 00 	mov    0x2007ff(%rip),%rax        # 601008 <exit+0x200657>
+  400809:	48 89 c6             	mov    %rax,%rsi
+  40080c:	bf 01 00 00 00       	mov    $0x1,%edi
+  400811:	e8 52 00 00 00       	callq  400868 <write>
+  400816:	89 45 cc             	mov    %eax,-0x34(%rbp)
+	if(printed < 0)
+  400819:	83 7d cc 00          	cmpl   $0x0,-0x34(%rbp)
+  40081d:	79 07                	jns    400826 <printf+0x3a7>
+		return -1;
+  40081f:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+  400824:	eb 09                	jmp    40082f <printf+0x3b0>
+	return screen_ctr;
+  400826:	48 8b 05 d3 07 20 00 	mov    0x2007d3(%rip),%rax        # 601000 <exit+0x20064f>
+  40082d:	8b 00                	mov    (%rax),%eax
+
+}
+  40082f:	c9                   	leaveq 
+  400830:	c3                   	retq   
+
+0000000000400831 <syscall_3>:
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2));
+	return ret;
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+  400831:	55                   	push   %rbp
+  400832:	48 89 e5             	mov    %rsp,%rbp
+  400835:	48 83 ec 30          	sub    $0x30,%rsp
+  400839:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  40083d:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  400841:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+  400845:	48 89 4d d0          	mov    %rcx,-0x30(%rbp)
+
+	uint64_t ret;
+    
+	__asm__("movq %1,%%rax;"
+  400849:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  40084d:	48 8b 7d e0          	mov    -0x20(%rbp),%rdi
+  400851:	48 8b 75 d8          	mov    -0x28(%rbp),%rsi
+  400855:	48 8b 55 d0          	mov    -0x30(%rbp),%rdx
+  400859:	cd 80                	int    $0x80
+  40085b:	48 89 c0             	mov    %rax,%rax
+  40085e:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+			"movq %3, %%rsi;"
+			"movq %4, %%rdx;"
+			"int $0x80;"
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2),"m"(a3));
+	return ret;
+  400862:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  400866:	c9                   	leaveq 
+  400867:	c3                   	retq   
+
+0000000000400868 <write>:
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+
+
+ssize_t write(int fd, const void *buf, size_t count){
+  400868:	55                   	push   %rbp
+  400869:	48 89 e5             	mov    %rsp,%rbp
+  40086c:	48 83 ec 28          	sub    $0x28,%rsp
+  400870:	89 7d ec             	mov    %edi,-0x14(%rbp)
+  400873:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  400877:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+
+	int retvalue=syscall_3(SYS_write,fd,(uint64_t)buf,(uint64_t)count);
+  40087b:	48 8b 55 e0          	mov    -0x20(%rbp),%rdx
+  40087f:	8b 45 ec             	mov    -0x14(%rbp),%eax
+  400882:	48 98                	cltq   
+  400884:	48 8b 4d d8          	mov    -0x28(%rbp),%rcx
+  400888:	48 89 c6             	mov    %rax,%rsi
+  40088b:	bf 01 00 00 00       	mov    $0x1,%edi
+  400890:	e8 9c ff ff ff       	callq  400831 <syscall_3>
+  400895:	89 45 fc             	mov    %eax,-0x4(%rbp)
+	if(retvalue >=0){
+  400898:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  40089c:	78 07                	js     4008a5 <write+0x3d>
+		return retvalue;
+  40089e:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  4008a1:	48 98                	cltq   
+  4008a3:	eb 07                	jmp    4008ac <write+0x44>
+	}
+	return -1;
+  4008a5:	48 c7 c0 ff ff ff ff 	mov    $0xffffffffffffffff,%rax
+}
+  4008ac:	c9                   	leaveq 
+  4008ad:	c3                   	retq   
+
+00000000004008ae <syscall_3>:
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2));
+	return ret;
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+  4008ae:	55                   	push   %rbp
+  4008af:	48 89 e5             	mov    %rsp,%rbp
+  4008b2:	48 83 ec 30          	sub    $0x30,%rsp
+  4008b6:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  4008ba:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  4008be:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+  4008c2:	48 89 4d d0          	mov    %rcx,-0x30(%rbp)
+
+	uint64_t ret;
+    
+	__asm__("movq %1,%%rax;"
+  4008c6:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  4008ca:	48 8b 7d e0          	mov    -0x20(%rbp),%rdi
+  4008ce:	48 8b 75 d8          	mov    -0x28(%rbp),%rsi
+  4008d2:	48 8b 55 d0          	mov    -0x30(%rbp),%rdx
+  4008d6:	cd 80                	int    $0x80
+  4008d8:	48 89 c0             	mov    %rax,%rax
+  4008db:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+			"movq %3, %%rsi;"
+			"movq %4, %%rdx;"
+			"int $0x80;"
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n),"m"(a1),"m"(a2),"m"(a3));
+	return ret;
+  4008df:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  4008e3:	c9                   	leaveq 
+  4008e4:	c3                   	retq   
+
+00000000004008e5 <execve>:
+#include<sys/syscall.h>
+#include<syscall.h>
+#include<stdlib.h>
+
+int execve(const char *filename, char *const argv[], char *const envp[])
+{
+  4008e5:	55                   	push   %rbp
+  4008e6:	48 89 e5             	mov    %rsp,%rbp
+  4008e9:	48 83 ec 28          	sub    $0x28,%rsp
+  4008ed:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  4008f1:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+  4008f5:	48 89 55 d8          	mov    %rdx,-0x28(%rbp)
+		int retvalue;
+		retvalue = syscall_3(SYS_execve, (uint64_t)filename, (uint64_t)argv, (uint64_t)envp);
+  4008f9:	48 8b 4d d8          	mov    -0x28(%rbp),%rcx
+  4008fd:	48 8b 55 e0          	mov    -0x20(%rbp),%rdx
+  400901:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  400905:	48 89 c6             	mov    %rax,%rsi
+  400908:	bf 3b 00 00 00       	mov    $0x3b,%edi
+  40090d:	e8 9c ff ff ff       	callq  4008ae <syscall_3>
+  400912:	89 45 fc             	mov    %eax,-0x4(%rbp)
+		if(retvalue >=0){
+  400915:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  400919:	78 05                	js     400920 <execve+0x3b>
+			return retvalue;
+  40091b:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  40091e:	eb 05                	jmp    400925 <execve+0x40>
+		}
+		return -1;
+  400920:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+
+}
+  400925:	c9                   	leaveq 
+  400926:	c3                   	retq   
+
+0000000000400927 <syscall_0>:
+#define _SYSCALL_H
+
+#include <sys/defs.h>
+#include <sys/syscall.h>
+
+static __inline uint64_t syscall_0(uint64_t n) {
+  400927:	55                   	push   %rbp
+  400928:	48 89 e5             	mov    %rsp,%rbp
+  40092b:	48 83 ec 18          	sub    $0x18,%rsp
+  40092f:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+
+	uint64_t ret;
+	__asm__("movq %1,%%rax;"
+  400933:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  400937:	cd 80                	int    $0x80
+  400939:	48 89 c0             	mov    %rax,%rax
+  40093c:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+			"int $0x80;"
+			"movq %%rax,%0;"
+			:"=r"(ret):"m"(n));
+
+	return ret;
+  400940:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  400944:	c9                   	leaveq 
+  400945:	c3                   	retq   
+
+0000000000400946 <fork>:
+#include <stdio.h>
+#include <errno.h>
+
+
+pid_t fork()
+{
+  400946:	55                   	push   %rbp
+  400947:	48 89 e5             	mov    %rsp,%rbp
+  40094a:	48 83 ec 10          	sub    $0x10,%rsp
+	int retvalue;
+
+	retvalue = syscall_0(SYS_fork);
+  40094e:	bf 39 00 00 00       	mov    $0x39,%edi
+  400953:	e8 cf ff ff ff       	callq  400927 <syscall_0>
+  400958:	89 45 fc             	mov    %eax,-0x4(%rbp)
+
+	if(retvalue >=0){
+  40095b:	83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+  40095f:	78 05                	js     400966 <fork+0x20>
+		return retvalue;
+  400961:	8b 45 fc             	mov    -0x4(%rbp),%eax
+  400964:	eb 05                	jmp    40096b <fork+0x25>
+	}
+	return -1;
+  400966:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+
+}
+  40096b:	c9                   	leaveq 
+  40096c:	c3                   	retq   
+
+000000000040096d <syscall_1>:
+
+static __inline int64_t syscall_1(uint64_t n, uint64_t a1) {
+  40096d:	55                   	push   %rbp
+  40096e:	48 89 e5             	mov    %rsp,%rbp
+  400971:	48 83 ec 20          	sub    $0x20,%rsp
+  400975:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  400979:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+
+	int64_t ret;
+
+	__asm__("movq $78,%r15");
+  40097d:	49 c7 c7 4e 00 00 00 	mov    $0x4e,%r15
+	//__asm__("movq %0,%%rax;"
+	//		::"m"(n));
+
+	//while(1);
+
+	if(n==60){
+  400984:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  400988:	48 83 f8 3c          	cmp    $0x3c,%rax
+  40098c:	75 0c                	jne    40099a <syscall_1+0x2d>
+		__asm__("movq %0,%%rax;"
+  40098e:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  400992:	48 8b 7d e0          	mov    -0x20(%rbp),%rdi
+  400996:	cd 80                	int    $0x80
+  400998:	eb 11                	jmp    4009ab <syscall_1+0x3e>
+
+		//while(1);
+	}
+	else{
+
+		__asm__("movq %1,%%rax;"
+  40099a:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  40099e:	48 8b 7d e0          	mov    -0x20(%rbp),%rdi
+  4009a2:	cd 80                	int    $0x80
+  4009a4:	48 89 c0             	mov    %rax,%rax
+  4009a7:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+				"movq %2,%%rdi;"
+				"int $0x80;"
+				"movq %%rax,%0;"
+				:"=r"(ret):"m"(n),"m"(a1));
+	}
+	return ret;
+  4009ab:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+}
+  4009af:	c9                   	leaveq 
+  4009b0:	c3                   	retq   
+
+00000000004009b1 <exit>:
+#include <sys/defs.h>
+#include <syscall.h>
+#include <stdlib.h>
+#include <sys/syscall.h>
+
+void exit(int status){
+  4009b1:	55                   	push   %rbp
+  4009b2:	48 89 e5             	mov    %rsp,%rbp
+  4009b5:	48 83 ec 08          	sub    $0x8,%rsp
+  4009b9:	89 7d fc             	mov    %edi,-0x4(%rbp)
+
+	syscall_1(SYS_exit,44);
+  4009bc:	be 2c 00 00 00       	mov    $0x2c,%esi
+  4009c1:	bf 3c 00 00 00       	mov    $0x3c,%edi
+  4009c6:	e8 a2 ff ff ff       	callq  40096d <syscall_1>
+
+
+}
+  4009cb:	c9                   	leaveq 
+  4009cc:	c3                   	retq   

@@ -131,7 +131,7 @@ if(ticks%900 == 0)
         
     }
 
-   // scheduler();
+    scheduler();
 
 }
 

@@ -22,6 +22,7 @@
 #define SYS_dup2       33
 #define SYS_getdents   78
 #define SYS_ps         90
+#define SYS_kill       91
 
 
 #include<sys/defs.h>
@@ -45,6 +46,7 @@ int sys_pipe(int* pipeFD);
 int sys_ps();
 uint64_t sys_brk(uint64_t n);
 int sys_sleep(void* t);
+int sys_kill(int n);
 int sys_dup2(int oldfd,int newfd);
 int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
 ;

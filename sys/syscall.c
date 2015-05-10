@@ -174,6 +174,31 @@ int sys_sleep(void* t){
 
 }
 
+int sys_kill(int pid){
+
+	//t=t;
+    ProcStruct *proc=(procs+pid-1);
+	proc_free(proc);
+    remove_page(proc->cr3);
+    remove_page((uint64_t*)PADDR((uint64_t)proc->mm));
+
+    ProcStruct* parent =((ProcStruct*)procs+proc->parent_id-1);
+
+    if(parent)
+        parent->num_child--; 
+    if((parent) && (parent->status == WAITING) && (parent->waitingfor == proc->proc_id || parent->waitingfor == 0 || (parent->num_child==0)))
+    {
+        parent->status=RUNNABLE;
+        parent->waitingfor=-1;
+    }
+                      
+    printf("Killed %d ",proc->proc_id);
+    
+   // kmemset((void*)proc,0,sizeof(ProcStruct));
+    proc->status = FREE;
+    //proccount--
+   return 0; 
+}
 
 int sys_execve(const char *arg1,const char *arg2[],const  char* arg3[])
 {

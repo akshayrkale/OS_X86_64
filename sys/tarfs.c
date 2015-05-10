@@ -17,7 +17,6 @@ int numOfEntries = 1; //index into the tarfs table..after tarfs_init() it has th
 tarfs_entry tarfs_fs[100];
 fileTable_entry file_table[10];
 
-
 void show_fd_table(){
 
 
@@ -28,7 +27,7 @@ void show_fd_table(){
     }
     printf("\n");
 }
-
+   
 void show_file_table(int fd){
 
 
@@ -222,11 +221,12 @@ void tarfs_init(){
 	file_table[1].present = 1;
 	file_table[2].present = 1;
 
-	 i=0;
+	 //i=0;
 //	 for(i=0;i<12;i++){
-//	 	printf("%d.Name: %s Type: %d Size: %d Parent %d\n",i,tarfs_fs[i].name,tarfs_fs[i].typeflag,tarfs_fs[i].size,tarfs_fs[i].par_ind);
+//	 	printf("%d.Name: %s\t Type: %d\tSize: %d\tParent %d\n",i,tarfs_fs[i].name,tarfs_fs[i].typeflag,tarfs_fs[i].size,tarfs_fs[i].par_ind);
 //	 }
-	
+//while(1);
+
 }//end of tarfs_init()
 
 
