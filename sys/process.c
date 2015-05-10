@@ -577,10 +577,11 @@ vma=vma->vm_next;
 if(vma)
 {
     //printf("inc_brk:in if\n");
+    uint64_t base=vma->vm_end;
     vma->vm_end=vma->vm_end+n;
     curproc->mm->end_brk+=n;
 //    printf("incbrk return%d ",vma->vm_end);
-    return vma->vm_end;
+    return base;
 
 }
 

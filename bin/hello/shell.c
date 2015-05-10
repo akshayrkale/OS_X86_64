@@ -46,7 +46,7 @@ int main (int argc, char *argv[], char* envp[])
 		if(argv[1] == NULL)
 		{
 			printf("%s> ",PS1);
-			//read_line(0,cmdLine);
+			read_line(0,cmdLine);
 		}
 		else
 		{
@@ -57,7 +57,7 @@ int main (int argc, char *argv[], char* envp[])
 			if(ret == -1)
 				break;
 		}
-    strcpy(cmdLine,"malluaunty");
+//    strcpy(cmdLine,"malluaunty");
         printf("entered: %s",cmdLine);
     
 		if (cmdLine == NULL) {

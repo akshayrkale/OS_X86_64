@@ -29,6 +29,7 @@ void execute_cmd(parseInfo * info,char*envp[])
 
 
 	proc_ids = (int *)malloc(info->pipeNum+1);
+printf("proc_ids=%p",proc_ids);
 
 	if(info->pipeNum==0)
 	{
