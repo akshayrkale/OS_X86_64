@@ -12,7 +12,7 @@ if(argc!=3)
 }
 
 
-if(strcmp(argv[1],"\\9")!=0)
+if((argv[1][0] !='-') ||argv[1][1]!='9' || strlen(argv[1])!=2)
 {
     printf("\nSecond Argument Wrong\n KILL:USAGE: \"kill -9 pid\"");
     exit(0);

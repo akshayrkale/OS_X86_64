@@ -7,11 +7,14 @@
 int main(int argc, char** arg2, char** envp)
 {
 
-if(argc!=1)
-{
-     printf("\nWrong Number of Arguments\n PS:USAGE: \"ps\"");
-    exit(0);
-}
+printf("Argc in ps: %d at %p",argc,&argc);
+
+ if(argc!=1)
+ {
+      printf("\nWrong Number of Arguments\n PS:USAGE: \"ps\"");
+     exit(0);
+ }
+
 
 ps();
 return 0;

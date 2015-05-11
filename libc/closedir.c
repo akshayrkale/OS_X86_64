@@ -16,6 +16,8 @@ int closedir(void *dir){
 	}
 	int fd = (uint64_t)dir;
 
+
+	printf("Check fd %d",fd);
 	int retvalue;
 	retvalue = syscall_1(SYS_close,(uint64_t)fd);
 

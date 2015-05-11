@@ -82,7 +82,17 @@ void executeBuiltins(parseInfo* command,char*envp[]){
 
 			printf("Too many arguments to cd.Please enter cd <directory name>\n");
 			return;
+		}else if(command->CommArray[0]->VarNum ==1){
+	
+		command->CommArray[0]->VarList[2]=NULL;			command->CommArray[0]->VarList[1]="/";
+changedir(command->CommArray[0]->VarList[1]);
+		getcwd(cmdWithoutSpaces,100);
+		printf("Current Working Directory is: %s\n",cmdWithoutSpaces);
+
+
+	return;
 		}
+else
 
 
 		//execute change directory

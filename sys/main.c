@@ -40,9 +40,11 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	initialize_vm_64();
    
    i=499999999;
-   while(i--);
+//   while(i--);
 
   tarfs_init();
+
+  
 
   printf("After initialize tarfs\n");
   initialize_process();

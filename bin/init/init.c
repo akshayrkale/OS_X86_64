@@ -12,8 +12,12 @@ int main(int argc, char** arg2, char** envp)
         envp[0]=(char*)malloc(10);
         envp[1]=NULL;
         strcpy(envp[0],"PATH=/bin");
-        envp[1]=NULL;        
-        execve("/bin/sh",NULL,envp);
+        char* arg2[2];
+        arg2[0]=(char*)malloc(10);
+        arg2[1]=NULL;
+        strcpy(arg2[0],"/bin/sh");
+	    
+        execve("/bin/sh",arg2,envp);
     }
     else
     {

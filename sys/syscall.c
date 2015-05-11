@@ -41,6 +41,7 @@ void sys_exit(uint64_t error_code){
     printf("Exited%d ",curproc->proc_id);
     
    // kmemset((void*)proc,0,sizeof(ProcStruct));
+   
     curproc->status = FREE;
     //proccount--
         }
@@ -177,6 +178,7 @@ int sys_sleep(void* t){
 int sys_kill(int pid){
 
 	//t=t;
+	printf("killing %d.",pid);
     ProcStruct *proc=(procs+pid-1);
 	proc_free(proc);
     remove_page(proc->cr3);

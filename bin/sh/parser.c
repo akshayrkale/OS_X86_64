@@ -19,7 +19,7 @@ void print_info (parseInfo *info) {
 
 	for(i=0;i<=info->pipeNum;i++){
 
-		//printf("Command Name : %s\n",info->CommArray[i]->commandName);
+		printf("parser.c: Command Name : %s\n",info->CommArray[i]->commandName);
 
 		//printf("Command Arguments :\n");
 		//printf("Number of arguments %d\n",info->CommArray[i]->VarNum);
@@ -54,7 +54,7 @@ parseInfo* parseModified(char *cmd,char* envp[]){
 
 //	envVar=findEnvVar("PATH",envp);
     //envVar[0]="PATH=/bin";
-	printf("In parser... full PATH= %s\n\n",cmd);
+	//printf("In parser... full PATH= %s\n\n",cmd);
 
 	//path=tokenize(*envVar,"=");
 
@@ -65,11 +65,11 @@ parseInfo* parseModified(char *cmd,char* envp[]){
 	//strcpy(srchPath,path->tokenArr[1]);
 	strcpy(srchPath,"/bin");
 
-	printf("Seatch PAth is %s",srchPath);
+	printf("parser.c: Seatch PAth is %s",srchPath);
 
 	tokenPipe = tokenize(cmd,"|");
 
-	printf("In PARSE MODIFIED%d\n",tokenPipe->numOfTokens);
+	//printf("In PARSE MODIFIED%d\n",tokenPipe->numOfTokens);
 	for(i=0;i<tokenPipe->numOfTokens;i++){
 
 		//for each pipe separated token find space separated tokens
@@ -79,11 +79,11 @@ parseInfo* parseModified(char *cmd,char* envp[]){
 		sc = (singleCommand*)malloc(sizeof(singleCommand));
 		sc->commandName=(char*)malloc(100);
 		sc->commandName[0]='\0';
-		printf("Before find full binary path\n\n\n");
+		//printf("Before find full binary path\n\n\n");
 		sc->commandName=tokenSpace->tokenArr[0];
 		if(strcmp(tokenSpace->tokenArr[0],"set") && strcmp(tokenSpace->tokenArr[0],"cd") && strcmp(tokenSpace->tokenArr[0],"exit") )
 		{
-			printf("Loop %d cmd: %s\n\n",i,tokenSpace->tokenArr[0] );
+			//printf("Loop %d cmd: %s\n\n",i,tokenSpace->tokenArr[0] );
 
 			if(strstr(tokenSpace->tokenArr[0],"/")==NULL){
 
@@ -105,7 +105,7 @@ parseInfo* parseModified(char *cmd,char* envp[]){
 		//printf("In parser..fullpath for %s is %s\n",tokenSpace->tokenArr[0],fullPath);
 
 
-		printf("COMMAND NAME=%s\n",sc->commandName);
+		printf("parser.c: COMMAND NAME=%s\n",sc->commandName);
 		//sc->VarList[0]=fullPath;
 		sc->VarNum = tokenSpace->numOfTokens;
 		for(j=0;j<tokenSpace->numOfTokens;j++){
@@ -140,6 +140,15 @@ int read_line(int fd, char* buf)
 			return -1;
 	}
 	*(byte-1)='\0';*/
-    read(0,buf,MAXLINE);
+static int offset=0;
+int i=0;
+char temp[256];
+    read(fd,&temp,MAXLINE);
+while(temp[offset]!='\n')
+{
+	buf[i]=temp[i];
+	i++;
+}
+buf[i]='\0';
 	return 1;
 }

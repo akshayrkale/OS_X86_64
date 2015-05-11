@@ -57,7 +57,7 @@ uint64_t wakeuptime;
 uint64_t *elf;
 struct mm_struct *mm;
 uint64_t kstack[512];
-int fd_table[10];  //per process file descriptor array
+int fd_table[50];  //per process file descriptor array
 char cwd[50]; //store the current working directory of a process
 int waitingfor;
 int num_child;

@@ -40,6 +40,7 @@ int pipe(int *pipefd){
 	
 
 	printf("file_table[%d].read: %p\n",j,file_table[j].read );
+	printf("file_table[%d].close: %p\n",j,file_table[j].close );
 
 	//This is the write descriptor
 
@@ -57,7 +58,7 @@ int pipe(int *pipefd){
 	file_table[k].write = pipe_write; 
 	file_table[k].close = pipe_close;
 
-	printf("file_table[%d].write: %p\n",k,file_table[k].write);
+	printf("file_table[%d].close: %p\n",k,file_table[k].close);
 	
 	//install duplicate pointers
 
@@ -99,7 +100,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 
 	int duplicateFD=-1;
 
-	printf("In pipe write\n");
+	//printf("In pipe write\n");
 
 	//If writing to a read pipe then fail
 
@@ -113,7 +114,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 
 	if(file_table[file_table_index].cursor == 1024){
 
-		printf("Buffer is full..Blocking process\n");
+		// //printf("Buffer is full..Blocking process\n");
 		return -1;
 
 	}
@@ -123,7 +124,7 @@ int pipe_write(int file_table_index,char *buf,int numBytesToWrite){
 		//buffer is not full. Check if enuf space is there for writing data
 		if(1024-file_table[file_table_index].cursor < numBytesToWrite){
 
-			printf("Not enuf space...Blocking\n");
+			//printf("Not enuf space...Blocking\n");
 			return -1;
 		}
 		else{
@@ -201,10 +202,11 @@ int pipe_close(int fd){
 	int file_table_index = curproc->fd_table[fd];
 	//int duplicateFD;
 
+	printf("file table index %d",file_table_index);
 	if(file_table[file_table_index].write == 0){
 
 		//We are closing the read end of the pipe
-		//printf("Closing read end\n");
+		printf("Closing read end\n");
 		file_table[file_table_index].pipe.readers--;
 		// duplicateFD = file_table[file_table_index].pipe.duplicateFD; //referes to the seconf pipe filetable entry
 		// file_table[duplicateFD].pipe.readers--;
@@ -213,7 +215,7 @@ int pipe_close(int fd){
 	else if(file_table[file_table_index].read == 0){
 
 		//We are closing the write end of the pipe
-		//printf("Closing write end\n");
+		printf("Closing write end\n");
 		file_table[file_table_index].pipe.writers--;
 		// duplicateFD = file_table[file_table_index].pipe.duplicateFD; //referes to the seconf pipe filetable entry
 		// file_table[duplicateFD].pipe.writers--;

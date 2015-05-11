@@ -19,6 +19,7 @@ int main (int argc, char *argv[], char* envp[])
 	printf("Envp[0] = %s\n\n",envp[0]);
 	printf("Starting shell\n");*/
 
+
     printf("argc=%d %p %p ",argc,argv,envp);
 //    printf("argv=%s",envp[0]);
 char cmdLine[MAXLINE];
@@ -34,29 +35,35 @@ char cmdLine[MAXLINE];
 	//exit(0);
     //sleep(10);
 //    printf("Argv1is:%s",argv[1]);
-	if(0&&argv[1]!=NULL)
+int len=strlen(argv[0]);
+
+	if(argv[0][len-3]=='.')
 	{
-		printf("executing script");
+		printf("executing script%s",argv[0]);
 		fd=open(argv[1],0);
-		//printf("opened");
+		printf("opened%d ",fd);
 	}
 
 	while(1)
 	{
 		//cmdLine = "Santosh 1 2 3 | ls -l";
 
-		if(1 || argv[1] == NULL)
+		if(argv[0][len-3]!='.')
 		{
 			printf("%s> ",PS1);
-			read_line(0,cmdLine);
+			read(0,cmdLine,256);
 		}
 		else
 		{
-			//printf("here");
-			ret=read_line(fd, cmdLine);
-			while (cmdLine[0] == '#')
+			printf("here");
+			read_line(fd, cmdLine);
+	
+printf("cmdLine=%s",cmdLine);
+				while (cmdLine[0] == '#')
+{
 				ret=read_line(fd,cmdLine);
-			if(ret == -1)
+	printf("cmdLine=%s",cmdLine);
+}			if(ret == -1)
 				break;
 		}
 //    strcpy(cmdLine,"malluaunty");
@@ -72,7 +79,7 @@ char cmdLine[MAXLINE];
 			continue;
 		}
 
-		printf("Calling parser%s",cmdLine);
+		//printf("Calling parser%s",cmdLine);
 		info = parseModified(cmdLine,envp);
 		if (info == NULL){
 			free(cmdLine);
@@ -80,18 +87,35 @@ char cmdLine[MAXLINE];
 		}
 
 		//prints the info struct
-		print_info(info);
+		//print_info(info);
 
+		//printf("INFO COMMAND00");
+		char buf[50];
+        getcwd(buf,50);
+        //printf("Command given: %s PWD: %s",info->CommArray[0]->VarList[0],buf);
 		strcpy(temp,info->CommArray[0]->commandName);
+		//printf("Just bfeore %s<---\n",temp);
 
 		if(strcmp(temp,"set")==0||strcmp(temp,"cd")==0 || strcmp(temp,"exit")==0){
 
 			printf("Executing Builtin command\n");
 			executeBuiltins(info,envp);
 		}
+        else if(strcmp(temp,"/bin/ls")==0)
+        {
+         
+         printf("XXXXXXXXX");
+        //strcpy(info->CommArray[0]->VarList[0],temp);
+        strcpy(info->CommArray[0]->VarList[0],buf);
+        //info->CommArray[0]->VarList[2]=NULL;
+        
+    	//printf("Calling Execute with %s ",info->CommArray[0]->VarList[1]);
+    	printf("Just afterre\n");
 
+        execute_cmd(info,envp);
+}
 		else{
-            printf("Calling Execute");
+            printf("Calling Execute with %s",info->CommArray[0]->VarList[0]);
 			execute_cmd(info,envp);
 
 		}

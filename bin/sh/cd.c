@@ -83,6 +83,12 @@ int pathLen = strlen(path);
    
     i=0;
 
+    while(i<numOfComponents){
+
+        printf("%s ",components[i++]);
+    }
+
+    i=0;
     
     while(i < numOfComponents){
 
@@ -90,9 +96,11 @@ int pathLen = strlen(path);
             break;
         }
 
+        
+
         if(i==0){
-            strcpy(toSend,components[i]);
             
+            strcpy(toSend,components[i]);
             if(chdir(toSend) == -1){
             chdir(originalWorkingDirectory);
             break;
@@ -126,7 +134,12 @@ int pathLen = strlen(path);
             }
 
 
-            if(toSend[strlen(toSend)-1] != '/'){
+
+            if(strcmp(toSend,"..")==0 || strcmp(toSend,".")==0){
+
+                getcwd(toSend,100);
+            }
+            else if(toSend[strlen(toSend)-1] != '/'){
                 
                 strcat(toSend,"/");
             }
@@ -150,6 +163,9 @@ int pathLen = strlen(path);
         }
 
     }
+
+    getcwd(buff,100);
+    printf("CWD: %s",buff);
 	
 
 }

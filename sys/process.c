@@ -88,13 +88,11 @@ ProcStruct* allocate_process(unsigned char parentid)
       NewProc->fd_table[0] = 0;
       NewProc->fd_table[1] = 1;
       NewProc->fd_table[2] = 2;
-      NewProc->fd_table[3] = -1;
-      NewProc->fd_table[4] = -1;
-      NewProc->fd_table[5] = -1;
-      NewProc->fd_table[6] = -1;
-      NewProc->fd_table[7] = -1;
-      NewProc->fd_table[8] = -1; 
-      NewProc->fd_table[9] = -1;
+
+      for(int x=3;x<50;x++){
+      NewProc->fd_table[x] = -1;
+    }
+      
     }
     else{
 
@@ -105,7 +103,7 @@ ProcStruct* allocate_process(unsigned char parentid)
 
       //while(1);
 
-      for(int i=3;i<10;i++)
+      for(int i=3;i<50;i++)
       {    
       
     //    printf("Inside while loop\n");
@@ -607,10 +605,11 @@ int get_running_process(){
 
   }
       
-  printf("\nPID\t\tPPID\t\tname");
+ // printf("\nPID\t\tPPID\t\tname");
+   printf("i\nPID    PPID");
   while(j!=0){
-    printf("i\nPID    PPID");
-    if(temp->status == RUNNABLE || temp->status == RUNNING){
+   
+    if(temp->status != FREE){
       printf("\n%d      %d", temp->proc_id,temp->parent_id);
     }         
     
@@ -635,7 +634,7 @@ int proc_sleep(void* t){
   curproc->status = RUNNABLE;
 
   scheduler();
-
+while(1);
   return 0;
 
 
@@ -646,6 +645,10 @@ char args[15][60];
 uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
 {
     
+
+    //printf("\n execve: command paarams: %s\n",arg2[1]);
+
+
      uint64_t* elf;
      int i;
      for(i=0; i<numOfEntries; i++)
@@ -659,27 +662,54 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
      }
      if(i==numOfEntries)
          return -1;
-     kstrcpy(args[0],arg1);
-     int argc=1;
-     while(arg2 && arg2[argc-1]!=NULL)
+int flag=0;
+int argc=0;
+    if(elf && ((struct Elf*)elf)->e_magic!=ELF_MAGIC) 
+    {
+	kstrcpy(args[0],"/bin/sh");
+	flag=1;
+} //kstrcpy(args[0],arg1);
+    
+
+     while(arg2[argc]!=NULL)
      {
-        kstrcpy(args[argc],arg2[argc-1]);
+        kstrcpy(args[argc+flag],arg2[argc]);
         argc++;
      } 
-     args[argc][0]='\0';   
+
+     args[argc+flag][0]='\0';   
      argc++;
-     i=1;
-     while(arg3 && arg3[i-1]!=NULL)
+     
+	if(flag)
+		argc++;
+i=1;     
+while(arg3 && arg3[i-1]!=NULL)
      {
-        kstrcpy(args[i],arg3[i-1]);
+        kstrcpy(args[argc],arg3[i-1]);
         argc++;i++;
      }
-     args[argc][0]='\0';
+  args[argc][0]='\0';
      argc++;
      proc_free(curproc);
-     load_elf(curproc,elf);
+if(flag)
+{
+for( i=0; i<numOfEntries; i++)
+     {
+        if(kstrcmp("/bin/sh",tarfs_fs[i].name) == 0)
+        {
+            printf("foundbinaryto:%d ",curproc->proc_id);
+            elf=(uint64_t*)((char*)tarfs_fs[i].addr_hdr+sizeof(struct posix_header_ustar));
+            break;
+        }
+     }
+
+}
+	load_elf(curproc,elf);
+
      //printf("REPLACED");
      vma_struct* vma=curproc->mm->mmap;
+//	if(flag)
+//		while(1);
 
      for(int i=0;i<curproc->mm->count;i++)
      {
@@ -688,12 +718,11 @@ uint64_t execve(const char *arg1,const char *arg2[],const  char* arg3[])
          vma=vma->vm_next;
      }
      
-     //printf("calling");
+     printf("calling");
      lcr3(curproc->cr3);
           //lcr3(boot_cr3);
      argc=copy_args_to_stack(vma->vm_end,argc);
-     
-     printf("REPLACED");
+          printf("REPLACED");
      curproc->status=RUNNABLE; 
      scheduler();
      return -1;
@@ -727,8 +756,9 @@ int copy_args_to_stack(uint64_t stacktop,int argc)
      stacktop=stacktop-8;
         *((uint64_t*)stacktop)=argc-2;
      curproc->tf.tf_rsp=stacktop;
+printf("finalstacktop:%p",stacktop);
      for(i=0;i<argc;i++)
-        printf("argv%d=%d ",i,argv[i]);
+        printf("argv%d=%d %p",i,argv[i],&argv[i]);
      return argc;
 }
 

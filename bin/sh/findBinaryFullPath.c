@@ -17,28 +17,23 @@ char* find_file_in_dir (char *path, char *file)
 	//ret=NULL;
 	void *dir;
 	dir = opendir (path);
-	if(dir == NULL)
-		return (char *)NULL;
+	// if(dir == NULL)
+	// 	return (char *)NULL;
 
 	errno = 0;
-	//printf("In find_file_in_dir....searching %s\n",path);
+	printf("dir = %d",(uint64_t)dir);
 	while ((entry = readdir (dir)) != NULL) {
-		//printf("entry->dname=%s file=%s",entry->d_name, file);
+		//printf("File = %s Searching = %s",entry->d_name, file);
 		if (!strcmp(entry->d_name, file)) {
+			
 			ret=malloc(sizeof(strlen(path)+1));
 			strcpy(ret,path);
-			break;
+			//break;
 		}
 	}
-	if (errno && !entry){
-		strerror(errno);
-	}
 
-	if(closedir (dir) == -1){
 
-		printf("Fatal error. Could not close a directory\n");
-
-	}
+	closedir(dir);
 
 
 	//printf("In find_file_in_dir....returning %s\n",ret);
@@ -74,9 +69,11 @@ char* findBinaryFullPath(char* srchPath,char* binaryName){
 		//printf("Calling find_file_in_dir token number %d of %d",i,dirToSearch->numOfTokens);
 		//printf("\n\npath component 1 %s\n\n",dirToSearch->tokenArr[i]);
 		strcpy(temp,dirToSearch->tokenArr[i]);
-		printf("\n\nBefore calling find_file_in_dir %s binary=%s\n",temp, binaryName	);
+		//printf("\n\nBefore calling find_file_in_dir %s binary=%s\n",temp, binaryName);
 
 		x=find_file_in_dir(temp,binaryName);
+
+		//while(1);
 
 		if(x!=NULL){
 

@@ -37,4 +37,4 @@ typedef struct{
 
 } fileTable_entry;
 
-extern fileTable_entry file_table[10];
+extern fileTable_entry file_table[100];

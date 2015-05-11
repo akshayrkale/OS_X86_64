@@ -199,7 +199,8 @@ void isr14_handler(struct faultStruct *faultFrame)
 //        printf("Kernel mode Page Fault");
 //        printf("Address of faultFrame %p",faultFrame);
 //        printf(" \n Error occured at %p ", faultFrame->rip);
-        printf(" \n Faulting virtual address is %p", vaddr);
+          printf("  Fault:%p ", vaddr);
+          
 //
         if(curproc->status==RUNNING)
         {
@@ -296,8 +297,11 @@ void isr14_handler(struct faultStruct *faultFrame)
                  {
                      printf("Segmentation Fault:%d %p",curproc->proc_id,vaddr);
                      while(1);
-                     proc_free(curproc);
-                     curproc->status=FREE;
+                    sys_kill(curproc->proc_id);
+                    while(1);
+                    scheduler();
+		     //proc_free(curproc);
+                     //curproc->status=FREE;
                      //proccount--;
                      //kill process
                  }
@@ -318,7 +322,10 @@ void isr128_handler(struct Trapframe* tf){
 
 
         switch(syscall_number){
-    
+   		case SYS_kill:
+		
+ tf->tf_regs.reg_rax = sys_kill(tf->tf_regs.reg_rdi);
+	break;	
                 case SYS_write:
                         //printf("In sys write isr\n");
                         syscall_ret_value = sys_write(tf->tf_regs.reg_rdi,tf->tf_regs.reg_rsi,tf->tf_regs.reg_rdx);
@@ -362,7 +369,7 @@ void isr128_handler(struct Trapframe* tf){
                     //printf("%d\n",(O_DIRECTORY|O_RDONLY) );
                     if(tf->tf_regs.reg_rsi == (KO_DIRECTORY|KO_RDONLY)){
 
-        //                printf("Going to open a directory\n");
+                        //printf("Going to open a directory\n");
                         syscall_ret_value  = sys_open_dir((char*)tf->tf_regs.reg_rdi);
                         tf->tf_regs.reg_rax = (uint64_t)syscall_ret_value;
 
